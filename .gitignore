@@ -23,6 +23,7 @@ chrome-user-data
 .vscode
 *.swp
 *.swo
+*.db
 
 packages/react-devtools-core/dist
 packages/react-devtools-extensions/chrome/build
@@ -175,3 +176,13 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
