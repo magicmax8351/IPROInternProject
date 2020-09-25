@@ -6,6 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel, constr
 import datetime
 
+# See https://docs.sqlalchemy.org/en/13/orm/basic_relationships.html
+# for more information.
+
 Base = declarative_base()
 metadata = MetaData()
 
