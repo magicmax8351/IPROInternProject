@@ -41,3 +41,100 @@ class UserModel(BaseModel):
     class Config:
         orm_mode = True
 
+class ResumeORM(Base):
+    __tablename__ = "resume"
+
+class ResumeModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class StageORM(Base):
+    __tablename__ = "stage"
+
+class StageModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class TokenORM(Base):
+    __tablename__ = "token"
+
+class TokenModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class SettingsORM(Base):
+    __tablename__ = "settings"
+
+class SettingsModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class GroupORM(Base):
+    __tablename__ = "group"
+
+class GroupModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class MembershipORM(Base):
+    __tablename__ = "membership"
+
+class MembershipModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class PostORM(Base):
+    __tablename__ = "post"
+
+class PostModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class CommentORM(Base):
+    __tablename__ = "comment"
+
+class CommentModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class CompanyORM(Base):
+    __tablename__ = "company"
+
+class CompanyModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class JobORM(Base):
+    __tablename__ = "job"
+
+class JobModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class JobtagORM(Base):
+    __tablename__ = "jobtag"
+
+class JobtagModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class ApplicationORM(Base):
+    __tablename__ = "application"
+
+class ApplicationModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class PresetORM(Base):
+    __tablename__ = "preset"
+
+class PresetModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class PresetitemORM(Base):
+    __tablename__ = "presetitem"
+
+class PresetitemModel(BaseModel):
+    class Config:
+        orm_mode = True
