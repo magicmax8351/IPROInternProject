@@ -26,6 +26,12 @@ class Item(BaseModel):
     price: float
     is_offer: Optional[bool] = None
 
+@app.get("/groups/get")
+def get_group(group_id: int):
+    """Returns a group object with the given ID. """
+    raise HTTPException(400, "Not implemented")
+
+
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
