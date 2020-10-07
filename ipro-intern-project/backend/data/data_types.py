@@ -180,8 +180,12 @@ class CompanyORM(Base):
     __tablename__ = "company"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
 
 class CompanyModel(BaseModel):
+    id: int
+    name: str
+
     class Config:
         orm_mode = True
 
@@ -189,8 +193,16 @@ class JobORM(Base):
     __tablename__ = "job"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    location = Column(String(32), nullable=False)
+    company_id = Column(Integer, nullable=False)
 
 class JobModel(BaseModel):
+    id: int
+    name: str
+    location: str
+    company_id: int
+
     class Config:
         orm_mode = True
 
@@ -198,8 +210,14 @@ class JobtagORM(Base):
     __tablename__ = "jobtag"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    tag = column(String(32), nullable=False)
+    job_id = Column(Integer, nullable=False)
 
 class JobtagModel(BaseModel):
+    id: int
+    tag: str
+    job_id: int
+
     class Config:
         orm_mode = True
 
@@ -207,8 +225,20 @@ class ApplicationORM(Base):
     __tablename__ = "application"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    date = Column(Datetime.Date, nullable=False)
+    job_id = Column(Integer, nullable=False)
+    stage_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)
+    resume_id = Column(Integer, nullable=False)
 
 class ApplicationModel(BaseModel):
+    id: int
+    date: Datetime.Date
+    job_id: int
+    stage_id: int
+    user_id: int
+    resume_id: int
+
     class Config:
         orm_mode = True
 
@@ -216,8 +246,14 @@ class PresetORM(Base):
     __tablename__ = "preset"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    user_id = Column(Integer, nullable=False)
 
 class PresetModel(BaseModel):
+    id: int
+    name = str
+    user_id: int
+
     class Config:
         orm_mode = True
 
@@ -225,7 +261,15 @@ class PresetitemORM(Base):
     __tablename__ = "presetitem"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    preset_id = Column(Integer, nullable=False)
+    group_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)
 
 class PresetitemModel(BaseModel):
+    id: int
+    preset_id: int
+    group_id: int
+    user_id: int
+    
     class Config:
         orm_mode = True
