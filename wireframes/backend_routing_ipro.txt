@@ -1,0 +1,45 @@
+Assuming these pages are from the view of an existing, logged-in user
+This is a minimal list of actions that these pages should be able to perform
+From this list, the smallest possible API will be specified in order to implement these actions
+
+HOMEPAGE
+	link to dashboard, profile, and group
+	news feed
+		get notifications from groups
+		get notifications from tags
+		get notifications from companies
+		get notifications from people you follow
+	search for posts, people, companies
+	follow tags, people, companies
+	unfollow tags, people, companies
+	
+DASHBOARD
+	link to homepage, profile, and group
+	add a job
+	add a resume
+	update a job
+	view historical resumes
+	view historical job postings
+	update an application status
+	remove a resume from history
+	remvoe a job from history
+	
+PROFILE
+	link to dashboard, homepage, and group
+	update information: name, address, password, email, location, institution, grad date, major(s), language
+	update privacy: posts, profile views, follower transparency
+	delete account
+	
+GROUP (differentiate between a general groups page and the page for a specific group)
+	link to dashboard, profile, and homepage
+	search for groups
+	join a group
+	leave a group
+	create a group
+	delete a group
+	post in a group
+	comment on a post
+	add a posted job/application to your dashboard
+	see basic stats about each group (members, # of posts, helpfulness?)
+	if you get an offer, award the group that was most helpful to show that they were helpful in doing so
+		point system?
