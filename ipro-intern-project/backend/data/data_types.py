@@ -43,6 +43,8 @@ class UserModel(BaseModel):
 
 class ResumeORM(Base):
     __tablename__ = "resume"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class ResumeModel(BaseModel):
     class Config:
@@ -50,6 +52,8 @@ class ResumeModel(BaseModel):
 
 class StageORM(Base):
     __tablename__ = "stage"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class StageModel(BaseModel):
     class Config:
@@ -57,6 +61,8 @@ class StageModel(BaseModel):
 
 class TokenORM(Base):
     __tablename__ = "token"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class TokenModel(BaseModel):
     class Config:
@@ -64,6 +70,8 @@ class TokenModel(BaseModel):
 
 class SettingsORM(Base):
     __tablename__ = "settings"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class SettingsModel(BaseModel):
     class Config:
@@ -71,6 +79,8 @@ class SettingsModel(BaseModel):
 
 class GroupORM(Base):
     __tablename__ = "group"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class GroupModel(BaseModel):
     class Config:
@@ -78,6 +88,8 @@ class GroupModel(BaseModel):
 
 class MembershipORM(Base):
     __tablename__ = "membership"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class MembershipModel(BaseModel):
     class Config:
@@ -85,6 +97,8 @@ class MembershipModel(BaseModel):
 
 class PostORM(Base):
     __tablename__ = "post"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class PostModel(BaseModel):
     class Config:
@@ -92,6 +106,8 @@ class PostModel(BaseModel):
 
 class CommentORM(Base):
     __tablename__ = "comment"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class CommentModel(BaseModel):
     class Config:
@@ -103,6 +119,8 @@ class CommentModel(BaseModel):
 
 class CompanyORM(Base):
     __tablename__ = "company"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class CompanyModel(BaseModel):
     class Config:
@@ -110,6 +128,8 @@ class CompanyModel(BaseModel):
 
 class JobORM(Base):
     __tablename__ = "job"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class JobModel(BaseModel):
     class Config:
@@ -117,6 +137,8 @@ class JobModel(BaseModel):
 
 class JobtagORM(Base):
     __tablename__ = "jobtag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class JobtagModel(BaseModel):
     class Config:
@@ -124,6 +146,8 @@ class JobtagModel(BaseModel):
 
 class ApplicationORM(Base):
     __tablename__ = "application"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class ApplicationModel(BaseModel):
     class Config:
@@ -131,6 +155,8 @@ class ApplicationModel(BaseModel):
 
 class PresetORM(Base):
     __tablename__ = "preset"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class PresetModel(BaseModel):
     class Config:
@@ -138,6 +164,8 @@ class PresetModel(BaseModel):
 
 class PresetitemORM(Base):
     __tablename__ = "presetitem"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
 
 class PresetitemModel(BaseModel):
     class Config:
