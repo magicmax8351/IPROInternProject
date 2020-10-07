@@ -20,3 +20,12 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {"Hello": "World"}
+
+class Item(BaseModel):
+    name: str
+    price: float
+    is_offer: Optional[bool] = None
+
+@app.put("/items/{item_id}")
+def update_item(item_id: int, item: Item):
+    return {"item_name": item.name, "item_id": item_id}

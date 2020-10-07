@@ -97,6 +97,10 @@ class CommentModel(BaseModel):
     class Config:
         orm_mode = True
 
+# justin do above 
+#############################
+# hunter do below 
+
 class CompanyORM(Base):
     __tablename__ = "company"
 
