@@ -48,6 +48,28 @@ def update_user(updated_user: UserModel):
 def delete_user(user_id: int):
     """Removes the user with the given ID."""
     raise HTTPException(400, "Not implemented")
+    
+# Token
+@app.post("/tokens/add")
+def add_token(new_token: TokenModel):
+    """Adds a new row to token table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/tokens/get")
+def get_token(token_id: int):
+    """Returns a token object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/tokens/update")
+def update_token(updated_token: TokenModel):
+    """Updates the token with the given ID with new information.
+       Checks to make sure that the token exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/tokens/delete")
+def delete_token(token_id: int):
+    """Removes the token with the given ID."""
+    raise HTTPException(400, "Not implemented")
 
 # Post
 @app.post("/posts/add")
@@ -85,7 +107,7 @@ def get_comment(comment_id: int):
 @app.post("/comments/update")
 def update_comment(updated_comment: CommentModel):
     """Updates the comment with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the comment exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/comments/delete")
@@ -107,7 +129,7 @@ def get_application(application_id: int):
 @app.post("/applications/update")
 def update_application(updated_application: ApplicationModel):
     """Updates the application with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the application exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/applications/delete")
@@ -129,7 +151,7 @@ def get_job(job_id: int):
 @app.post("/jobs/update")
 def update_job(updated_job: JobModel):
     """Updates the job with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the job exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/jobs/delete")
@@ -151,7 +173,7 @@ def get_company(company_id: int):
 @app.post("/companies/update")
 def update_company(updated_company: CompanyModel):
     """Updates the company with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the company exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/companies/delete")
@@ -173,7 +195,7 @@ def get_stage(stage_id: int):
 @app.post("/stages/update")
 def update_stage(updated_stage: StageModel):
     """Updates the stage with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the stage exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/stages/delete")
@@ -195,7 +217,7 @@ def get_resume(resume_id: int):
 @app.post("/resumes/update")
 def update_resume(updated_resume: ResumeModel):
     """Updates the resume with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the resume exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/resumes/delete")
@@ -217,7 +239,7 @@ def get_jobtag(jobtag_id: int):
 @app.post("/jobtags/update")
 def update_jobtag(updated_jobtag: JobtagModel):
     """Updates the jobtag with the given ID with new information.
-       Checks to make sure that the post exists first."""
+       Checks to make sure that the jobtag exists first."""
     raise HTTPException(400, "Not implemented")
 
 @app.post("/jobtags/delete")
