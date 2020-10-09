@@ -247,12 +247,95 @@ def delete_jobtag(jobtag_id: int):
     """Removes the jobtag with the given ID."""
     raise HTTPException(400, "Not implemented")
 
-# END HUNTER'S CODE
+# Group
+@app.post("/groups/add")
+def add_group(new_group: GroupModel):
+    """Adds a new row to group table."""
+    raise HTTPException(400, "Not implemented")
 
 @app.get("/groups/get")
 def get_group(group_id: int):
-    """Returns a group object with the given ID. """
+    """Returns a group object with the given ID."""
     raise HTTPException(400, "Not implemented")
+
+@app.post("/groups/update")
+def update_group(updated_group: GroupModel):
+    """Updates the group with the given ID with new information.
+       Checks to make sure that the group exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/groups/delete")
+def delete_group(group_id: int):
+    """Removes the group with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Membership
+@app.post("/memberships/add")
+def add_membership(new_membership: MembershipModel):
+    """Adds a new row to membership table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/memberships/get")
+def get_membership(membership_id: int):
+    """Returns a membership object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/memberships/update")
+def update_membership(updated_membership: MembershipModel):
+    """Updates the membership with the given ID with new information.
+       Checks to make sure that the membership exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/memberships/delete")
+def delete_membership(membership_id: int):
+    """Removes the membership with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Settings
+@app.post("/settings/add")
+def add_settings(new_settings: SettingsModel):
+    """Adds a new row to settings table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/settings/get")
+def get_settings(settings_id: int):
+    """Returns a settings object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/settings/update")
+def update_settings(updated_settings: SettingsModel):
+    """Updates the settings with the given ID with new information.
+       Checks to make sure that the settings exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/settings/delete")
+def delete_settings(settings_id: int):
+    """Removes the settings with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Preset
+@app.post("/presets/add")
+def add_preset(new_preset: PresetModel):
+    """Adds a new row to preset table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/presets/get")
+def get_preset(preset_id: int):
+    """Returns a preset object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/presets/update")
+def update_preset(updated_preset: PresetModel):
+    """Updates the preset with the given ID with new information.
+       Checks to make sure that the preset exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/presets/delete")
+def delete_preset(preset_id: int):
+    """Removes the preset with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# END HUNTER'S CODE
 
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
