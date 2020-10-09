@@ -335,6 +335,28 @@ def delete_preset(preset_id: int):
     """Removes the preset with the given ID."""
     raise HTTPException(400, "Not implemented")
 
+# Presetitem
+@app.post("/presetitems/add")
+def add_presetitem(new_presetitem: PresetitemModel):
+    """Adds a new row to presetitem table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/presetitems/get")
+def get_presetitem(presetitem_id: int):
+    """Returns a presetitem object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/presetitems/update")
+def update_presetitem(updated_presetitem: PresetitemModel):
+    """Updates the presetitem with the given ID with new information.
+       Checks to make sure that the presetitem exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/presetitems/delete")
+def delete_presetitem(presetitem_id: int):
+    """Removes the presetitem with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
 # END HUNTER'S CODE
 
 @app.put("/items/{item_id}")
