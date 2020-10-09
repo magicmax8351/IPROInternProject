@@ -71,6 +71,28 @@ def delete_post(post_id: int):
     """Removes the post with the given ID."""
     raise HTTPException(400, "Not implemented")
 
+# Comment
+@app.post("/comments/add")
+def add_comment(new_comment: CommentModel):
+    """Adds a new row to comment table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/comments/get")
+def get_comment(comment_id: int):
+    """Returns a comment object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/comments/update")
+def update_comment(updated_comment: CommentModel):
+    """Updates the comment with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/comments/delete")
+def delete_comment(comment_id: int):
+    """Removes the comment with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
 # END HUNTER'S CODE
 
 @app.get("/groups/get")
