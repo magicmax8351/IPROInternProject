@@ -159,6 +159,72 @@ def delete_company(company_id: int):
     """Removes the company with the given ID."""
     raise HTTPException(400, "Not implemented")
 
+# Stage
+@app.post("/stages/add")
+def add_stage(new_stage: StageModel):
+    """Adds a new row to stage table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/stages/get")
+def get_stage(stage_id: int):
+    """Returns a stage object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/stages/update")
+def update_stage(updated_stage: StageModel):
+    """Updates the stage with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/stages/delete")
+def delete_stage(stage_id: int):
+    """Removes the stage with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Resume
+@app.post("/resumes/add")
+def add_resume(new_resume: ResumeModel):
+    """Adds a new row to resume table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/resumes/get")
+def get_resume(resume_id: int):
+    """Returns a resume object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/resumes/update")
+def update_resume(updated_resume: ResumeModel):
+    """Updates the resume with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/resumes/delete")
+def delete_resume(resume_id: int):
+    """Removes the resume with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Jobtag
+@app.post("/jobtags/add")
+def add_jobtag(new_jobtag: JobtagModel):
+    """Adds a new row to jobtag table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/jobtags/get")
+def get_jobtag(jobtag_id: int):
+    """Returns a jobtag object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/jobtags/update")
+def update_jobtag(updated_jobtag: JobtagModel):
+    """Updates the jobtag with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/jobtags/delete")
+def delete_jobtag(jobtag_id: int):
+    """Removes the jobtag with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
 # END HUNTER'S CODE
 
 @app.get("/groups/get")
