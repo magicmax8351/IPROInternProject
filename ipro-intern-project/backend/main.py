@@ -93,6 +93,72 @@ def delete_comment(comment_id: int):
     """Removes the comment with the given ID."""
     raise HTTPException(400, "Not implemented")
 
+# Application
+@app.post("/applications/add")
+def add_application(new_application: ApplicationModel):
+    """Adds a new row to application table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/applications/get")
+def get_application(application_id: int):
+    """Returns a application object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/applications/update")
+def update_application(updated_application: ApplicationModel):
+    """Updates the application with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/applications/delete")
+def delete_application(application_id: int):
+    """Removes the application with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Job
+@app.post("/jobs/add")
+def add_job(new_job: JobModel):
+    """Adds a new row to job table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/jobs/get")
+def get_job(job_id: int):
+    """Returns a job object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/jobs/update")
+def update_job(updated_job: JobModel):
+    """Updates the job with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/jobs/delete")
+def delete_job(job_id: int):
+    """Removes the job with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+# Company
+@app.post("/companies/add")
+def add_company(new_company: CompanyModel):
+    """Adds a new row to company table."""
+    raise HTTPException(400, "Not implemented")
+
+@app.get("/companies/get")
+def get_company(company_id: int):
+    """Returns a company object with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/companies/update")
+def update_company(updated_company: CompanyModel):
+    """Updates the company with the given ID with new information.
+       Checks to make sure that the post exists first."""
+    raise HTTPException(400, "Not implemented")
+
+@app.post("/companies/delete")
+def delete_company(company_id: int):
+    """Removes the company with the given ID."""
+    raise HTTPException(400, "Not implemented")
+
 # END HUNTER'S CODE
 
 @app.get("/groups/get")
