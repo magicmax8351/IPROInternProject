@@ -137,8 +137,8 @@ class PostORM(Base):
     __tablename__ = "post"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    subject: strcolumn
-    body: strcolumn
+    subject: Column(String(32), nullable=False)
+    body: Column(String(32), nullable=False)
     timestamp: datetime.datetime
     [job id relationship]
     [user id relationship]
@@ -162,7 +162,7 @@ class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    text: strcolumn
+    text: Column(String(32), nullable=False)
     timestamp: datetime.datetime
     [post id relationship]
     [user id relationship]
@@ -171,10 +171,6 @@ class CommentORM(Base):
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
-
-# justin do above 
-#############################
-# hunter do below 
 
 class CompanyORM(Base):
     __tablename__ = "company"
