@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -25,6 +25,12 @@ class UserORM(Base):
     graddate = Column(Date)
     city = Column(String(32))
     state = Column(String(32))
+    
+    resumes = relationship("ResumeORM")
+    settings = relationship("SettingsORM")
+    groups = relationship("GroupORM")
+    applications = relationship("ApplicationORM")
+    presets = relationship("PresetORM")
 
 class UserModel(BaseModel):
     class Config:
@@ -41,6 +47,12 @@ class UserModel(BaseModel):
     city: str
     state: str
 
+    resumes: List[ResumeModel]
+    settings: List[SettingModel]
+    groups: List[GroupModel]
+    applications: List[ApplicationModel]
+    presets: List[PresetModel]
+
 
 class ResumeORM(Base):
     __tablename__ = "resume"
@@ -49,7 +61,7 @@ class ResumeORM(Base):
     name = Column(String(32), nullable=False)
     filename = Column(String(32), nullable=True)
     date = datetime.datetime
-    [user id relationship] 
+    user_id = Column(Integer, ForeignKey(UserORM.id))
 
 class ResumeModel(BaseModel):
     class Config:
@@ -58,20 +70,20 @@ class ResumeModel(BaseModel):
     name: str
     filename: str
     date: datetime.datetime
-    [user id relationship model] 
+    # # [user id relationship model]  
 
 class StageORM(Base):
     __tablename__ = "stage"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name: Column(String(32), nullable=False)
-    [user id relationship] 
+    user_id = Column(Integer, ForeignKey(UserORM.id))
 
 class StageModel(BaseModel):
     class Config:
         orm_mode = True
     name: str
-    [user id relationship model]
+    # [user id relationship model] 
 
 class TokenORM(Base):
     __tablename__ = "token"
@@ -84,8 +96,7 @@ class TokenModel(BaseModel):
     class Config:
         orm_mode = True
     val: str
-    [user id relationship model]
-
+    # [user id relationship model] 
 
 class SettingsORM(Base):
     __tablename__ = "settings"
@@ -99,7 +110,7 @@ class SettingsModel(BaseModel):
         orm_mode = True
     id: int
     visibility: str
-    [user id relationship model]
+    # [user id relationship model] 
 
 class GroupORM(Base):
     __tablename__ = "group"
@@ -131,14 +142,14 @@ class MembershipModel(BaseModel):
     id: int
     permission: int
     [group id relationship model]
-    [user id relationship model] 
+    # # [user id relationship model]  
 
 class PostORM(Base):
     __tablename__ = "post"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    subject: strcolumn
-    body: strcolumn
+    subject: Column(String(32), nullable=False)
+    body: Column(String(32), nullable=False)
     timestamp: datetime.datetime
     [job id relationship]
     [user id relationship]
@@ -155,14 +166,14 @@ class PostModel(BaseModel):
 
     timestamp: datetime.datetime
     [job id relationship model]
-    [user id relationship model]
+    # [user id relationship model] 
     [group id relationship model]
 
 class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    text: strcolumn
+    text: Column(String(32), nullable=False)
     timestamp: datetime.datetime
     [post id relationship]
     [user id relationship]
@@ -171,10 +182,6 @@ class CommentORM(Base):
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
-
-# justin do above 
-#############################
-# hunter do below 
 
 class CompanyORM(Base):
     __tablename__ = "company"
