@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -25,8 +25,17 @@ class UserORM(Base):
     graddate = Column(Date)
     city = Column(String(32))
     state = Column(String(32))
+    
+    resumes = relationship("ResumeORM")
+    settings = relationship("SettingsORM")
+    groups = relationship("GroupORM")
+    applications = relationship("ApplicationORM")
+    presets = relationship("PresetORM")
 
 class UserModel(BaseModel):
+    class Config:
+        orm_mode = True
+
     id: int
     fname: str
     lname: str
@@ -38,107 +47,236 @@ class UserModel(BaseModel):
     city: str
     state: str
 
-    class Config:
-        orm_mode = True
+    resumes: List[ResumeModel]
+    settings: List[SettingModel]
+    groups: List[GroupModel]
+    applications: List[ApplicationModel]
+    presets: List[PresetModel]
+
 
 class ResumeORM(Base):
     __tablename__ = "resume"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    filename = Column(String(32), nullable=True)
+    date = datetime.datetime
+    user_id = Column(Integer, ForeignKey(UserORM.id))
 
 class ResumeModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    name: str
+    filename: str
+    date: datetime.datetime
+    # # [user id relationship model]  
 
 class StageORM(Base):
     __tablename__ = "stage"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name: Column(String(32), nullable=False)
+    user_id = Column(Integer, ForeignKey(UserORM.id))
 
 class StageModel(BaseModel):
     class Config:
         orm_mode = True
+    name: str
+    # [user id relationship model] 
 
 class TokenORM(Base):
     __tablename__ = "token"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    val = Column(String(128), nullable=False)
+    [user id relationship]
 
 class TokenModel(BaseModel):
     class Config:
         orm_mode = True
+    val: str
+    # [user id relationship model] 
 
 class SettingsORM(Base):
     __tablename__ = "settings"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    visibility = Column(String(32), nullable=False)
+    [user id relationship]
 
 class SettingsModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    visibility: str
+    # [user id relationship model] 
 
 class GroupORM(Base):
     __tablename__ = "group"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    icon = Column(String(32), nullable=False) 
+    desc = Column(String(256), nullable=False)
 
 class GroupModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    name: str
+    icon: str
+    desc: str
 
 class MembershipORM(Base):
     __tablename__ = "membership"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    permission = Column(Integer)
+    [group id relationship]
+    [user id relationship]
 
 class MembershipModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    permission: int
+    [group id relationship model]
+    # # [user id relationship model]  
 
 class PostORM(Base):
     __tablename__ = "post"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    subject: Column(String(32), nullable=False)
+    body: Column(String(32), nullable=False)
+    timestamp: datetime.datetime
+    [job id relationship]
+    [user id relationship]
+    [group id relationship] 
+    # Tags are a relatinshop 
 
 class PostModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    subject: str
+    body: str
+    tags: List[TagModel]
+
+    timestamp: datetime.datetime
+    [job id relationship model]
+    # [user id relationship model] 
+    [group id relationship model]
 
 class CommentORM(Base):
     __tablename__ = "comment"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    text: Column(String(32), nullable=False)
+    timestamp: datetime.datetime
+    [post id relationship]
+    [user id relationship]
+    [comment parent relationship]
 
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
 
-# justin do above 
-#############################
-# hunter do below 
-
 class CompanyORM(Base):
     __tablename__ = "company"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
 
 class CompanyModel(BaseModel):
+    id: int
+    name: str
+
     class Config:
         orm_mode = True
 
 class JobORM(Base):
     __tablename__ = "job"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    location = Column(String(32), nullable=False)
+    company_id = Column(Integer, nullable=False)
 
 class JobModel(BaseModel):
+    id: int
+    name: str
+    location: str
+    company_id: int
+
     class Config:
         orm_mode = True
 
 class JobtagORM(Base):
     __tablename__ = "jobtag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    tag = column(String(32), nullable=False)
+    job_id = Column(Integer, nullable=False)
 
 class JobtagModel(BaseModel):
+    id: int
+    tag: str
+    job_id: int
+
     class Config:
         orm_mode = True
 
 class ApplicationORM(Base):
     __tablename__ = "application"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    date = Column(Datetime.Date, nullable=False)
+    job_id = Column(Integer, nullable=False)
+    stage_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)
+    resume_id = Column(Integer, nullable=False)
 
 class ApplicationModel(BaseModel):
+    id: int
+    date: Datetime.Date
+    job_id: int
+    stage_id: int
+    user_id: int
+    resume_id: int
+
     class Config:
         orm_mode = True
 
 class PresetORM(Base):
     __tablename__ = "preset"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String(32), nullable=False)
+    user_id = Column(Integer, nullable=False)
 
 class PresetModel(BaseModel):
+    id: int
+    name = str
+    user_id: int
+
     class Config:
         orm_mode = True
 
 class PresetitemORM(Base):
     __tablename__ = "presetitem"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    preset_id = Column(Integer, nullable=False)
+    group_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)
 
 class PresetitemModel(BaseModel):
+    id: int
+    preset_id: int
+    group_id: int
+    user_id: int
+    
     class Config:
         orm_mode = True
