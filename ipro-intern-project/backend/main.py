@@ -26,6 +26,11 @@ class Item(BaseModel):
     price: float
     is_offer: Optional[bool] = None
 
+@app.get("/testpath")
+def test_get():
+    print("Successfully received test get request.")
+    return {"message": "Hello World"}
+
 # CRUD functions for each table
 # User
 @app.post("/users/add")
