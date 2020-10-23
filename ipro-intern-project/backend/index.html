@@ -1,0 +1,32 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>The HTML5 Herald</title>
+</head>
+
+<script>
+    function fetchAlert() {
+        fetch("http://localhost:8000/?name=Doug", {
+            "method": "GET",
+            "headers": {}
+        })
+            .then(response => {
+                alert(response.message);
+                console.log(response);
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }
+</script>
+
+<body>
+    <h1>Hello world!</h1>
+    <h3>Press this button, and see what happens:</h3>
+    <p>Button: <button onclick="fetchAlert()">Button!</button>
+</body>
+
+</html>
