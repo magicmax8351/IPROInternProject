@@ -2,10 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import random
 
-import os
-import image_gen
-import sheet_data
 
 app = FastAPI()
 
@@ -17,14 +15,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class HelloResponse(BaseModel):
+    name: str
+    message: str
+
 @app.get("/")
-def root():
-    return {"Hello": "World"}
+def root(name: str) -> HelloResponse:
+    return HelloResponse(
+        name=name,
+        message=f"Hello {name}! Your lucky number is {random.randint(5, 100)}"
+    )
+
 
 class Item(BaseModel):
     name: str
     price: float
-    is_offer: Optional[bool] = None
 
 @app.get("/groups/get")
 def get_group(group_id: int):
