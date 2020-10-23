@@ -1,6 +1,6 @@
 from typing import List
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
-from sqlalchemy import MetaData
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, MetaData, DateTime, Date
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel, constr
@@ -31,6 +31,7 @@ class UserORM(Base):
     groups = relationship("GroupORM")
     applications = relationship("ApplicationORM")
     presets = relationship("PresetORM")
+    tokens = relationship("TokenORM")
 
 class UserModel(BaseModel):
     class Config:
@@ -47,20 +48,13 @@ class UserModel(BaseModel):
     city: str
     state: str
 
-    resumes: List[ResumeModel]
-    settings: List[SettingModel]
-    groups: List[GroupModel]
-    applications: List[ApplicationModel]
-    presets: List[PresetModel]
-
-
 class ResumeORM(Base):
     __tablename__ = "resume"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False)
     filename = Column(String(32), nullable=True)
-    date = datetime.datetime
+    date = Column(DateTime)
     user_id = Column(Integer, ForeignKey(UserORM.id))
 
 class ResumeModel(BaseModel):
@@ -70,7 +64,6 @@ class ResumeModel(BaseModel):
     name: str
     filename: str
     date: datetime.datetime
-    # # [user id relationship model]  
 
 class StageORM(Base):
     __tablename__ = "stage"
@@ -90,27 +83,23 @@ class TokenORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     val = Column(String(128), nullable=False)
-    [user id relationship]
 
 class TokenModel(BaseModel):
     class Config:
         orm_mode = True
     val: str
-    # [user id relationship model] 
 
 class SettingsORM(Base):
     __tablename__ = "settings"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     visibility = Column(String(32), nullable=False)
-    [user id relationship]
 
 class SettingsModel(BaseModel):
     class Config:
         orm_mode = True
     id: int
     visibility: str
-    # [user id relationship model] 
 
 class GroupORM(Base):
     __tablename__ = "group"
@@ -132,16 +121,16 @@ class MembershipORM(Base):
     __tablename__ = "membership"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey(UserORM.id))
+    group_id = Column(Integer, ForeignKey(GroupORM.id))
     permission = Column(Integer)
-    [group id relationship]
-    [user id relationship]
 
 class MembershipModel(BaseModel):
     class Config:
         orm_mode = True
     id: int
     permission: int
-    [group id relationship model]
+    # [group id relationship model]
     # # [user id relationship model]  
 
 class PostORM(Base):
@@ -150,10 +139,10 @@ class PostORM(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     subject: Column(String(32), nullable=False)
     body: Column(String(32), nullable=False)
-    timestamp: datetime.datetime
-    [job id relationship]
-    [user id relationship]
-    [group id relationship] 
+    timestamp: Column(DateTime)
+    # [job id relationship]
+    # [user id relationship] 
+    # [group id relationship] 
     # Tags are a relatinshop 
 
 class PostModel(BaseModel):
@@ -162,22 +151,22 @@ class PostModel(BaseModel):
     id: int
     subject: str
     body: str
-    tags: List[TagModel]
+    # tags: List[TagModel]
 
     timestamp: datetime.datetime
-    [job id relationship model]
+    # [job id relationship model]
     # [user id relationship model] 
-    [group id relationship model]
+    # [group id relationship model]
 
 class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     text: Column(String(32), nullable=False)
-    timestamp: datetime.datetime
-    [post id relationship]
-    [user id relationship]
-    [comment parent relationship]
+    timestamp: Column(DateTime)
+    # [post id relationship]
+    # [user id relationship] 
+    # [comment parent relationship]
 
 class CommentModel(BaseModel):
     class Config:
@@ -217,7 +206,7 @@ class JobtagORM(Base):
     __tablename__ = "jobtag"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    tag = column(String(32), nullable=False)
+    tag = Column(String(32), nullable=False)
     job_id = Column(Integer, nullable=False)
 
 class JobtagModel(BaseModel):
@@ -232,7 +221,7 @@ class ApplicationORM(Base):
     __tablename__ = "application"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    date = Column(Datetime.Date, nullable=False)
+    date = Column(DateTime, nullable=False)
     job_id = Column(Integer, nullable=False)
     stage_id = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
@@ -240,7 +229,7 @@ class ApplicationORM(Base):
 
 class ApplicationModel(BaseModel):
     id: int
-    date: Datetime.Date
+    date: datetime.date
     job_id: int
     stage_id: int
     user_id: int
