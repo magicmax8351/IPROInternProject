@@ -13,7 +13,7 @@ Base = declarative_base()
 metadata = MetaData()
 
 class UserORM(Base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     fname = Column(String(32), nullable=False)
@@ -55,7 +55,7 @@ class ResumeORM(Base):
     name = Column(String(32), nullable=False)
     filename = Column(String(32), nullable=True)
     date = Column(DateTime)
-    user_id = Column(Integer, ForeignKey(UserORM.id))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class ResumeModel(BaseModel):
     class Config:
@@ -70,7 +70,7 @@ class StageORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name: Column(String(32), nullable=False)
-    user_id = Column(Integer, ForeignKey(UserORM.id))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class StageModel(BaseModel):
     class Config:
@@ -83,6 +83,7 @@ class TokenORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     val = Column(String(128), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class TokenModel(BaseModel):
     class Config:
@@ -94,6 +95,7 @@ class SettingsORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     visibility = Column(String(32), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class SettingsModel(BaseModel):
     class Config:
@@ -108,6 +110,7 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class GroupModel(BaseModel):
     class Config:
@@ -121,8 +124,8 @@ class MembershipORM(Base):
     __tablename__ = "membership"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(Integer, ForeignKey(UserORM.id))
-    group_id = Column(Integer, ForeignKey(GroupORM.id))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    group_id = Column(Integer, ForeignKey("group.id"))
     permission = Column(Integer)
 
 class MembershipModel(BaseModel):
@@ -137,13 +140,12 @@ class PostORM(Base):
     __tablename__ = "post"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    subject: Column(String(32), nullable=False)
-    body: Column(String(32), nullable=False)
-    timestamp: Column(DateTime)
-    # [job id relationship]
-    # [user id relationship] 
-    # [group id relationship] 
-    # Tags are a relatinshop 
+    subject = Column(String(32), nullable=False)
+    body = Column(String(32), nullable=False)
+    timestamp = Column(DateTime)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    group_id = Column(Integer, ForeignKey("group.id"))
 
 class PostModel(BaseModel):
     class Config:
@@ -162,11 +164,11 @@ class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    text: Column(String(32), nullable=False)
-    timestamp: Column(DateTime)
-    # [post id relationship]
-    # [user id relationship] 
-    # [comment parent relationship]
+    text = Column(String(32), nullable=False)
+    timestamp =  Column(DateTime)
+    post_id = Column(Integer, ForeignKey("post.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    parent_id = Column(Integer, ForeignKey("comment.id"))
 
 class CommentModel(BaseModel):
     class Config:
@@ -191,7 +193,7 @@ class JobORM(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False)
     location = Column(String(32), nullable=False)
-    company_id = Column(Integer, nullable=False)
+    company_id = Column(Integer, ForeignKey("company.id"))
 
 class JobModel(BaseModel):
     id: int
@@ -207,7 +209,7 @@ class JobtagORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     tag = Column(String(32), nullable=False)
-    job_id = Column(Integer, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
 
 class JobtagModel(BaseModel):
     id: int
@@ -222,10 +224,10 @@ class ApplicationORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     date = Column(DateTime, nullable=False)
-    job_id = Column(Integer, nullable=False)
-    stage_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
-    resume_id = Column(Integer, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    stage_id = Column(Integer, ForeignKey("stage.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    resume_id = Column(Integer, ForeignKey("resume.id"))
 
 class ApplicationModel(BaseModel):
     id: int
@@ -243,7 +245,7 @@ class PresetORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class PresetModel(BaseModel):
     id: int
@@ -257,9 +259,9 @@ class PresetitemORM(Base):
     __tablename__ = "presetitem"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    preset_id = Column(Integer, nullable=False)
-    group_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
+    preset_id = Column(Integer, ForeignKey("preset.id"))
+    group_id = Column(Integer, ForeignKey("group.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
 class PresetitemModel(BaseModel):
     id: int
