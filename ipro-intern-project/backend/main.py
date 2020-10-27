@@ -32,10 +32,10 @@ class Item(BaseModel):
     name: str
     price: float
 
-@app.get("/testpath")
-def test_get():
-    print("Successfully received test get request.")
-    return {"message": "Hello World"}
+@app.post("/testpath")
+def test_func(goodStr: Item):
+    print("\n\n\nSuccessfully received test post request: {}\n\n\n".format(goodStr.name))
+    return {"textRecieved": goodStr.name}
 
 # CRUD functions for each table
 # User
