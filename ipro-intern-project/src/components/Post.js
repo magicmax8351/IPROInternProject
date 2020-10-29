@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-// Investigate https://fontawesome.com/how-to-use/on-the-web/using-with/react
+
+import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Container = styled.div`
     width: 650px;
@@ -26,6 +28,12 @@ const CompanyTitle = styled.h3`
 const HRLine = styled.hr`
     margin-right: 30px;
     margin-left: 15px;
+    margin-bottom: 20px;
+`
+
+const CommentHRLine = styled.hr`
+    margin-right: 35px;
+    margin-left: 120px;
     margin-bottom: 20px;
 `
 
@@ -95,6 +103,30 @@ const CommentID = styled.p`
     margin-bottom: 5px;
 `
 
+const ButtonStyled = styled.button`
+    position: absolute;
+    border: none;
+    background-color: transparent;
+    font-size: 20px;
+    margin-left: 160px;
+    margin-top: -60px;
+`
+
+const MoreComments = styled.p`
+    font-style: italic;
+    margin-left: 15px;
+`
+
+const PostCommentButton = styled.button`
+    background: #ffffff;
+    margin-left: 120px;
+    border: none;
+    font-size: 18px;
+    font-style: italic;
+    border-radius: 10px;
+`
+
+
 const Comment = props => (
     /* author, author_avatar, reply_to, subject, body */
     <div>
@@ -104,7 +136,7 @@ const Comment = props => (
         <CommentReplyTo>In response to #{props.props.reply_to}</CommentReplyTo>
         <CommentSubject>{props.props.subject}</CommentSubject>
         <CommentBody>{props.props.body}</CommentBody>
-        <HRLine/>
+        <CommentHRLine/>
     </div>
 )
 
@@ -179,6 +211,7 @@ class Post extends React.Component {
             return (
             <section>
                 <SectionTitleActive>Job Description</SectionTitleActive>
+                <ButtonStyled onClick={this.description_button_event}><FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon></ButtonStyled>
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
@@ -188,7 +221,7 @@ class Post extends React.Component {
                     occaecat cupidatat non proident, sunt in culpa qui officia deserunt
                     mollit anim id est laborum
                 </p>
-                <button onClick={this.description_button_event}>Click here to contract</button>
+                
 
             </section>
             )
@@ -196,7 +229,7 @@ class Post extends React.Component {
             return (
                 <section>
                     <SectionTitleClosed>Job Description</SectionTitleClosed>
-                    <button onClick={this.description_button_event}>Click here to expand</button>
+                    <ButtonStyled onClick={this.description_button_event}><FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon></ButtonStyled>
                 </section>
             )
         }
@@ -208,15 +241,15 @@ class Post extends React.Component {
             return (
                 <section>
                 <SectionTitleActive>Job Information</SectionTitleActive>
+                <ButtonStyled onClick={this.information_button_event}><FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon></ButtonStyled>
                 <p>Job information component</p>
-                <button onClick={this.information_button_event}>Click here to contract</button>
                 </section>
             )
         } else {
             return (
                 <section>
                     <SectionTitleClosed>Job Information</SectionTitleClosed>
-                    <button onClick={this.information_button_event}>Click here to expand</button>
+                    <ButtonStyled onClick={this.information_button_event}><FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon></ButtonStyled>
                 </section>
             )
         }
@@ -252,9 +285,9 @@ class Post extends React.Component {
             return (
                 <section>
                     <SectionTitleActive>Comments</SectionTitleActive>
-                    <HRLine/>                
+                    <ButtonStyled onClick={this.comment_button_event}><FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon></ButtonStyled>
                     {this.renderComments(100)}
-                    <button onClick={this.comment_button_event}>Click here to contract</button>
+                    <PostCommentButton>Post a reply...</PostCommentButton>
                     
                 </section>
             )
@@ -262,8 +295,9 @@ class Post extends React.Component {
             return (
                 <section>
                     <SectionTitleClosed>Comments</SectionTitleClosed>
+                    <ButtonStyled onClick={this.comment_button_event}><FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon></ButtonStyled>
                     {this.renderComments(1)}
-                    <button onClick={this.comment_button_event}>Click here to expand</button>
+                    <MoreComments>{this.comments.length - 1} more comments...</MoreComments>
                 </section>
             )
         }
