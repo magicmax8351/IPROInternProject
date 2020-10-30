@@ -4,7 +4,14 @@ import styled from "styled-components";
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const Container = styled.div`
+// For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
+
+const BodyText = styled.p`
+    line-height: 1.5;
+    white-space: pre-wrap;
+`
+
+const Container = styled.div` 
     width: 650px;
     margin-left: auto;
     margin-right: auto;
@@ -83,7 +90,8 @@ const CommentBody = styled.p`
     margin-left: 120px;
     margin-top: -100px;
     margin-bottom: 60px;
-    
+    line-height: 1.5;
+    white-space: pre-wrap;
 `
 
 const CommentSubject = styled.p`
@@ -125,12 +133,22 @@ const PostCommentButton = styled.button`
     font-style: italic;
     border-radius: 10px;
 `
+const PostExpandButton = styled.button`
+    border: none;
+    border-radius: 10px;
+    background: none;
+    font-size: 22px;
+    font-style: italic;
+    width: 100%;
+    margin-left: auto;
+    margin-rigth: auto;
+`
 
 
 const Comment = props => (
     /* author, author_avatar, reply_to, subject, body */
     <div>
-        <CommentAvatar src={props.props.author_avatar}/> {console.log(props)}
+        <CommentAvatar src={props.props.author_avatar}/>
         <CommentAuthor>{props.props.author}</CommentAuthor>
         <CommentID>Post #{props.props.post_id}</CommentID>
         <CommentReplyTo>In response to #{props.props.reply_to}</CommentReplyTo>
@@ -144,6 +162,7 @@ class Post extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            post_expand: 0,
             comment_expand: 0,
             description_expand: 0, 
             information_expand: 0,
@@ -154,10 +173,12 @@ class Post extends React.Component {
         this.renderInformation = this.renderInformation.bind(this);
         this.renderComments = this.renderComments.bind(this);
         this.renderCommentSection = this.renderCommentSection.bind(this);
+        this.renderPost = this.renderPost.bind(this);
 
         this.description_button_event = this.description_button_event.bind(this);
         this.information_button_event = this.information_button_event.bind(this);
         this.comment_button_event = this.comment_button_event.bind(this);
+        this.post_button_event = this.post_button_event.bind(this);
 
         this.comments = [
         {
@@ -185,9 +206,16 @@ class Post extends React.Component {
             post_id: "532",
             reply_to: "251",
             subject: "University Communication",
-            body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel justo vel lectus aliquet pulvinar. Sed dui dolor, hendrerit sit amet velit ac, ornare placerat velit. Sed leo est, mattis vel pulvinar a, rutrum eu mauris. Aliquam vitae pretium lorem. Suspendisse varius arcu velit, a elementum enim pretium vel. Duis ut egestas sem. Curabitur efficitur semper elit. Cras condimentum pretium velit, eu ultrices eros dignissim sed. Mauris aliquam faucibus ex, vitae finibus nisl consectetur nec. Suspendisse sed bibendum est. \n\nMorbi eu lacinia urna. Nam a justo id massa porttitor malesuada non eget quam. Nunc ultrices lectus mi, vehicula dapibus ligula pretium non. Praesent sit amet quam diam. Donec vulputate ligula eget felis ultricies, ac lacinia ante faucibus. Duis nec nisi nisi. Aenean sed facilisis felis, et vehicula orci. Maecenas eget mauris eget metus vulputate laoreet quis a ante. Suspendisse id porttitor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec fringilla ultrices neque ut feugiat. Fusce eget molestie velit. Sed in enim bibendum ex ullamcorper malesuada et sed risus. Donec consequat nisl est, eu suscipit lacus condimentum id."
+            body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel justo vel lectus aliquet pulvinar. Sed dui dolor, hendrerit sit amet velit ac, ornare placerat velit. Sed leo est, mattis vel pulvinar a, rutrum eu mauris. Aliquam vitae pretium lorem. Suspendisse varius arcu velit, a elementum enim pretium vel. uis ut egestas sem. Curabitur efficitur semper elit. Cras condimentum pretium velit, eu ultrices eros dignissim sed. Mauris aliquam faucibus ex, vitae finibus nisl consectetur nec. Suspendisse sed bibendum est. \n\nMorbi eu lacinia urna. Nam a justo id massa porttitor malesuada non eget quam. Nunc ultrices lectus mi, vehicula dapibus ligula pretium non. Praesent sit amet quam diam. Donec vulputate ligula eget felis ultricies, ac lacinia ante faucibus. Duis nec nisi nisi. Aenean sed facilisis felis, et vehicula orci. Maecenas eget mauris eget metus vulputate laoreet quis a ante. Suspendisse id porttitor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec fringilla ultrices neque ut feugiat. Fusce eget molestie velit. Sed in enim bibendum ex ullamcorper malesuada et sed risus. Donec consequat nisl est, eu suscipit lacus condimentum id."
         }
         ]
+
+        this.post = {
+            "post_title": "Bad Corporate Culture Alert: The Dangers of A Boring Bank",
+            "post_body": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. \n\nNemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. \n\nNeque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?",
+            "post_author": "Justin Schmitz",
+            "post_timestamp": "2009-06-15"
+        }
     }
 
     description_button_event() {
@@ -205,6 +233,11 @@ class Post extends React.Component {
             comment_expand: !this.state.comment_expand
         })
     }
+    post_button_event() {
+        this.setState({
+            post_expand: !this.state.post_expand
+        })
+    }
 
     renderDescription() {
         if(this.state.description_expand) {
@@ -212,7 +245,7 @@ class Post extends React.Component {
             <section>
                 <SectionTitleActive>Job Description</SectionTitleActive>
                 <ButtonStyled onClick={this.description_button_event}><FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon></ButtonStyled>
-                <p>
+                <BodyText>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
                     veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
@@ -220,7 +253,7 @@ class Post extends React.Component {
                     velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
                     occaecat cupidatat non proident, sunt in culpa qui officia deserunt
                     mollit anim id est laborum
-                </p>
+                </BodyText>
                 
 
             </section>
@@ -235,7 +268,6 @@ class Post extends React.Component {
         }
 
     }
-
     renderInformation() {
         if(this.state.information_expand) {
             return (
@@ -254,7 +286,6 @@ class Post extends React.Component {
             )
         }
     }
-
     renderComments(num_comments) {
         let ret = [];
         for(let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
@@ -276,10 +307,8 @@ class Post extends React.Component {
         }
 
         
-        console.log(ret);
         return ret;
     }
-
     renderCommentSection() {
         if(this.state.comment_expand) {
             return (
@@ -288,7 +317,6 @@ class Post extends React.Component {
                     <ButtonStyled onClick={this.comment_button_event}><FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon></ButtonStyled>
                     {this.renderComments(100)}
                     <PostCommentButton>Post a reply...</PostCommentButton>
-                    
                 </section>
             )
         } else {
@@ -303,22 +331,55 @@ class Post extends React.Component {
         }
     }
 
-    render() {
+    renderPost() {
+        let body_text = "";
+        if(this.state.post_expand) {
+            body_text = this.post.post_body;
+        } else {
+            body_text = this.post.post_body.substring(0, 140) + "..."
+        }
         return (
-            <Container>
-                <GroupPost>ACM-IIT</GroupPost>
-                <JobTitle>Software Engineering Internship</JobTitle>
-                <CompanyTitle>Wells Fargo</CompanyTitle>
-                <HRLine/>
-                <h4>Bad Corporate Culture Alert: The Dangers of A Boring Bank</h4>
-                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. <br/><br/>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. <br/><br/>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
-                <p><em>Posted by Justin Schmitz on 2009-06-15</em></p>
+            <div>
+                <h4>{this.post.post_title}</h4>
+                <BodyText>{body_text}</BodyText>
+                <p>Posted by {this.post.post_author} on {this.post.post_timestamp}</p>
+            </div>
+            
+        )
+    }
+
+    render() {
+
+        let secondary_content;
+
+        if(this.state.post_expand) {
+            secondary_content = (
+            <div>
                 <HRLine/>
                 {this.renderDescription()}
                 <HRLine/>
                 {this.renderInformation()}
                 <HRLine/>
                 {this.renderCommentSection()}
+            </div>
+            )
+        } else {
+            secondary_content = (
+                <div>
+                    <PostExpandButton onClick={this.post_button_event}><FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon></PostExpandButton> 
+                </div>
+            )
+        }
+
+        return (
+            <Container>
+                <GroupPost>ACM-IIT</GroupPost>
+                <JobTitle>Software Engineering Internship</JobTitle>
+                <CompanyTitle>Wells Fargo</CompanyTitle>
+                <HRLine/>
+                {this.renderPost()}
+                {secondary_content}
+
             </Container>
         )
     }
