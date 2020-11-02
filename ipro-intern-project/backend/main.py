@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from src.data_types import *
 import random
+from src.session import *
 
 
 app = FastAPI()
@@ -31,6 +32,38 @@ def root(name: str) -> HelloResponse:
 class Item(BaseModel):
     name: str
     price: float
+
+@app.get("/posts/test/{item_id}")
+def posts_test(item_id: int):
+    print(f"The button was indeed clicked. {item_id}")
+
+    # Adds a user and change their name
+    '''c = s.demo()
+    orm_session = s.orm_parent_session()
+    for p in orm_session.query(data_types.UserORM).all():
+        print(f"{p.id} : {p.fname}")
+    print(c)
+    orm_session.query(data_types.UserORM).filter_by(fname=f"John{c}").first().fname = f"JohnNameChange{c}"
+    orm_session.commit()
+    for p in orm_session.query(data_types.UserORM).all():
+        print(f"{p.id} : {p.fname}")'''
+
+    # delete the specified user
+    '''orm_session = s.orm_parent_session()
+    for p in orm_session.query(data_types.UserORM).all():
+        print(f"{p.id} : {p.fname}")
+    print(orm_session.query(data_types.UserORM).count())
+    try:
+        orm_session.delete(orm_session.query(data_types.UserORM).filter_by(id=item_id).first())
+    except:
+        print(f"error deleting {item_id}")
+    orm_session.commit()
+    for p in orm_session.query(data_types.UserORM).all():
+        print(f"{p.id} : {p.fname}")
+    print(orm_session.query(data_types.UserORM).count())'''
+
+    print("end of posts test")
+    return {'deletion': item_id}
 
 # CRUD functions for each table
 # User
@@ -81,12 +114,44 @@ def delete_token(token_id: int):
 @app.post("/posts/add")
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
-    raise HTTPException(400, "Not implemented")
+    new_post_orm = PostORM(
+        id=random.randint(1, 100000),
+        subject=new_post.subject,
+        body=new_post.body,
+        timestamp=new_post.timestamp#,
+        #job_id=new_post.job_id,
+        #user_id=new_post.user_id,
+        #group_id=new_post.group_id,
+    )
+
+    print(new_post.subject)
+    print(new_post.body)
+    print(new_post.timestamp)
+    print()
+
+    orm_session = s.orm_parent_session()
+    orm_session.add(new_post_orm)
+    orm_session.commit()
+
+    for p in orm_session.query(data_types.PostORM).all():
+        print(f"{p.subject} : {p.timestamp} : {p.body}")
 
 @app.get("/posts/get")
-def get_post(post_id: int):
-    """Returns a post object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_post():
+    """Returns all posts."""
+    orm_session = s.orm_parent_session()
+
+    all_posts = []
+    for p in orm_session.query(data_types.PostORM).all():
+        all_posts.append(PostModel(
+            id=p.id,
+            subject=p.subject,
+            body=p.body,
+            timestamp=p.timestamp
+        ))
+
+    return {'posts': all_posts, 'count': len(all_posts)}
+    
 
 @app.post("/posts/update")
 def update_post(updated_post: PostModel):
