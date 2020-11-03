@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
 import BootstrapTable from 'react-bootstrap-table-next';
+
 //import Navbar from 'react-bootstrap/Navbar'
 
 class App extends Component {
@@ -61,7 +62,14 @@ class App extends Component {
       {
         dataField: 'status',
         text: 'Applied?',
-        sort:true
+        sort:true,
+        formatter: (cellContent, row) => (
+            <div className="Checkbox">
+              <label>
+                <input type="checkbox" checked={ row.applied } />
+              </label>
+            </div>
+          )
       },
       {
         dataField: 'resume',
@@ -72,13 +80,27 @@ class App extends Component {
         dataField: 'round1',
         text: 'Round 1',
         sort: true,
-        headerStyle:{minWidth: '100px'}
+        headerStyle:{minWidth: '100px'},
+        formatter: (cellContent, row) => (
+            <div className="Checkbox">
+              <label>
+                <input type="checkbox" checked={ row.r1 } />
+              </label>
+            </div>
+        )
       },
       {
         dataField: 'round2',
         text: 'Round 2',
         sort: true,
-        headerStyle:{minWidth: '100px'}
+        headerStyle:{minWidth: '100px'},
+        formatter: (cellContent, row) => (
+            <div className="Checkbox">
+              <label>
+                <input type="checkbox" checked={ row.r2 } />
+              </label>
+            </div>
+        )
       },
       {
         dataField: 'offer',
@@ -98,11 +120,10 @@ class App extends Component {
 
 
   render() {
-    const selectRow = {
-        mode: 'checkbox',
-        clickToSelect: true,
-        
-      };
+    // const selectRow = {
+    //     mode: 'checkbox',
+    //     clickToSelect: true
+    //   };
 
     return (
       <div className="container" style={{ marginTop: 50 }}>
@@ -111,8 +132,8 @@ class App extends Component {
         keyField='id' 
         data={ this.state.data } 
         columns={ this.state.columns } 
-        selectRow={ selectRow }        
-        bordered={true}
+        //selectRow={ selectRow }        
+        bordered={false}
         header = {true} />
       </div>
 
