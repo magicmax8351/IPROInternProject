@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-import data_types
+from . import data_types
 import datetime
 import random
 
@@ -12,10 +12,10 @@ class Session:
 
     def demo(self):
         orm_session = self.orm_parent_session()
-
+        c = random.randint(1,1000)
         user = data_types.UserORM(
             id=random.randint(1, 100000),
-            fname=f"John{random.randint(1,1000)}",
+            fname=f"John{c}",
             lname="Smith",
             salt="hunter2",
             hashed="hunter3",
@@ -30,6 +30,7 @@ class Session:
         orm_session.commit()
 
         user_model = data_types.UserModel.from_orm(user)
+        return c
 
 
 s = Session()
