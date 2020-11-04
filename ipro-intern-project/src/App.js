@@ -6,6 +6,10 @@ import Profile from './views/Profile'
 import Dashboard from './views/Dashboard'
 import Settings from './views/Settings'
 import Nav from './components/Nav'
+import 'antd/dist/antd.css';
+import ProfilePic from './components/ProfilePic';
+
+
 
 class CreatePost extends Component {
   constructor(props) {
