@@ -106,7 +106,14 @@ class App extends Component {
         dataField: 'offer',
         text: 'Offer?',
         sort: true,
-        headerStyle:{minWidth: '100px'}
+        headerStyle:{minWidth: '100px'},
+        formatter: (cellContent, row) => (
+            <div className="Checkbox">
+              <label>
+                <input type="checkbox" checked={ row.r1 } />
+              </label>
+            </div>
+        )
       },
       {
         dataField: 'notes',
