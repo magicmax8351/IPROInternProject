@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
 import BootstrapTable from 'react-bootstrap-table-next';
+import Navbar from 'react-bootstrap/Navbar';
+import { Button } from 'react-bootstrap';
+import { Nav } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
+import { FormControl } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 
-//import Navbar from 'react-bootstrap/Navbar'
+
 
 class App extends Component {
 
@@ -127,6 +133,21 @@ class App extends Component {
 
     return (
       <div className="container" style={{ marginTop: 50 }}>
+        
+        <Navbar minWidth='1000px' bg="light" variant="light" expand="lg">
+            <Navbar.Brand> Job Zoomer </Navbar.Brand>
+            <Nav className="Buttons">
+                <Nav.Link>Add Post</Nav.Link>
+                <Nav.Link>Add In Bulk</Nav.Link>
+                <Nav.Link>Multisort</Nav.Link>
+                <Nav.Link>Clear Filters</Nav.Link>
+            </Nav>
+            <Form inline>
+                <FormControl type="text" placeholder="filter tags" className="tagsearch" />
+                <Button variant="outline-light">Search</Button>
+            </Form>
+        </Navbar>
+
         <BootstrapTable 
         striped
         keyField='id' 
