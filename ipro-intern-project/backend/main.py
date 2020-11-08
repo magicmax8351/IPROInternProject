@@ -170,8 +170,8 @@ def add_comment(new_comment: CommentModel):
     """Adds a new row to comment table."""
     raise HTTPException(400, "Not implemented")
 
-@app.get("/comments/get")
-def get_comment(comment_id: int):
+@app.get("/comments/get/{post_id}")
+def get_comment():
     """Returns a comment object with the given ID."""
     raise HTTPException(400, "Not implemented")
 
