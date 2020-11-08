@@ -33,9 +33,9 @@ class Item(BaseModel):
     name: str
     price: float
 
-@app.get("/posts/test/{item_id}")
+@app.get("/test/{item_id}")
 def posts_test(item_id: int):
-    print(f"The button was indeed clicked. {item_id}")
+    #print(f"The button was indeed clicked. {item_id}")
 
     # Adds a user and change their name
     '''c = s.demo()
@@ -62,8 +62,21 @@ def posts_test(item_id: int):
         print(f"{p.id} : {p.fname}")
     print(orm_session.query(data_types.UserORM).count())'''
 
-    print("end of posts test")
-    return {'deletion': item_id}
+    orm_session = s.orm_parent_session()
+
+    #for j in orm_session.query(data_types.JobORM).filter_by(id=1):
+    #    print(j.name)
+    #try:
+    #    print(orm_session.query(data_types.JobORM).filter_by(id=item_id).one().name)
+    #except:
+    #    print("query error")
+
+    for p in orm_session.query(data_types.PostORM).all():
+        print(f"{p.id} : {p.subject} : {p.job_id} : {p.group_id}")
+    print(orm_session.query(data_types.PostORM).count())
+
+    #print("end of posts test")
+    #return {'deletion': item_id}
 
 # CRUD functions for each table
 # User
@@ -118,15 +131,17 @@ def add_post(new_post: PostModel):
         id=random.randint(1, 100000),
         subject=new_post.subject,
         body=new_post.body,
-        timestamp=new_post.timestamp#,
-        #job_id=new_post.job_id,
+        timestamp=new_post.timestamp,
+        job_id=new_post.job_id,
         #user_id=new_post.user_id,
-        #group_id=new_post.group_id,
+        group_id=new_post.group_id
     )
 
     print(new_post.subject)
     print(new_post.body)
     print(new_post.timestamp)
+    print(new_post.job_id)
+    print(new_post.group_id)
     print()
 
     orm_session = s.orm_parent_session()
@@ -134,7 +149,12 @@ def add_post(new_post: PostModel):
     orm_session.commit()
 
     for p in orm_session.query(data_types.PostORM).all():
-        print(f"{p.subject} : {p.timestamp} : {p.body}")
+        try:
+            jobname = orm_session.query(data_types.JobORM).filter_by(id=p.job_id).one().name
+            groupname = orm_session.query(data_types.GroupORM).filter_by(id=p.group_id).one().name
+            print(f"{p.subject} : {p.timestamp} : {p.body[:10]} : {jobname} : {groupname}")
+        except:
+            print("query error. a post may have invalid group id or job id")
 
 @app.get("/posts/get")
 def get_post():
@@ -147,7 +167,9 @@ def get_post():
             id=p.id,
             subject=p.subject,
             body=p.body,
-            timestamp=p.timestamp
+            timestamp=p.timestamp,
+            job_id=p.job_id,
+            group_id=p.group_id
         ))
 
     return {'posts': all_posts, 'count': len(all_posts)}
@@ -160,9 +182,16 @@ def update_post(updated_post: PostModel):
     raise HTTPException(400, "Not implemented")
 
 @app.post("/posts/delete")
-def delete_post(post_id: int):
+def delete_post(post_id: IntegerModel):
     """Removes the post with the given ID."""
-    raise HTTPException(400, "Not implemented")
+    post_to_delete = post_id.i
+    
+    orm_session = s.orm_parent_session()
+    try:
+        orm_session.delete(orm_session.query(data_types.PostORM).filter_by(id=post_to_delete).one())
+    except:
+        print(f"error deleting {post_to_delete}")
+    orm_session.commit()
 
 # Comment
 @app.post("/comments/add")
@@ -215,9 +244,20 @@ def add_job(new_job: JobModel):
     raise HTTPException(400, "Not implemented")
 
 @app.get("/jobs/get")
-def get_job(job_id: int):
-    """Returns a job object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_job():
+    """Returns all jobs"""
+    orm_session = s.orm_parent_session()
+
+    all_jobs = []
+    for j in orm_session.query(data_types.JobORM).all():
+        all_jobs.append(JobModel(
+            id=j.id,
+            name=j.name,
+            location=j.location,
+            company_id=j.company_id
+        ))
+
+    return {'jobs': all_jobs, 'count': len(all_jobs)}
 
 @app.post("/jobs/update")
 def update_job(updated_job: JobModel):
@@ -237,9 +277,18 @@ def add_company(new_company: CompanyModel):
     raise HTTPException(400, "Not implemented")
 
 @app.get("/companies/get")
-def get_company(company_id: int):
-    """Returns a company object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_company():
+    """Returns all companies"""
+    orm_session = s.orm_parent_session()
+
+    all_companies = []
+    for c in orm_session.query(data_types.CompanyORM).all():
+        all_companies.append(CompanyModel(
+            id=c.id,
+            name=c.name
+        ))
+
+    return {'jobs': all_companies, 'count': len(all_companies)}
 
 @app.post("/companies/update")
 def update_company(updated_company: CompanyModel):
@@ -325,9 +374,20 @@ def add_group(new_group: GroupModel):
     raise HTTPException(400, "Not implemented")
 
 @app.get("/groups/get")
-def get_group(group_id: int):
-    """Returns a group object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_group():
+    """Returns all groups"""
+    orm_session = s.orm_parent_session()
+
+    all_groups = []
+    for g in orm_session.query(data_types.GroupORM).all():
+        all_groups.append(GroupModel(
+            id=g.id,
+            name=g.name,
+            icon=g.icon,
+            desc=g.desc
+        ))
+
+    return {'jobs': all_groups, 'count': len(all_groups)}
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):
