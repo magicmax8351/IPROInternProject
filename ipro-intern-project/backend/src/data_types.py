@@ -173,6 +173,9 @@ class CommentORM(Base):
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
+    text: str 
+    timestamp: datetime.datetime
 
 class CompanyORM(Base):
     __tablename__ = "company"

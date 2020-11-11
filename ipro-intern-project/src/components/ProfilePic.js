@@ -7,7 +7,7 @@ import CatPhoto from './CatPhoto.jpg';
 class ProfilePic extends Component {
     render(){
     return(
-        <div className="ProfilePic">
+        <div className="ProfilePic" >
             <Avatar size = {48} src={CatPhoto} />
         </div>
 
