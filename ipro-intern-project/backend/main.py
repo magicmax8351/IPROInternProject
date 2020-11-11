@@ -214,17 +214,10 @@ def add_comment(new_comment: CommentModel):
 
 
 
-<<<<<<< HEAD
 @app.get("/comments/get")
 def get_comment():
     """Returns all comments """
     orm_session = s.orm_parent_session()
-=======
-@app.get("/comments/get/{post_id}")
-def get_comment():
-    """Returns a comment object with the given ID."""
-    raise HTTPException(400, "Not implemented")
->>>>>>> 4b379b5903695bdbc420ab74dff5042882dd664e
 
     all_comments = []
     for p in orm_session.query(data_types.CommentORM).all():
