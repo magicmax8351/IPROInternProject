@@ -168,8 +168,8 @@ def get_post():
             subject=p.subject,
             body=p.body,
             timestamp=p.timestamp,
-            job_id=p.job_id,
-            group_id=p.group_id
+            job_id=p.job_id, # replace with getJobById(id)
+            group_id=p.group_id # replace with getGroupById(id)
         ))
 
     return {'posts': all_posts, 'count': len(all_posts)}
