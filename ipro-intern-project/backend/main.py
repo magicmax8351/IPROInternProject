@@ -166,15 +166,41 @@ def delete_post(post_id: int):
 
 # Comment
 @app.post("/comments/add")
-def add_comment(new_comment: CommentModel):
+def add_comment(new_comment: CommentModel):  
     """Adds a new row to comment table."""
-    raise HTTPException(400, "Not implemented")
+    new_comment_orm = CommentORM(
+        id = random.randint(1,100000),
+        text = new_comment.text,
+        timestamp = new_comment.timestamp
+        #post_id = new_comment.post_id,
+        #user_id = new_comment.user_id,
+        #parent_id = new_comment.parent_id,
+        
+    )
+
+    orm_session = s.orm_parent_session()
+    orm_session.add(new_comment_orm)
+    orm_session.commit()
+
+
+
 
 @app.get("/comments/get")
-def get_comment(comment_id: int):
-    """Returns a comment object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_comment():
+    """Returns all comments """
+    orm_session = s.orm_parent_session()
 
+    all_comments = []
+    for p in orm_session.query(data_types.CommentORM).all():
+        all_comments.append(CommentModel(
+            id=p.id,
+            text=p.text,
+            timestamp=p.timestamp
+        ))
+
+    return {'comments': all_comments, 'count': len(all_comments)}
+    
+   
 @app.post("/comments/update")
 def update_comment(updated_comment: CommentModel):
     """Updates the comment with the given ID with new information.
