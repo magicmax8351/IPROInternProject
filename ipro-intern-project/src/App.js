@@ -27,8 +27,12 @@ class CreatePost extends Component {
       id: 0,
       subject: this.state.subject,
       body: this.state.body,
-      timestamp: Date.now()
-    }
+      timestamp: Date.now(),
+      job_id: 0,
+      group_id: 0
+    };
+
+    console.log(JSON.stringify(post));
 
     fetch(path, {
       method: "POST",

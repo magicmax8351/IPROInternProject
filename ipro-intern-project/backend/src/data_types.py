@@ -12,6 +12,9 @@ import datetime
 Base = declarative_base()
 metadata = MetaData()
 
+class IntegerModel(BaseModel):
+    i: int
+
 class UserORM(Base):
     __tablename__ = "user"
     metadata = metadata
@@ -156,9 +159,9 @@ class PostModel(BaseModel):
     # tags: List[TagModel]
 
     timestamp: datetime.datetime
-    # [job id relationship model]
+    job_id: int
     # [user id relationship model] 
-    # [group id relationship model]
+    group_id: int
 
 class CommentORM(Base):
     __tablename__ = "comment"
