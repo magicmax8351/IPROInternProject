@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
+import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
 import BootstrapTable from 'react-bootstrap-table-next';
 
 
@@ -49,9 +50,14 @@ class App extends Component {
       },
       {
           dataField: 'tags',
-          text: 'Tags',
           sort: false,
-          headerStyle:{minWidth: '100px'}
+          //https://www.npmjs.com/package/react-bootstrap-table2-filter
+          filter: textFilter({
+            placeholder: 'Search tags',
+            className: 'tag-filter',
+            style: {marginBottom: '-10px'}
+          }),
+          headerStyle:{minWidth: '200px'}
       },
       {
         dataField: 'location',
@@ -131,19 +137,26 @@ class App extends Component {
     //     mode: 'checkbox',
     //     clickToSelect: true
     //   };
+    
+    
+  
+
 
     return (
+      
+      
       <div className="container" style={{ marginTop: 50 }}>
-        
 
-        <BootstrapTable 
-        striped
-        keyField='id' 
-        data={ this.state.data } 
-        columns={ this.state.columns } 
-        //selectRow={ selectRow }        
-        bordered={false}
-        header = {true} />
+            <BootstrapTable
+              keyField='id' 
+              data={ this.state.data } 
+              columns={ this.state.columns } 
+              striped
+              bordered={false}
+              filter={ filterFactory() }
+              header = {true} 
+              // rowEvents={ rowEvents }
+            />  
       </div>
 
     );
