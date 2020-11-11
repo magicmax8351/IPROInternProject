@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet'
 import PageHeader from '../components/PageHeader'
 import PageContent from '../components/PageContent'
 import Post from '../components/Post'
+import NewPost from '../components/NewPost'
 
 const Home = props => (
   <div>
@@ -11,6 +12,7 @@ const Home = props => (
     </Helmet>
     <PageHeader title="Home Page" />
     <PageContent>
+      <NewPost></NewPost>
       <Post></Post>
     </PageContent>
   </div>
