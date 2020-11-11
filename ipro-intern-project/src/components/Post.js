@@ -1,6 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
+import Form from "react-bootstrap/Form";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button"
+import MDEditor from "@uiw/react-md-editor";
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -165,18 +169,21 @@ class Post extends React.Component {
       description_expand: 0,
       information_expand: 0,
       comment_expand: 0,
+      post_comment: 0
     };
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
     this.renderComments = this.renderComments.bind(this);
     this.renderCommentSection = this.renderCommentSection.bind(this);
+    this.renderNewComment = this.renderNewComment.bind(this);
     this.renderPost = this.renderPost.bind(this);
 
     this.description_button_event = this.description_button_event.bind(this);
     this.information_button_event = this.information_button_event.bind(this);
     this.comment_button_event = this.comment_button_event.bind(this);
     this.post_button_event = this.post_button_event.bind(this);
+    this.post_comment_event = this.post_comment_event.bind(this);
 
     this.comments = [
       {
@@ -244,6 +251,12 @@ class Post extends React.Component {
     });
   }
 
+  post_comment_event() {
+    this.setState({
+      post_comment: !this.state.post_comment
+    })
+  }
+
   renderDescription() {
     if (this.state.description_expand) {
       return (
@@ -307,21 +320,6 @@ class Post extends React.Component {
           <Comment props={this.comments[i]} key={this.comments[i].key} />
         );
       }
-      for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-        ret.push(
-          <Comment props={this.comments[i]} key={this.comments[i].key} />
-        );
-      }
-      for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-        ret.push(
-          <Comment props={this.comments[i]} key={this.comments[i].key} />
-        );
-      }
-      for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-        ret.push(
-          <Comment props={this.comments[i]} key={this.comments[i].key} />
-        );
-      }
     }
 
     return ret;
@@ -335,7 +333,7 @@ class Post extends React.Component {
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
           {this.renderComments(100)}
-          <PostCommentButton>Post a reply...</PostCommentButton>
+          {this.renderNewComment()}
         </section>
       );
     } else {
@@ -354,6 +352,25 @@ class Post extends React.Component {
     }
   }
 
+  renderNewComment() {
+    let value = "";
+    let setValue = "";
+    if(this.state.post_comment) {
+       return <Form>
+         <Form.Group>
+           <Form.Label>Subject</Form.Label>
+           <Form.Control placeholder="subject"/>
+         </Form.Group>
+         <Form.Group>
+            <MDEditor value={value} onChange={setValue} />
+            <MDEditor.Markdown source={value} />
+         </Form.Group>
+         <Button>Submit</Button>
+         </Form>
+    } else {
+      return <PostCommentButton onClick={this.post_comment_event}>Post a reply...</PostCommentButton>
+    }
+  }
   renderPost() {
     let body_text = "";
     if (this.state.post_expand) {
