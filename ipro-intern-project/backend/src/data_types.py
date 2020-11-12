@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, MetaData, DateTime, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -40,7 +40,7 @@ class UserModel(BaseModel):
     class Config:
         orm_mode = True
 
-    id: int
+    id: Optional[int]
     fname: str
     lname: str
     salt: str
@@ -63,7 +63,7 @@ class ResumeORM(Base):
 class ResumeModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     name: str
     filename: str
     date: datetime.datetime
@@ -103,7 +103,7 @@ class SettingsORM(Base):
 class SettingsModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     visibility: str
 
 class GroupORM(Base):
@@ -118,7 +118,7 @@ class GroupORM(Base):
 class GroupModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     name: str
     icon: str
     desc: str
@@ -134,7 +134,7 @@ class MembershipORM(Base):
 class MembershipModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     permission: int
     # [group id relationship model]
     # # [user id relationship model]  
@@ -153,15 +153,15 @@ class PostORM(Base):
 class PostModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     subject: str
     body: str
     # tags: List[TagModel]
 
     timestamp: datetime.datetime
-    job_id: int
+    job_id: Optional[int]
     # [user id relationship model] 
-    group_id: int
+    group_id: Optional[int]
 
 class CommentORM(Base):
     __tablename__ = "comment"
@@ -176,7 +176,7 @@ class CommentORM(Base):
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
-    id: int
+    id: Optional[int]
     text: str 
     timestamp: datetime.datetime
 
@@ -187,7 +187,7 @@ class CompanyORM(Base):
     name = Column(String(32), nullable=False)
 
 class CompanyModel(BaseModel):
-    id: int
+    id: Optional[int]
     name: str
 
     class Config:
@@ -202,10 +202,10 @@ class JobORM(Base):
     company_id = Column(Integer, ForeignKey("company.id"))
 
 class JobModel(BaseModel):
-    id: int
+    id: Optional[int]
     name: str
     location: str
-    company_id: int
+    company_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -218,9 +218,9 @@ class JobtagORM(Base):
     job_id = Column(Integer, ForeignKey("job.id"))
 
 class JobtagModel(BaseModel):
-    id: int
+    id: Optional[int]
     tag: str
-    job_id: int
+    job_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -236,12 +236,12 @@ class ApplicationORM(Base):
     resume_id = Column(Integer, ForeignKey("resume.id"))
 
 class ApplicationModel(BaseModel):
-    id: int
+    id: Optional[int]
     date: datetime.date
-    job_id: int
-    stage_id: int
-    user_id: int
-    resume_id: int
+    job_id: Optional[int]
+    stage_id: Optional[int]
+    user_id: Optional[int]
+    resume_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -254,9 +254,9 @@ class PresetORM(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
 
 class PresetModel(BaseModel):
-    id: int
+    id: Optional[int]
     name = str
-    user_id: int
+    user_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -270,10 +270,10 @@ class PresetitemORM(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
 
 class PresetitemModel(BaseModel):
-    id: int
-    preset_id: int
-    group_id: int
-    user_id: int
+    id: Optional[int]
+    preset_id: Optional[int]
+    group_id: Optional[int]
+    user_id: Optional[int]
     
     class Config:
         orm_mode = True

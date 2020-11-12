@@ -128,7 +128,6 @@ def delete_token(token_id: int):
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
     new_post_orm = PostORM(
-        id=random.randint(1, 100000),
         subject=new_post.subject,
         body=new_post.body,
         timestamp=new_post.timestamp,
@@ -198,7 +197,6 @@ def delete_post(post_id: IntegerModel):
 def add_comment(new_comment: CommentModel):  
     """Adds a new row to comment table."""
     new_comment_orm = CommentORM(
-        id = random.randint(1,100000),
         text = new_comment.text,
         timestamp = new_comment.timestamp
         #post_id = new_comment.post_id,
