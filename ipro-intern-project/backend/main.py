@@ -287,6 +287,18 @@ def add_job(new_job: JobModel):
     """Adds a new row to job table."""
     raise HTTPException(400, "Not implemented")
 
+@app.get("/jobs/get_id")
+def get_job_by_id(job_id: int):
+    """Get job by job ID. """
+    orm_session = orm_parent_session()
+    for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
+        job = JobModel.from_orm(u)
+        orm_session.close()
+        return job
+    orm_session.close()
+    return
+
+
 @app.get("/jobs/get")
 def get_job():
     """Returns all jobs"""
@@ -418,6 +430,17 @@ def delete_jobtag(jobtag_id: int):
 def add_group(new_group: GroupModel):
     """Adds a new row to group table."""
     raise HTTPException(400, "Not implemented")
+
+@app.get("/groups/get_id")
+def get_group_by_id(group_id: int):
+    """Get group by group ID. """
+    orm_session = orm_parent_session()
+    for u in orm_session.query(GroupORM).filter(GroupORM.id == group_id):
+        group = GroupModel.from_orm(u)
+        orm_session.close()
+        return group
+    orm_session.close()
+    return
 
 @app.get("/groups/get")
 def get_group():

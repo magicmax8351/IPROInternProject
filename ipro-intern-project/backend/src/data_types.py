@@ -199,6 +199,7 @@ class JobORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False)
+    description = Column(String(5000), nullable=True)
     location = Column(String(32), nullable=False)
     company_id = Column(Integer, ForeignKey("company.id"))
 
@@ -206,6 +207,7 @@ class JobModel(BaseModel):
     id: Optional[int]
     name: str
     location: str
+    description: str
     company_id: Optional[int]
 
     class Config:

@@ -16,10 +16,14 @@ class GroupFeed extends React.Component {
   constructor(props) {
     super(props);
     this.postList = this.postList.bind(this);
+    let start = props.location.pathname.search("id");
+    this.group_id = parseInt(props.location.pathname.substring(start + 3, start + 100))
+
     this.state = {
       ready: 0,
       posts: [],
-      comments: []
+      comments: [],
+      group: null
     };
   }
 
@@ -31,6 +35,10 @@ class GroupFeed extends React.Component {
     fetch("http://localhost:8000/comments/get")
       .then((res) => res.json())
       .then((json) => this.setState({ comments: json }));
+
+    fetch("http://localhost:8000/groups/get_id?group_id=" + this.group_id)
+      .then((res) => res.json())
+      .then((json) => this.setState({ group: json }));
   }
 
   postList(in_posts, in_comments) {
@@ -40,22 +48,31 @@ class GroupFeed extends React.Component {
     if(!in_comments.comments){
       return null;
     }
-    for (let i = 0; i < in_posts.length; i++) {
+    let group_posts = null;
+    if(this.group_id != -1) {
+      group_posts = in_posts.filter((post) => post.group_id == this.group_id);
+    } else {
+      group_posts = in_posts;
+    }
+    for (let i = 0; i < group_posts.length; i++) {
       out_posts.push(<Post 
-        post={in_posts[i]}
-        comments={in_comments.comments.filter((comment) => comment.post_id == in_posts[i].id)} />);
+        post={group_posts[i]}
+        comments={in_comments.comments.filter((comment) => comment.post_id == group_posts[i].id)} />);
     }
     return out_posts;
   }
 
   render() {
-    console.log(this.state);
+    if(!this.state.group) {
+      return null;
+    }
     return (
       <div>
         <Helmet>
           <title>Home</title>
         </Helmet>
-        <PageHeader title="Group Page" />
+        <PageHeader title={this.state.group.name} />
+        <h1>{this.state.group.desc}</h1>
         <PageContent>{this.postList(this.state.posts, this.state.comments)}</PageContent>
       </div>
     );

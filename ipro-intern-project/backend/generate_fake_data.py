@@ -63,27 +63,31 @@ def gen_fake_data():
         return random.choice(s.query(data_types.CompanyORM).all()).id
 
     # Add some jobs
-    jobs = []
-    jobs.append(JobORM(name="Machine Learning Sales Specialist", location="Sunnyvale, CA", company_id=comp_id()))
-    jobs.append(JobORM(name="Research Intern", location="Mountain View, CA", company_id=comp_id()))
-    jobs.append(JobORM(name="Junior Software Developer", location="Chicago, IL", company_id=comp_id()))
-    jobs.append(JobORM(name="Product Manager", location="New York, NY", company_id=comp_id()))
-    jobs.append(JobORM(name="Android Developer", location="San Franscisco, CA", company_id=comp_id()))
-    jobs.append(JobORM(name="User Interface Designer", location="San Franscisco, CA", company_id=comp_id()))
-    jobs.append(JobORM(name="Quantitative Researcher", location="Chicago, IL", company_id=comp_id()))
-    jobs.append(JobORM(name="Trader", location="Chicago, IL", company_id=comp_id()))
-    jobs.append(JobORM(name="Software Engineer", location="St. Louis, MO", company_id=comp_id()))
-    jobs.append(JobORM(name="Database Administrator", location="Chicago, IL", company_id=comp_id()))
 
-    for j in jobs:
-        s.add(j)
+    fake_job_titles = ["Machine Learning Sales Specialist", "Research Intern", "Junior Software Developer",
+                        "Android Developer", "Product Manager", "UI Designer", "Quant Researcher", 
+                        "Trader", "Software Engineer", "DBA"]
+
+    fake_locations = ["Sunnyvale, CA", "Mountain View, CA", "Chicago, IL", "New York, NY", "St. Louis, MO"]
+
+    jobs = []
+    for i in range(10):
+        jobs.append(JobORM(
+            name=random.choice(fake_job_titles),
+            location=random.choice(fake_locations),
+            company_id=comp_id(),
+            description=lipsum.paragraph(nb_sentences=15, variable_nb_sentences=False, ext_word_list="the crazy brown dog jumped over the fence".split())
+        ))
+
+    s.add_all(jobs)
     s.commit()
     print("Added sample jobs to DB")
 
     # Add some groups
     groups = []
-    groups.append(GroupORM(name="ACM @ IIT", icon="/var/www/images/acm_logo.png", desc="Advancing Computing as a Science & Profession", user_id=0))
-    groups.append(GroupORM(name="AEPKS", icon="/var/www/images/pks_logo.png", desc="Men of Honor", user_id=0))
+    groups.append(GroupORM(name="ACM @ IIT", icon="/var/www/images/acm_logo.png", desc="Advancing Computing as a Science & Profession"))
+    groups.append(GroupORM(name="AEPKS", icon="/var/www/images/pks_logo.png", desc="Men of Honor"))
+    groups.append(GroupORM(name="Tesla Fan Club", icon="/var/www/images/pks_logo.png", desc="I love Elon's Musk"))
 
     for g in groups:
         s.add(g)

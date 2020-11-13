@@ -166,7 +166,6 @@ class Comment extends React.Component {
     if(!this.user_id) {
       return null;
     }
-    console.log("NOT AN ID? " + this.user_id);
     fetch("http://localhost:8000/users/get?user_id=" + this.user_id)
       .then((res) => res.json())
       .then((json) => this.setState({ user: json }))
@@ -176,9 +175,6 @@ class Comment extends React.Component {
     if(!this.state.user) {
       return null;
     }
-    console.log(this.state);
-    console.log(this.id);
-    console.log(this.text);
     return (
       <div>
       <CommentAvatar src={this.state.user.pic} />
@@ -200,14 +196,14 @@ class Post extends React.Component {
       description_expand: 0,
       information_expand: 0,
       comment_expand: 0,
-      post_comment: 0
+      post_comment: 0,
+      job: null,
+      group: null
     };
 
     this.post = props.post;
     this.comments = props.comments;
 
-    console.log(props);
-    console.log(this.comments);
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
@@ -223,6 +219,20 @@ class Post extends React.Component {
     this.post_comment_event = this.post_comment_event.bind(this);
 
   }
+
+  componentDidMount() {
+    if(!this.post) {
+      return null;
+    }
+    fetch("http://localhost:8000/jobs/get_id?job_id=" + this.post.job_id)
+      .then((res) => res.json())
+      .then((json) => this.setState({ job: json }));
+
+    fetch("http://localhost:8000/groups/get_id?group_id=" + this.post.group_id)
+      .then((res) => res.json())
+      .then((json) => this.setState({ group: json }))
+    };
+
 
   description_button_event() {
     this.setState({
@@ -260,13 +270,7 @@ class Post extends React.Component {
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
           <BodyText>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum
+            {this.state.job.description}
           </BodyText>
         </section>
       );
@@ -372,7 +376,6 @@ class Post extends React.Component {
   renderPost() {
     let body = "";
 
-    console.log(this.post);
     if (this.state.post_expand) {
       body = this.post.body;
     } else {
@@ -393,8 +396,15 @@ class Post extends React.Component {
     );
   }
 
+  
   render() {
     if(!this.post) {
+      return null;
+    }
+    if(!this.state.job) {
+      return null;
+    }
+    if(!this.state.group) {
       return null;
     }
 
@@ -422,9 +432,9 @@ class Post extends React.Component {
 
     return (
       <Container>
-        <GroupPost>ACM-IIT</GroupPost>
-        <JobTitle>Software Engineering Internship</JobTitle>
-        <CompanyTitle>Wells Fargo</CompanyTitle>
+        <GroupPost>{this.state.group.name}</GroupPost>
+        <JobTitle>{this.state.job.name}</JobTitle>
+        <CompanyTitle>{this.state.job.location}</CompanyTitle>
         <HRLine />
         {this.renderPost()}
         {secondary_content}
