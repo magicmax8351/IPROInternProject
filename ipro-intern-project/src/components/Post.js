@@ -172,6 +172,8 @@ class Post extends React.Component {
       post_comment: 0
     };
 
+    this.post = props.data;
+
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
     this.renderComments = this.renderComments.bind(this);
@@ -221,13 +223,6 @@ class Post extends React.Component {
       },
     ];
 
-    this.post = {
-      post_title: "Bad Corporate Culture Alert: The Dangers of A Boring Bank",
-      post_body:
-        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. \n\nNemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. \n\nNeque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?",
-      post_author: "Justin Schmitz",
-      post_timestamp: "2009-06-15",
-    };
   }
 
   description_button_event() {
@@ -372,26 +367,35 @@ class Post extends React.Component {
     }
   }
   renderPost() {
-    let body_text = "";
+    let body = "";
+
+    console.log(this.post);
     if (this.state.post_expand) {
-      body_text = this.post.post_body;
+      body = this.post.body;
     } else {
-      body_text = this.post.post_body.substring(0, 140) + "...";
+      if(this.post.body.length > 140) {
+        body = this.post.body.substring(0, 140) + "..." ;
+      } else {
+        body = this.post.body;
+      }
     }
     return (
       <div>
         <h4>{this.post.post_title}</h4>
-        <BodyText>{body_text}</BodyText>
+        <BodyText>{body}</BodyText>
         <p>
-          Posted by {this.post.post_author} on {this.post.post_timestamp}
+          Posted by [PLACEHOLDER] on {this.post.timestamp}
         </p>
       </div>
     );
   }
 
   render() {
+    if(!this.post) {
+      return null;
+    }
+    
     let secondary_content;
-
     if (this.state.post_expand) {
       secondary_content = (
         <div>
