@@ -19,6 +19,7 @@ class GroupFeed extends React.Component {
     this.state = {
       ready: 0,
       posts: [],
+      comments: []
     };
   }
 
@@ -26,12 +27,23 @@ class GroupFeed extends React.Component {
     fetch("http://localhost:8000/posts/get")
       .then((res) => res.json())
       .then((json) => this.setState({ posts: json.posts }));
+
+    fetch("http://localhost:8000/comments/get")
+      .then((res) => res.json())
+      .then((json) => this.setState({ comments: json }));
   }
 
-  postList(in_posts) {
+  postList(in_posts, in_comments) {
     let out_posts = [];
+    console.log(in_comments.comments);
+
+    if(!in_comments.comments){
+      return null;
+    }
     for (let i = 0; i < in_posts.length; i++) {
-      out_posts.push(<Post data={in_posts[i]} />);
+      out_posts.push(<Post 
+        post={in_posts[i]}
+        comments={in_comments.comments.filter((comment) => comment.post_id == in_posts[i].id)} />);
     }
     return out_posts;
   }
@@ -44,7 +56,7 @@ class GroupFeed extends React.Component {
           <title>Home</title>
         </Helmet>
         <PageHeader title="Group Page" />
-        <PageContent>{this.postList(this.state.posts)}</PageContent>
+        <PageContent>{this.postList(this.state.posts, this.state.comments)}</PageContent>
       </div>
     );
   }

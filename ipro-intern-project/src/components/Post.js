@@ -147,18 +147,49 @@ const PostExpandButton = styled.button`
   margin-rigth: auto;
 `;
 
-const Comment = (props) => (
-  /* author, author_avatar, reply_to, subject, body */
-  <div>
-    <CommentAvatar src={props.props.author_avatar} />
-    <CommentAuthor>{props.props.author}</CommentAuthor>
-    <CommentID>Post #{props.props.post_id}</CommentID>
-    <CommentReplyTo>In response to #{props.props.reply_to}</CommentReplyTo>
-    <CommentSubject>{props.props.subject}</CommentSubject>
-    <CommentBody>{props.props.body}</CommentBody>
-    <CommentHRLine />
-  </div>
-);
+
+class Comment extends React.Component {
+  constructor(props) {
+    super(props);
+    this.id = props.id;
+    this.text = props.text;
+    this.timestamp = props.timestamp;
+    this.user_id = props.user_id;
+    
+    this.state = {
+      user: null
+    }
+  }
+
+  
+  componentDidMount() {
+    if(!this.user_id) {
+      return null;
+    }
+    console.log("NOT AN ID? " + this.user_id);
+    fetch("http://localhost:8000/users/get?user_id=" + this.user_id)
+      .then((res) => res.json())
+      .then((json) => this.setState({ user: json }))
+    };
+
+  render() {
+    if(!this.state.user) {
+      return null;
+    }
+    console.log(this.state);
+    console.log(this.id);
+    console.log(this.text);
+    return (
+      <div>
+      <CommentAvatar src={this.state.user.pic} />
+      <CommentAuthor>{this.state.user.fname}</CommentAuthor>
+      <CommentID>Post #{this.id}</CommentID>
+      <CommentBody>{this.text}</CommentBody>
+      <CommentHRLine />
+    </div>
+    )
+  }
+}
 
 class Post extends React.Component {
   constructor(props) {
@@ -172,7 +203,11 @@ class Post extends React.Component {
       post_comment: 0
     };
 
-    this.post = props.data;
+    this.post = props.post;
+    this.comments = props.comments;
+
+    console.log(props);
+    console.log(this.comments);
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
@@ -186,42 +221,6 @@ class Post extends React.Component {
     this.comment_button_event = this.comment_button_event.bind(this);
     this.post_button_event = this.post_button_event.bind(this);
     this.post_comment_event = this.post_comment_event.bind(this);
-
-    this.comments = [
-      {
-        key: 0,
-        author: "Justin Schmitz",
-        author_avatar:
-          "https://www.flaticon.com/svg/static/icons/svg/194/194938.svg",
-        post_id: "421",
-        reply_to: "443",
-        subject: "BIG MOOD ENERGY",
-        body:
-          "I agree! Wells fargo reminds me of the Big Bad Wolf from Red Riding Hood. I think they're bad :(. ",
-      },
-      {
-        key: 1,
-        author: "Maxwell Buffo",
-        author_avatar:
-          "https://www.flaticon.com/svg/static/icons/svg/1818/1818401.svg",
-        post_id: "422",
-        reply_to: "445",
-        subject: "Totally True 😊",
-        body:
-          "I agree! I always love the stories you tell <3 Keep it up tiger!! uWu",
-      },
-      {
-        key: 2,
-        author: "Alan Cramb",
-        author_avatar:
-          "https://www.iit.edu/sites/default/files/styles/width_220/public/2019-11/alan_cramb_320x355.jpg?itok=TsAY30A_",
-        post_id: "532",
-        reply_to: "251",
-        subject: "University Communication",
-        body:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel justo vel lectus aliquet pulvinar. Sed dui dolor, hendrerit sit amet velit ac, ornare placerat velit. Sed leo est, mattis vel pulvinar a, rutrum eu mauris. Aliquam vitae pretium lorem. Suspendisse varius arcu velit, a elementum enim pretium vel. uis ut egestas sem. Curabitur efficitur semper elit. Cras condimentum pretium velit, eu ultrices eros dignissim sed. Mauris aliquam faucibus ex, vitae finibus nisl consectetur nec. Suspendisse sed bibendum est. \n\nMorbi eu lacinia urna. Nam a justo id massa porttitor malesuada non eget quam. Nunc ultrices lectus mi, vehicula dapibus ligula pretium non. Praesent sit amet quam diam. Donec vulputate ligula eget felis ultricies, ac lacinia ante faucibus. Duis nec nisi nisi. Aenean sed facilisis felis, et vehicula orci. Maecenas eget mauris eget metus vulputate laoreet quis a ante. Suspendisse id porttitor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec fringilla ultrices neque ut feugiat. Fusce eget molestie velit. Sed in enim bibendum ex ullamcorper malesuada et sed risus. Donec consequat nisl est, eu suscipit lacus condimentum id.",
-      },
-    ];
 
   }
 
@@ -307,7 +306,11 @@ class Post extends React.Component {
   renderComments(num_comments) {
     let ret = [];
     for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-      ret.push(<Comment props={this.comments[i]} key={this.comments[i].key} />);
+      ret.push(<Comment
+        id={this.comments[i].id}
+        text={this.comments[i].text}
+        timestamp={this.comments[i].timestamp}
+        user_id={this.comments[i].user_id}/>)
     }
     if (num_comments > 1) {
       for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
@@ -394,7 +397,7 @@ class Post extends React.Component {
     if(!this.post) {
       return null;
     }
-    
+
     let secondary_content;
     if (this.state.post_expand) {
       secondary_content = (

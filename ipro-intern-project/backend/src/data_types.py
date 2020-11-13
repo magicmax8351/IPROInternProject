@@ -41,15 +41,15 @@ class UserModel(BaseModel):
         orm_mode = True
 
     id: Optional[int]
-    fname: str
-    lname: str
-    salt: str
-    hashed: str
-    email: str
-    pic: str
-    graddate: datetime.date
-    city: str
-    state: str
+    fname: Optional[str]
+    lname: Optional[str]
+    salt: Optional[str]
+    hashed: Optional[str]
+    email: Optional[str]
+    pic: Optional[str]
+    graddate: Optional[datetime.date]
+    city: Optional[str]
+    state: Optional[str]
 
 class ResumeORM(Base):
     __tablename__ = "resume"
@@ -171,7 +171,6 @@ class CommentORM(Base):
     timestamp =  Column(DateTime)
     post_id = Column(Integer, ForeignKey("post.id"))
     user_id = Column(Integer, ForeignKey("user.id"))
-    parent_id = Column(Integer, ForeignKey("comment.id"))
 
 class CommentModel(BaseModel):
     class Config:
@@ -179,6 +178,8 @@ class CommentModel(BaseModel):
     id: Optional[int]
     text: str 
     timestamp: datetime.datetime
+    post_id: int
+    user_id: int
 
 class CompanyORM(Base):
     __tablename__ = "company"

@@ -21,6 +21,10 @@ class HelloResponse(BaseModel):
     name: str
     message: str
 
+engine = create_engine("sqlite:///test_db.db")
+orm_parent_session = sessionmaker(bind=engine)
+orm_session = orm_parent_session()
+
 @app.get("/")
 def root(name: str) -> HelloResponse:
     return HelloResponse(
@@ -35,11 +39,12 @@ class Item(BaseModel):
 
 @app.get("/test/{item_id}")
 def posts_test(item_id: int):
+
     #print(f"The button was indeed clicked. {item_id}")
 
     # Adds a user and change their name
     '''c = s.demo()
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
     for p in orm_session.query(data_types.UserORM).all():
         print(f"{p.id} : {p.fname}")
     print(c)
@@ -49,7 +54,7 @@ def posts_test(item_id: int):
         print(f"{p.id} : {p.fname}")'''
 
     # delete the specified user
-    '''orm_session = s.orm_parent_session()
+    '''orm_session = orm_parent_session()
     for p in orm_session.query(data_types.UserORM).all():
         print(f"{p.id} : {p.fname}")
     print(orm_session.query(data_types.UserORM).count())
@@ -62,7 +67,7 @@ def posts_test(item_id: int):
         print(f"{p.id} : {p.fname}")
     print(orm_session.query(data_types.UserORM).count())'''
 
-    orm_session = s.orm_parent_session()
+    s = self.orm_parent_session()
 
     #for j in orm_session.query(data_types.JobORM).filter_by(id=1):
     #    print(j.name)
@@ -71,9 +76,9 @@ def posts_test(item_id: int):
     #except:
     #    print("query error")
 
-    for p in orm_session.query(data_types.PostORM).all():
+    for p in s.query(data_types.PostORM).all():
         print(f"{p.id} : {p.subject} : {p.job_id} : {p.group_id}")
-    print(orm_session.query(data_types.PostORM).count())
+    print(s.query(data_types.PostORM).count())
 
     #print("end of posts test")
     #return {'deletion': item_id}
@@ -88,7 +93,13 @@ def add_user(new_user: UserModel):
 @app.get("/users/get")
 def get_user(user_id: int):
     """Returns a user object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+    orm_session = orm_parent_session()
+    for u in orm_session.query(UserORM).filter(UserORM.id == user_id):
+        user = UserModel.from_orm(u)
+        orm_session.close()
+        return user
+    orm_session.close()
+
 
 @app.post("/users/update")
 def update_user(updated_user: UserModel):
@@ -143,7 +154,7 @@ def add_post(new_post: PostModel):
     print(new_post.group_id)
     print()
 
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
     orm_session.add(new_post_orm)
     orm_session.commit()
 
@@ -158,7 +169,7 @@ def add_post(new_post: PostModel):
 @app.get("/posts/get")
 def get_post():
     """Returns all posts."""
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
 
     all_posts = []
     for p in orm_session.query(data_types.PostORM).all():
@@ -170,6 +181,8 @@ def get_post():
             job_id=p.job_id, # replace with getJobById(id)
             group_id=p.group_id # replace with getGroupById(id)
         ))
+
+    orm_session.close()
 
     return {'posts': all_posts, 'count': len(all_posts)}
     
@@ -185,12 +198,14 @@ def delete_post(post_id: IntegerModel):
     """Removes the post with the given ID."""
     post_to_delete = post_id.i
     
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
     try:
         orm_session.delete(orm_session.query(data_types.PostORM).filter_by(id=post_to_delete).one())
     except:
         print(f"error deleting {post_to_delete}")
     orm_session.commit()
+    orm_session.close()
+
 
 # Comment
 @app.post("/comments/add")
@@ -205,9 +220,11 @@ def add_comment(new_comment: CommentModel):
         
     )
 
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
     orm_session.add(new_comment_orm)
     orm_session.commit()
+
+    orm_session.close()
 
 
 
@@ -215,15 +232,18 @@ def add_comment(new_comment: CommentModel):
 @app.get("/comments/get")
 def get_comment():
     """Returns all comments """
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
 
     all_comments = []
     for p in orm_session.query(data_types.CommentORM).all():
         all_comments.append(CommentModel(
             id=p.id,
             text=p.text,
-            timestamp=p.timestamp
+            timestamp=p.timestamp,
+            post_id=p.post_id,
+            user_id=p.user_id
         ))
+    orm_session.close()
 
     return {'comments': all_comments, 'count': len(all_comments)}
     
@@ -270,7 +290,7 @@ def add_job(new_job: JobModel):
 @app.get("/jobs/get")
 def get_job():
     """Returns all jobs"""
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
 
     all_jobs = []
     for j in orm_session.query(data_types.JobORM).all():
@@ -280,6 +300,8 @@ def get_job():
             location=j.location,
             company_id=j.company_id
         ))
+
+    orm_session.close()
 
     return {'jobs': all_jobs, 'count': len(all_jobs)}
 
@@ -303,7 +325,7 @@ def add_company(new_company: CompanyModel):
 @app.get("/companies/get")
 def get_company():
     """Returns all companies"""
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
 
     all_companies = []
     for c in orm_session.query(data_types.CompanyORM).all():
@@ -400,7 +422,7 @@ def add_group(new_group: GroupModel):
 @app.get("/groups/get")
 def get_group():
     """Returns all groups"""
-    orm_session = s.orm_parent_session()
+    orm_session = orm_parent_session()
 
     all_groups = []
     for g in orm_session.query(data_types.GroupORM).all():
