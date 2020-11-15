@@ -23,6 +23,7 @@ const Container = styled.div`
   padding: 15px;
   border-radius: 20px;
   box-shadow: 8px 8px 15px 1px rgba(0, 0, 0, 0.51);
+  margin-bottom: 30px;
 `;
 
 const JobTitle = styled.h3`
