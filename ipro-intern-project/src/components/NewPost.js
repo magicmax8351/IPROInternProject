@@ -4,25 +4,20 @@ import MDEditor from "@uiw/react-md-editor";
 import ReactDOM from "react-dom";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button"
+import Button from "react-bootstrap/Button";
 
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+// Logic for adding posts is broken. 
+// Use https://formik.org/docs/overview to handle adding things to the database.
 
 class NewPost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      company_id: -1,
-      job_id: -1,
-    };
-
-    this.post = {
-      post_title: "Bad Corporate Culture Alert: The Dangers of A Boring Bank",
-      post_body:
-        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. \n\nNemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. \n\nNeque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?",
-      post_author: "Justin Schmitz",
-      post_timestamp: "2009-06-15",
+      company_id: 1,
+      job_id: 0,
     };
 
     this.dropdown_change = this.dropdown_change.bind(this);
@@ -125,7 +120,7 @@ class NewPost extends React.Component {
   renderListJob() {
     let jobs = [[-1, "Please select..."]];
     if (this.state.company_id === -1) {
-        return null;
+      return null;
     }
 
     for (let i = 0; i < this.jobs.length; i++) {
@@ -150,24 +145,36 @@ class NewPost extends React.Component {
       return null;
     } else {
       return (
-        <Form.Row>
-          <Form.Group as={Col}>
-            <Form.Label>Company Name</Form.Label>
-            <Form.Control placeholder="Job title" />
-          </Form.Group>
-          <Form.Group as={Col}>
-            <Form.Label>Company Sector</Form.Label>
-            <Form.Control as="select">
-              <option>Big Tech</option>
-              <option>Social Media</option>
-              <option>Trading</option>
-              <option>Banking</option>
-              <option>Whatever Oracle does</option>
-            </Form.Control>
-          </Form.Group>
-        </Form.Row>
+        <Form>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Company Name</Form.Label>
+              <Form.Control placeholder="Job title" />
+            </Form.Group>
+            <Form.Group as={Col}>
+              <Form.Label>Company Sector</Form.Label>
+              <Form.Control as="select">
+                <option>Big Tech</option>
+                <option>Social Media</option>
+                <option>Trading</option>
+                <option>Banking</option>
+                <option>Whatever Oracle does</option>
+              </Form.Control>
+            </Form.Group>
+          </Form.Row>
+          <Button variant="primary" type="submit" onClick={this.submitForm}>
+              Add job
+            </Button>
+        </Form>
       );
     }
+  }
+
+  submitForm(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    console.log(form);
+    
   }
 
   renderAddJob() {
@@ -175,34 +182,42 @@ class NewPost extends React.Component {
       return null;
     } else {
       return (
-        <Form.Row>
+        <Form>
+          <Form.Row>
             <Form.Group as={Col}>
-                <Form.Label>Job title</Form.Label>
-                <Form.Control placeholder="Software Engineer Intern"/>
+              <Form.Label>Job title</Form.Label>
+              <Form.Control placeholder="Software Engineer Intern" />
             </Form.Group>
             <Form.Group as={Col}>
-                <Form.Label>City</Form.Label>
-                <Form.Control placeholder="Chicago"/>
+              <Form.Label>City</Form.Label>
+              <Form.Control placeholder="Chicago" />
             </Form.Group>
             <Form.Group as={Col}>
-                <Form.Label>State</Form.Label>
-                <Form.Control placeholder="IL"/>
+              <Form.Label>State</Form.Label>
+              <Form.Control placeholder="IL" />
             </Form.Group>
           </Form.Row>
+          <Button variant="primary" type="submit" onClick={this.submitForm}>
+            Add job
+          </Button>
+        </Form>
       );
     }
   }
 
   renderWriteSubject() {
     if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-        return (
+      return (
         <Form.Group>
-            <Form.Label>Subject</Form.Label>
-            <Form.Control placeholder="Money is good, people are not. Avoid." maxLength="140"/>
+          <Form.Label>Subject</Form.Label>
+          <Form.Control
+            placeholder="Money is good, people are not. Avoid."
+            maxLength="140"
+          />
         </Form.Group>
-        );
+      );
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -215,9 +230,9 @@ class NewPost extends React.Component {
     if (this.state.job_id !== -1 && this.state.company_id !== -1) {
       return (
         <Form.Group>
-            <Form.Label>Body</Form.Label>
-                <MDEditor value={value} onChange={setValue} />
-                <MDEditor.Markdown source={value} />
+          <Form.Label>Body</Form.Label>
+          <MDEditor value={value} onChange={setValue} />
+          <MDEditor.Markdown source={value} />
         </Form.Group>
       );
     } else {
@@ -227,19 +242,19 @@ class NewPost extends React.Component {
 
   renderChooseGroups() {
     if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-        return (
+      return (
         <Form.Group>
-            <Form.Label>Select Groups to Share</Form.Label>
-            <Form.Control as="select" multiple>
+          <Form.Label>Select Groups to Share</Form.Label>
+          <Form.Control as="select" multiple>
             <option>ACM-W</option>
             <option>AEPKS</option>
             <option>Phi Kappa Sigma International</option>
             <option>International Society of Weenie Hut Jr. </option>
-            </Form.Control>
+          </Form.Control>
         </Form.Group>
-        );
+      );
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -247,7 +262,6 @@ class NewPost extends React.Component {
     //   const [value, setValue] = React.useState("**Hello world!!!**");
     return (
       <div>
-        <h2>Add New Post</h2>
         <Form>
           {this.renderListCompany()}
           {this.renderAddCompany()}
@@ -257,8 +271,8 @@ class NewPost extends React.Component {
           {this.renderWriteBody()}
           {this.renderChooseGroups()}
           <Button variant="primary" type="submit">
-    Submit
-  </Button>
+            Submit
+          </Button>
         </Form>
       </div>
     );
