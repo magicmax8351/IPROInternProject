@@ -19,12 +19,10 @@ class App extends Component {
       <Router>
         <div>
           <Nav />
-          <Route exact path="/" component={Home} />
-          <Route exact path="/profile" component={Profile} />
+          <Route exact path="/" component={NewsFeed} />
           <Route exact path="/dashboard" component ={Dashboard}/>
           <Route exact path="/settings" component ={Settings}/>
           <Route exact path="/group/id/:id" component={GroupFeed}/>
-          <Route exat path="/feed" component={NewsFeed}/>
         </div>
       </Router>
     )
