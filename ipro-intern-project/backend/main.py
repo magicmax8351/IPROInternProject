@@ -263,12 +263,37 @@ def delete_comment(comment_id: int):
 @app.post("/applications/add")
 def add_application(new_application: ApplicationModel):
     """Adds a new row to application table."""
-    raise HTTPException(400, "Not implemented")
+    
+    # user_id and resume_id will come later
+    new_application_orm = ApplicationORM(
+        date = new_application.date,
+        job_id = new_application.job_id,
+        stage_id = new_application.stage_id
+    )
+
+    orm_session = orm_parent_session()
+    orm_session.add(new_application_orm)
+    orm_session.commit()
+    orm_session.close()
 
 @app.get("/applications/get")
-def get_application(application_id: int):
+def get_application():
     """Returns a application object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+    # Normally, this function would take a user_id and only
+    # return the application records for that user
+
+    orm_session = orm_parent_session()
+    apps = []
+    for a in orm_session.query(data_types.ApplicationORM).all():
+        apps.append(ApplicationModel(
+            id=a.id,
+            date=a.date,
+            job_id=a.job_id,
+            stage_id=a.stage_id
+        ))
+    orm_session.close()
+
+    return {'applications': apps}
 
 @app.post("/applications/update")
 def update_application(updated_application: ApplicationModel):
