@@ -30,6 +30,7 @@ export default props => (
     <NavLink exact to="/">
       Home
     </NavLink>
+    <NavLink to="/profile/">Profile</NavLink>
     <NavLink to="/dashboard/">Dashboard</NavLink>
     <NavLink to="/settings/">Settings</NavLink>
     <ProfilePic />

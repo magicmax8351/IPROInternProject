@@ -20,6 +20,7 @@ class App extends Component {
         <div>
           <Nav />
           <Route exact path="/" component={NewsFeed} />
+          <Route exact path="/profile" component ={Profile}/>
           <Route exact path="/dashboard" component ={Dashboard}/>
           <Route exact path="/settings" component ={Settings}/>
           <Route exact path="/group/id/:id" component={GroupFeed}/>
