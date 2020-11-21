@@ -3,9 +3,13 @@ import styled from "styled-components";
 
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button"
+import Button from "react-bootstrap/Button";
 import MDEditor from "@uiw/react-md-editor";
-import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlusSquare,
+  faMinusSquare,
+  faBorderNone,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
@@ -16,6 +20,7 @@ const BodyText = styled.p`
 `;
 
 const Container = styled.div`
+  font-family: "Open Sans", sans-serif;
   width: 650px;
   margin-left: auto;
   margin-right: auto;
@@ -31,8 +36,8 @@ const JobTitle = styled.h3`
   margin-top: -5px;
 `;
 
-const CompanyTitle = styled.h3`
-  margin-top: -30px;
+const JobLocation = styled.h3`
+  margin-top: -20px;
   font-size: 24px;
   font-weight: 400;
 `;
@@ -46,7 +51,7 @@ const HRLine = styled.hr`
 const CommentHRLine = styled.hr`
   margin-right: 35px;
   margin-left: 120px;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 `;
 
 const SectionTitleActive = styled.h5`
@@ -60,9 +65,6 @@ const SectionTitleClosed = styled.h5`
 `;
 
 const GroupPost = styled.p`
-  position: absolute;
-  margin-left: 590px;
-  margin-top: -10px;
   font-style: italic;
 `;
 
@@ -70,15 +72,15 @@ const CommentAvatar = styled.img`
   width: 60px;
   height: 60px;
   margin-left: 16px;
-  margin-bottom: 10px;
+  // margin-bottom: 10px;
 `;
 const CommentAuthor = styled.p`
   position: relative;
   font-style: italic;
-  margin-top: -3px;
   width: 90px;
-  font-size: 14px;
+  font-size: 12px;
   margin-left: 10px;
+  margin-bottom: -3px;
 `;
 
 const CommentReplyTo = styled.p`
@@ -121,7 +123,7 @@ const ButtonStyled = styled.button`
   background-color: transparent;
   font-size: 20px;
   margin-left: 160px;
-  margin-top: -60px;
+  margin-top: -40px;
 `;
 
 const MoreComments = styled.p`
@@ -148,7 +150,6 @@ const PostExpandButton = styled.button`
   margin-rigth: auto;
 `;
 
-
 class Comment extends React.Component {
   constructor(props) {
     super(props);
@@ -156,35 +157,36 @@ class Comment extends React.Component {
     this.text = props.text;
     this.timestamp = props.timestamp;
     this.user_id = props.user_id;
-    
+
     this.state = {
-      user: null
-    }
+      user: null,
+    };
   }
 
-  
   componentDidMount() {
-    if(!this.user_id) {
+    if (!this.user_id) {
       return null;
     }
     fetch("http://localhost:8000/users/get?user_id=" + this.user_id)
       .then((res) => res.json())
-      .then((json) => this.setState({ user: json }))
-    };
+      .then((json) => this.setState({ user: json }));
+  }
 
   render() {
-    if(!this.state.user) {
+    if (!this.state.user) {
       return null;
     }
     return (
       <div>
-      <CommentAvatar src={this.state.user.pic} />
-      <CommentAuthor>{this.state.user.fname}</CommentAuthor>
-      <CommentID>Post #{this.id}</CommentID>
-      <CommentBody>{this.text}</CommentBody>
-      <CommentHRLine />
-    </div>
-    )
+        <CommentAvatar src={this.state.user.pic} />
+        <CommentAuthor>
+          {this.state.user.fname} {this.state.user.lname}
+        </CommentAuthor>
+        <CommentAuthor>{this.timestamp.substring(0, 10)}</CommentAuthor>
+        <CommentBody>{this.text}</CommentBody>
+        <CommentHRLine />
+      </div>
+    );
   }
 }
 
@@ -199,12 +201,12 @@ class Post extends React.Component {
       comment_expand: 0,
       post_comment: 0,
       job: null,
-      group: null
+      group: null,
+      user: null,
     };
 
     this.post = props.post;
     this.comments = props.comments;
-
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
@@ -219,10 +221,12 @@ class Post extends React.Component {
     this.post_button_event = this.post_button_event.bind(this);
     this.post_comment_event = this.post_comment_event.bind(this);
 
+    this.submitComment = this.submitComment.bind(this);
+    this.writeComment = this.writeComment.bind(this);
   }
 
   componentDidMount() {
-    if(!this.post) {
+    if (!this.post) {
       return null;
     }
     fetch("http://localhost:8000/jobs/get_id?job_id=" + this.post.job_id)
@@ -231,9 +235,12 @@ class Post extends React.Component {
 
     fetch("http://localhost:8000/groups/get_id?group_id=" + this.post.group_id)
       .then((res) => res.json())
-      .then((json) => this.setState({ group: json }))
-    };
+      .then((json) => this.setState({ group: json }));
 
+    fetch("http://localhost:8000/users/get?user_id=" + this.post.user_id)
+      .then((res) => res.json())
+      .then((json) => this.setState({ user: json }));
+  }
 
   description_button_event() {
     this.setState({
@@ -258,8 +265,8 @@ class Post extends React.Component {
 
   post_comment_event() {
     this.setState({
-      post_comment: !this.state.post_comment
-    })
+      post_comment: !this.state.post_comment,
+    });
   }
 
   renderDescription() {
@@ -270,9 +277,7 @@ class Post extends React.Component {
           <ButtonStyled onClick={this.description_button_event}>
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
-          <BodyText>
-            {this.state.job.description}
-          </BodyText>
+          <BodyText>{this.state.job.description}</BodyText>
         </section>
       );
     } else {
@@ -310,12 +315,22 @@ class Post extends React.Component {
   }
   renderComments(num_comments) {
     let ret = [];
+    if (this.comments.length == 0) {
+      return (
+        <div>
+          <p>Start the conversation!</p>
+        </div>
+      );
+    }
     for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-      ret.push(<Comment
-        id={this.comments[i].id}
-        text={this.comments[i].text}
-        timestamp={this.comments[i].timestamp}
-        user_id={this.comments[i].user_id}/>)
+      ret.push(
+        <Comment
+          id={this.comments[i].id}
+          text={this.comments[i].text}
+          timestamp={this.comments[i].timestamp}
+          user_id={this.comments[i].user_id}
+        />
+      );
     }
     if (num_comments > 1) {
       for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
@@ -327,14 +342,24 @@ class Post extends React.Component {
 
     return ret;
   }
+
+  closedCommentButton() {
+    if (this.comments.length > 4) {
+      return (
+        <ButtonStyled onClick={this.comment_button_event}>
+          <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
+        </ButtonStyled>
+      );
+    } else {
+      return null;
+    }
+  }
   renderCommentSection() {
-    if (this.state.comment_expand) {
+    if (this.state.comment_expand || this.comments.length <= 3) {
       return (
         <section>
           <SectionTitleActive>Comments</SectionTitleActive>
-          <ButtonStyled onClick={this.comment_button_event}>
-            <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
+          {this.closedCommentButton()}
           {this.renderComments(100)}
           {this.renderNewComment()}
         </section>
@@ -355,33 +380,66 @@ class Post extends React.Component {
     }
   }
 
+  submitComment(event) {
+    event.preventDefault();
+    if (
+      this.state.new_comment.length > 2
+    ) {
+      fetch("http://localhost:8000/comments/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: this.state.new_comment,
+          post_id: this.post.id,
+          user_id: 15
+        }),
+      })
+        .then((response) => {
+          alert(response.status)
+          console.log(response.status);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }
+
+  writeComment(event) {
+    this.setState({new_comment: event})
+  }
+
   renderNewComment() {
     let value = "";
     let setValue = "";
-    if(this.state.post_comment) {
-       return <Form>
-         <Form.Group>
-           <Form.Label>Subject</Form.Label>
-           <Form.Control placeholder="subject"/>
-         </Form.Group>
-         <Form.Group>
-            <MDEditor value={value} onChange={setValue} />
+    if (this.state.post_comment) {
+      return (
+        <Form>
+          <Form.Group>
+            <MDEditor value={value} onChange={this.writeComment} />
             <MDEditor.Markdown source={value} />
-         </Form.Group>
-         <Button>Submit</Button>
-         </Form>
+          </Form.Group>
+          <Button onClick={this.submitComment}>Submit</Button>
+        </Form>
+      );
     } else {
-      return <PostCommentButton onClick={this.post_comment_event}>Post a reply...</PostCommentButton>
+      return (
+        <PostCommentButton onClick={this.post_comment_event}>
+          Post a reply...
+        </PostCommentButton>
+      );
     }
   }
+
   renderPost() {
     let body = "";
 
     if (this.state.post_expand) {
       body = this.post.body;
     } else {
-      if(this.post.body.length > 140) {
-        body = this.post.body.substring(0, 140) + "..." ;
+      if (this.post.body.length > 140) {
+        body = this.post.body.substring(0, 140) + "...";
       } else {
         body = this.post.body;
       }
@@ -390,22 +448,21 @@ class Post extends React.Component {
       <div>
         <h4>{this.post.post_title}</h4>
         <BodyText>{body}</BodyText>
-        <p>
-          Posted by [PLACEHOLDER] on {this.post.timestamp}
-        </p>
       </div>
     );
   }
 
-  
   render() {
-    if(!this.post) {
+    if (!this.post) {
       return null;
     }
-    if(!this.state.job) {
+    if (!this.state.job) {
       return null;
     }
-    if(!this.state.group) {
+    if (!this.state.group) {
+      return null;
+    }
+    if (!this.state.user) {
       return null;
     }
 
@@ -415,8 +472,6 @@ class Post extends React.Component {
         <div>
           <HRLine />
           {this.renderDescription()}
-          <HRLine />
-          {this.renderInformation()}
           <HRLine />
           {this.renderCommentSection()}
         </div>
@@ -433,9 +488,12 @@ class Post extends React.Component {
 
     return (
       <Container>
-        <GroupPost>{this.state.group.name}</GroupPost>
         <JobTitle>{this.state.job.name}</JobTitle>
-        <CompanyTitle>{this.state.job.location}</CompanyTitle>
+        <JobLocation>{this.state.job.location}</JobLocation>
+        <GroupPost>
+          Posted by {this.state.user.fname} via {this.state.group.name} on{" "}
+          {this.post.timestamp.substring(0, 10)}
+        </GroupPost>
         <HRLine />
         {this.renderPost()}
         {secondary_content}

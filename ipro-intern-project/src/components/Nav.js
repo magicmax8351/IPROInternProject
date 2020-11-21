@@ -9,13 +9,14 @@ const Nav = styled.nav`
   padding: 1.5rem;
   background-color: #7dcfff;
   justify-content: center;
-
+  font-family: 'Open Sans', sans-serif;
   a {
     margin-right: 5rem;
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: inherit;
+    font-size: 20px;
 
     &:hover,
     &.active {

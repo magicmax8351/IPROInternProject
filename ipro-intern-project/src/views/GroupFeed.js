@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const AddPostContainer = styled.div`
   background: lightgrey;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 10px;
   margin-left: auto;
   width: 650px;
@@ -28,6 +28,8 @@ const AddPostContainer = styled.div`
 const AddPostHeader = styled.h2`
   font-style: italic;
   font-size: 28px;
+  font-family: 'Open Sans', sans-serif;
+  margin-left: 10px;
 `;
 
 const AddPostButton = styled.button`
@@ -35,16 +37,14 @@ const AddPostButton = styled.button`
   position: absolute;
   margin-left: 580px;
   margin-top: -48px;
-  border-radius: 30px;
+  border-radius: 10px;
   font-size: 30px;
+  background-color: none;
 `;
 
-const Motto = styled.h2`
-  font-style: italic;
-  margin-left: 30px;
-`;
 
 const FeedContianer = styled.div`
+  margin-top: 20px;
   width: 700px;
 `;
 
@@ -93,7 +93,6 @@ class GroupFeed extends React.Component {
 
   postList(in_posts, in_comments) {
     let out_posts = [];
-    console.log(in_comments.comments);
 
     if (!in_comments.comments) {
       return null;
@@ -151,7 +150,6 @@ class GroupFeed extends React.Component {
 
         <PageHeader title={this.state.group.name} />
         <FeedContianer>
-          <Motto>{this.state.group.desc}</Motto>
 
           {/* Add new post:  */}
 
