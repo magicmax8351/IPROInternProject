@@ -7,13 +7,13 @@ import faker
 import random
 import os
 
+
 def gen_fake_data():
     # initialize
     engine = create_engine("sqlite:///test_db.db")
     orm_parent_session = sessionmaker(bind=engine)
     metadata.create_all(engine)
     s = orm_parent_session()
-
     # Add a bunch of users
 
     fake = faker.Faker()
@@ -24,20 +24,24 @@ def gen_fake_data():
     email = faker.providers.internet.Provider(fake)
     lipsum = faker.providers.lorem.Provider(fake)
     
+    icons = [
+        "/profile_pictures/p1.svg",
+        "/profile_pictures/p2.svg",
+        "/profile_pictures/p4.svg"
+    ]
     users = []
     for x in range(100):
-        users.append(UserORM(
-            fname=fake.first_name(),
-            lname=fake.last_name(),
-            salt="hunter2",
-            hashed="hunter3",
-            email=email.ascii_free_email(),
-            pic="/var/www/images/image.png",
-            graddate=datetime.date(year=2020, month=9, day=9),
-            city="Chicago",
-            state="IL"
-        ))
-    
+        users.append(
+            UserORM(fname=fake.first_name(),
+                    lname=fake.last_name(),
+                    salt="hunter2",
+                    hashed="hunter3",
+                    email=email.ascii_free_email(),
+                    pic=random.choice(icons),
+                    graddate=datetime.date(year=2020, month=9, day=9),
+                    city="Chicago",
+                    state="IL"))
+
     s.add_all(users)
 
     s.commit()
@@ -64,20 +68,29 @@ def gen_fake_data():
 
     # Add some jobs
 
-    fake_job_titles = ["Machine Learning Sales Specialist", "Research Intern", "Junior Software Developer",
-                        "Android Developer", "Product Manager", "UI Designer", "Quant Researcher", 
-                        "Trader", "Software Engineer", "DBA"]
+    fake_job_titles = [
+        "Machine Learning Sales Specialist", "Research Intern",
+        "Junior Software Developer", "Android Developer", "Product Manager",
+        "UI Designer", "Quant Researcher", "Trader", "Software Engineer", "DBA"
+    ]
 
-    fake_locations = ["Sunnyvale, CA", "Mountain View, CA", "Chicago, IL", "New York, NY", "St. Louis, MO"]
+    fake_locations = [
+        "Sunnyvale, CA", "Mountain View, CA", "Chicago, IL", "New York, NY",
+        "St. Louis, MO"
+    ]
 
     jobs = []
     for i in range(10):
-        jobs.append(JobORM(
-            name=random.choice(fake_job_titles),
-            location=random.choice(fake_locations),
-            company_id=comp_id(),
-            description=lipsum.paragraph(nb_sentences=15, variable_nb_sentences=False, ext_word_list="the crazy brown dog jumped over the fence".split())
-        ))
+        jobs.append(
+            JobORM(
+                name=random.choice(fake_job_titles),
+                location=random.choice(fake_locations),
+                company_id=comp_id(),
+                description=lipsum.paragraph(
+                    nb_sentences=15,
+                    variable_nb_sentences=False,
+                    ext_word_list="the crazy brown dog jumped over the fence".
+                    split())))
 
     s.add_all(jobs)
     s.commit()
@@ -85,15 +98,23 @@ def gen_fake_data():
 
     # Add some groups
     groups = []
-    groups.append(GroupORM(name="ACM @ IIT", icon="/var/www/images/acm_logo.png", desc="Advancing Computing as a Science & Profession"))
-    groups.append(GroupORM(name="AEPKS", icon="/var/www/images/pks_logo.png", desc="Men of Honor"))
-    groups.append(GroupORM(name="Tesla Fan Club", icon="/var/www/images/pks_logo.png", desc="I love Elon's Musk"))
+    groups.append(
+        GroupORM(name="ACM @ IIT",
+                 icon="/var/www/images/acm_logo.png",
+                 desc="Advancing Computing as a Science & Profession"))
+    groups.append(
+        GroupORM(name="AEPKS",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="Men of Honor"))
+    groups.append(
+        GroupORM(name="Tesla Fan Club",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="I love Elon's Musk"))
 
     for g in groups:
         s.add(g)
     s.commit()
     print("Added sample groups to DB")
-
 
     def g_id():
         return random.choice(s.query(data_types.GroupORM).all()).id
@@ -102,18 +123,26 @@ def gen_fake_data():
 
     posts = []
     for i in range(100):
-        posts.append(PostORM(
-            subject = lipsum.paragraph(nb_sentences=2, variable_nb_sentences=False, ext_word_list="the crazy brown dog jumped over the fence".split()),
-            body = lipsum.paragraph(nb_sentences=5, variable_nb_sentences=False, ext_word_list="the crazy brown dog jumped over the fence".split()),
-            timestamp = datetime.datetime.now(),
-            job_id = random.choice(jobs).id,
-            user_id = user_id(),
-            group_id = g_id()
-        ))
+        posts.append(
+            PostORM(
+                subject=lipsum.paragraph(
+                    nb_sentences=2,
+                    variable_nb_sentences=False,
+                    ext_word_list="the crazy brown dog jumped over the fence".
+                    split()),
+                body=lipsum.paragraph(
+                    nb_sentences=5,
+                    variable_nb_sentences=False,
+                    ext_word_list="the crazy brown dog jumped over the fence".
+                    split()),
+                timestamp=datetime.datetime.now(),
+                job_id=random.choice(jobs).id,
+                user_id=user_id(),
+                group_id=g_id()))
 
     for post in posts:
         s.add(post)
-    
+
     s.commit()
 
     def post_id():
@@ -121,18 +150,21 @@ def gen_fake_data():
 
     comments = []
     for i in range(1000):
-        comments.append(CommentORM(
-            text = lipsum.paragraph(nb_sentences=2, variable_nb_sentences=False, ext_word_list="the crazy brown dog jumped over the fence".split()),
-            timestamp = datetime.datetime.now(),
-            post_id = post_id(),
-            user_id = user_id()
-        ))
+        comments.append(
+            CommentORM(text=lipsum.paragraph(
+                nb_sentences=2,
+                variable_nb_sentences=False,
+                ext_word_list="the crazy brown dog jumped over the fence".
+                split()),
+                       timestamp=datetime.datetime.now(),
+                       post_id=post_id(),
+                       user_id=user_id()))
     for c in comments:
         s.add(c)
     s.commit()
-    print("Added to DB!")    
+    print("Added to DB!")
+
 
 if __name__ == "__main__":
     print("Generating sample data...")
     gen_fake_data()
-

@@ -158,9 +158,9 @@ class PostModel(BaseModel):
     body: str
     # tags: List[TagModel]
 
-    timestamp: datetime.datetime
+    timestamp: Optional[datetime.datetime]
     job_id: Optional[int]
-    # [user id relationship model] 
+    user_id: Optional[int]
     group_id: Optional[int]
 
 class CommentORM(Base):
@@ -176,8 +176,8 @@ class CommentModel(BaseModel):
     class Config:
         orm_mode = True
     id: Optional[int]
-    text: str 
-    timestamp: datetime.datetime
+    text: Optional[str]
+    timestamp: Optional[datetime.datetime]
     post_id: int
     user_id: int
 
