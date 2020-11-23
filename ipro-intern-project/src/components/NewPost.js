@@ -15,6 +15,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 class NewPost extends React.Component {
   constructor(props) {
     super(props);
+    this.func = props.func;
+
     this.state = {
       company_id: 1,
       job_id: 0,
@@ -22,6 +24,10 @@ class NewPost extends React.Component {
       jobs: null,
       companies: null,
       groups: null,
+      body: null,
+      subject: null,
+
+      new_company_name: null
     };
 
     this.dropdown_change = this.dropdown_change.bind(this);
@@ -38,6 +44,14 @@ class NewPost extends React.Component {
     this.enter_body = this.enter_body.bind(this);
     this.enter_subject = this.enter_subject.bind(this);
     this.enter_group = this.enter_group.bind(this);
+
+    this.enter_new_company_name = this.enter_new_company_name.bind(this);
+    this.submitAddCompany = this.submitAddCompany.bind(this);
+
+    this.enter_new_job_name = this.enter_new_job_name.bind(this);
+    this.enter_new_job_description = this.enter_new_job_description.bind(this);
+    this.enter_new_job_location = this.enter_new_job_location.bind(this);
+    this.submitAddJob = this.submitAddJob.bind(this);
 
     this.submitPost = this.submitPost.bind(this);
   }
@@ -73,9 +87,25 @@ class NewPost extends React.Component {
     this.setState({ subject: event.target.value });
   }
 
+  enter_new_company_name(event) {
+    this.setState({ new_company_name: event.target.value });
+  }
+
   enter_group(event) {
     // parseint() is a hack
     this.setState({ group_id: parseInt(event.target.value) });
+  }
+
+  enter_new_job_name(event) {
+    this.setState({ new_job_name: event.target.value });
+  }
+
+  enter_new_job_description(event) {
+    this.setState({ new_job_description: event.target.value });
+  }
+
+  enter_new_job_location(event) {
+    this.setState({ new_job_location: event.target.value });
   }
 
   dropdown_change(id, event) {
@@ -83,9 +113,60 @@ class NewPost extends React.Component {
       [event.target.id]: event.target.value,
     });
   }
+  
+  submitAddCompany(event) {
+    event.preventDefault()
+    if(this.state.new_company_name.length > 2) {
+      fetch("http://localhost:8000/companies/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: this.state.new_company_name
+        }),
+      })
+        .then((response) => {
+          this.componentDidMount();
+          // alert(response.status);
+          // console.log(response.status);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+    this.componentDidMount();
+  }
+
+  submitAddJob(event) {
+    event.preventDefault()
+    if(this.state.new_job_name.length > 2 && this.state.company_id > 0 ) {
+      fetch("http://localhost:8000/jobs/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: this.state.new_job_name,
+          description: this.state.new_job_description,
+          location: this.state.new_job_location,
+          company_id: this.state.company_id
+        }),
+      })
+        .then((response) => {
+          this.componentDidMount();
+
+          // alert(response.status);
+          // console.log(response.status);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }
 
   submitPost(event) {
-    event.preventDefault();
     if (
       this.state.job_id > 0 &&
       this.state.company_id > 0 &&
@@ -107,8 +188,7 @@ class NewPost extends React.Component {
         }),
       })
         .then((response) => {
-          alert(response.status);
-          console.log(response.status);
+          this.func()
         })
         .catch((err) => {
           console.error(err);
@@ -147,6 +227,8 @@ class NewPost extends React.Component {
         this.state.companies[i].name,
       ]);
     }
+
+    companies.push([-2, "Add new"])
 
     return (
       <Form.Group controlId="companyID">
@@ -196,9 +278,9 @@ class NewPost extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Company Name</Form.Label>
-              <Form.Control placeholder="Job title" />
+              <Form.Control onChange={this.enter_new_company_name} placeholder="New company name" />
             </Form.Group>
-            <Form.Group as={Col}>
+            {/* <Form.Group as={Col}>
               <Form.Label>Company Sector</Form.Label>
               <Form.Control as="select">
                 <option>Big Tech</option>
@@ -207,10 +289,10 @@ class NewPost extends React.Component {
                 <option>Banking</option>
                 <option>Whatever Oracle does</option>
               </Form.Control>
-            </Form.Group>
+            </Form.Group> */}
           </Form.Row>
-          <Button variant="primary" type="submit" onClick={this.submitForm}>
-            Add job
+          <Button variant="primary" type="submit" onClick={this.submitAddCompany}>
+            Add company
           </Button>
         </Form>
       );
@@ -233,18 +315,20 @@ class NewPost extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Job title</Form.Label>
-              <Form.Control placeholder="Software Engineer Intern" />
+              <Form.Control onChange={this.enter_new_job_name} placeholder="Software Engineer Intern" />
             </Form.Group>
             <Form.Group as={Col}>
-              <Form.Label>City</Form.Label>
-              <Form.Control placeholder="Chicago" />
-            </Form.Group>
-            <Form.Group as={Col}>
-              <Form.Label>State</Form.Label>
-              <Form.Control placeholder="IL" />
+              <Form.Label>Location</Form.Label>
+              <Form.Control onChange={this.enter_new_job_location} placeholder="Chicago" />
             </Form.Group>
           </Form.Row>
-          <Button variant="primary" type="submit" onClick={this.submitForm}>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Description</Form.Label>
+              <Form.Control onChange={this.enter_new_job_description} placeholder="Engineer new techniques to move money in a big circle"/>
+            </Form.Group>
+          </Form.Row>
+          <Button variant="primary" type="submit" onClick={this.submitAddJob}>
             Add job
           </Button>
         </Form>

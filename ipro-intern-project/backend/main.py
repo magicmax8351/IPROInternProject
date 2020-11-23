@@ -320,7 +320,17 @@ def delete_application(application_id: int):
 @app.post("/jobs/add")
 def add_job(new_job: JobModel):
     """Adds a new row to job table."""
-    raise HTTPException(400, "Not implemented")
+    s = orm_parent_session()
+    j = JobORM(
+        name=new_job.name,
+        description=new_job.description,
+        location=new_job.location,
+        company_id=new_job.company_id
+    )
+    s.add(j)
+    s.commit()
+    s.close()
+    return
 
 
 @app.get("/jobs/get_id")
@@ -361,7 +371,13 @@ def delete_job(job_id: int):
 @app.post("/companies/add")
 def add_company(new_company: CompanyModel):
     """Adds a new row to company table."""
-    raise HTTPException(400, "Not implemented")
+    s = orm_parent_session()
+    c = CompanyORM(
+        name = new_company.name
+    )
+    s.add(c)
+    s.commit()
+    s.close()
 
 
 @app.get("/companies/get")
@@ -371,6 +387,17 @@ def get_company():
     c = [CompanyModel.from_orm(p) for p in s.query(data_types.CompanyORM).all()]
     s.close()
     return c
+
+@app.get("/companies/get/id")
+def get_company_id(company_id: int):
+    """Returns company with the given ID. """
+    s = orm_parent_session()
+    for c in s.query(CompanyORM).filter(CompanyORM.id == company_id):
+        company = CompanyModel.from_orm(c)
+        s.close()
+        return company
+    s.close()
+    return
 
 
 @app.post("/companies/update")

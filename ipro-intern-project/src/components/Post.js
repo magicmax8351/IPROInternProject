@@ -203,6 +203,7 @@ class Post extends React.Component {
       job: null,
       group: null,
       user: null,
+      company: null,
     };
 
     this.post = props.post;
@@ -465,6 +466,7 @@ class Post extends React.Component {
     if (!this.state.user) {
       return null;
     }
+
 
     let secondary_content;
     if (this.state.post_expand) {

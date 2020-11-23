@@ -93,7 +93,6 @@ class GroupFeed extends React.Component {
 
   postList(in_posts, in_comments) {
     let out_posts = [];
-
     if (!in_comments.comments) {
       return null;
     }
@@ -119,7 +118,7 @@ class GroupFeed extends React.Component {
 
   renderNewPost() {
     if(this.state.newPost) {
-      return <NewPost/>
+      return <NewPost func={this.componentDidMount}/>
     } else {
       return <AddPostButton onClick={this.newPostButton}>
       <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
