@@ -11,14 +11,19 @@ from sqlalchemy import desc
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "*"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class HelloResponse(BaseModel):
     name: str
@@ -182,7 +187,7 @@ def add_post(new_post: PostModel):
     #     except:
     #         print("query error. a post may have invalid group id or job id")
 
-    return {"success"}
+    return PostModel.from_orm(new_post_orm)
 
 
 @app.get("/posts/get")

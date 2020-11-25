@@ -167,6 +167,7 @@ class NewPost extends React.Component {
   }
 
   submitPost(event) {
+    event.preventDefault();
     if (
       this.state.job_id > 0 &&
       this.state.company_id > 0 &&
@@ -174,25 +175,14 @@ class NewPost extends React.Component {
       this.state.body.length > 1 &&
       this.state.subject.length > 1
     ) {
-      fetch("http://localhost:8000/posts/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject: this.state.subject,
-          body: this.state.body,
-          job_id: this.state.job_id,
-          user_id: 15,
-          group_id: this.state.group_id,
-        }),
-      })
-        .then((response) => {
-          this.func()
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      let post = {
+        subject: this.state.subject,
+        body: this.state.body,
+        job_id: this.state.job_id,
+        user_id: 15,
+        group_id: this.state.group_id
+      };
+      this.func(post);
     }
   }
 

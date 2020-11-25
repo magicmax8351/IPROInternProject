@@ -71,6 +71,8 @@ class GroupFeed extends React.Component {
     this.newPostButton = this.newPostButton.bind(this);
     this.renderNewPost = this.renderNewPost.bind(this);
     this.feedView = this.feedView.bind(this);
+    this.submitPost = this.submitPost.bind(this);
+    this.newPosts = [];
   }
 
   newPostButton() {
@@ -118,7 +120,7 @@ class GroupFeed extends React.Component {
 
   renderNewPost() {
     if(this.state.newPost) {
-      return <NewPost func={this.componentDidMount}/>
+      return <NewPost func={this.submitPost}/>
     } else {
       return <AddPostButton onClick={this.newPostButton}>
       <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
@@ -135,6 +137,22 @@ class GroupFeed extends React.Component {
         }});
     }
   }
+
+  submitPost(post) {
+    fetch("http://localhost:8000/posts/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(post),
+    })
+      .then((res) => res.json())
+      .then((json) => this.setState({ posts: [json, ...this.state.posts]}))
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   render() {
     this.feedView();
     
@@ -156,7 +174,7 @@ class GroupFeed extends React.Component {
             <AddPostHeader>Add a new post...</AddPostHeader>
           {this.renderNewPost()}
           </AddPostContainer>
-
+          {console.log(this.state.posts)}
           <PageContent>
             {this.postList(this.state.posts, this.state.comments)}
           </PageContent>
