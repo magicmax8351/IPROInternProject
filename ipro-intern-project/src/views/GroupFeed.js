@@ -66,8 +66,7 @@ class GroupFeed extends React.Component {
       posts: [],
       comments: [],
       group: null,
-      newPost: 0,
-      updatedPost: 0
+      newPost: 0
     };
     this.newPostButton = this.newPostButton.bind(this);
     this.renderNewPost = this.renderNewPost.bind(this);
@@ -100,7 +99,7 @@ class GroupFeed extends React.Component {
   postList(in_posts, in_comments) {
     let out_posts = [];
     if (!in_comments.comments) {
-      return null;
+      return [];
     }
     let group_posts = null;
     if (this.group_id != -1) {
@@ -109,8 +108,6 @@ class GroupFeed extends React.Component {
       group_posts = in_posts;
       }
 
-    console.log(group_posts);
-    
     for (let i = 0; i < group_posts.length; i++) {
       out_posts.push(
         <Post
@@ -118,11 +115,12 @@ class GroupFeed extends React.Component {
           comments={in_comments.comments.filter(
             (comment) => comment.post_id == group_posts[i].id
           )}
-          key={i}
+          key={group_posts[i].id}
         />
       );
     }
-    this.renderedPosts = out_posts;
+
+    return out_posts;
   }
 
   renderNewPost() {
@@ -145,25 +143,19 @@ class GroupFeed extends React.Component {
     })
       .then((res) => res.json())
       .then((json) => this.setState({ posts: [json, ...this.state.posts]}))
-      .then(() => this.renderedPosts = null)
-      .then(() => this.setState({ updatedPost: 1 }))
       .catch((err) => {
         console.error(err);
       });
   }
 
+
   render() {
     this.feedView();
-
     if (!this.state.group) {
       return null;
     }
-    
-    if(!this.state.updatedPost){ 
-      this.postList(this.state.posts, this.state.comments);
-    } else {
-      this.setState({updatedPost: 0})
-    }
+
+    let renderedPosts = this.postList(this.state.posts, this.state.comments);
     return (
       <div>
         <Helmet>
@@ -172,15 +164,12 @@ class GroupFeed extends React.Component {
 
         <PageHeader title={this.state.group.name} />
         <FeedContianer>
-
-          {/* Add new post:  */}
-
           <AddPostContainer>
             <AddPostHeader>Add a new post...</AddPostHeader>
           {this.renderNewPost()}
           </AddPostContainer>
           <PageContent>
-            {this.renderedPosts}
+            {renderedPosts}
           </PageContent>
         </FeedContianer>
       </div>

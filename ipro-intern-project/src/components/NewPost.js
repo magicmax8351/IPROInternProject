@@ -80,7 +80,6 @@ class NewPost extends React.Component {
 
   enter_body(event) {
     this.setState({ body: event });
-    console.log(this.state);
   }
 
   enter_subject(event) {
@@ -128,8 +127,6 @@ class NewPost extends React.Component {
       })
         .then((response) => {
           this.componentDidMount();
-          // alert(response.status);
-          // console.log(response.status);
         })
         .catch((err) => {
           console.error(err);
@@ -156,9 +153,6 @@ class NewPost extends React.Component {
       })
         .then((response) => {
           this.componentDidMount();
-
-          // alert(response.status);
-          // console.log(response.status);
         })
         .catch((err) => {
           console.error(err);
@@ -292,8 +286,6 @@ class NewPost extends React.Component {
   submitForm(event) {
     event.preventDefault();
     const form = event.currentTarget;
-    console.log(event.target);
-    console.log(form);
   }
 
   renderAddJob() {
@@ -345,9 +337,7 @@ class NewPost extends React.Component {
 
   renderWriteBody() {
     let value = "";
-    let setValue = (event) => {
-      console.log(event);
-    };
+
 
     let id = "body";
 

@@ -7,7 +7,7 @@ import random
 from src.session import *
 import datetime
 
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 
 app = FastAPI()
 
@@ -238,8 +238,9 @@ def add_comment(new_comment: CommentModel):
     orm_session = orm_parent_session()
     orm_session.add(new_comment_orm)
     orm_session.commit()
-
+    ret = CommentModel.from_orm(new_comment_orm)
     orm_session.close()
+    return ret
 
 
 @app.get("/comments/get")
@@ -248,7 +249,7 @@ def get_comment():
     orm_session = orm_parent_session()
 
     all_comments = []
-    for p in orm_session.query(data_types.CommentORM).all():
+    for p in orm_session.query(data_types.CommentORM).order_by(asc(CommentORM.id)).all():
         all_comments.append(
             CommentModel(id=p.id,
                          text=p.text,

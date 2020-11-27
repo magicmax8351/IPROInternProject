@@ -204,10 +204,10 @@ class Post extends React.Component {
       group: null,
       user: null,
       company: null,
+      comments: props.comments
     };
 
     this.post = props.post;
-    this.comments = props.comments;
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
@@ -316,36 +316,28 @@ class Post extends React.Component {
   }
   renderComments(num_comments) {
     let ret = [];
-    if (this.comments.length == 0) {
+    if (this.state.comments.length == 0) {
       return (
         <div>
           <p>Start the conversation!</p>
         </div>
       );
     }
-    for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
+    for (let i = 0; i < Math.min(num_comments, this.state.comments.length); i++) {
       ret.push(
         <Comment
-          id={this.comments[i].id}
-          text={this.comments[i].text}
-          timestamp={this.comments[i].timestamp}
-          user_id={this.comments[i].user_id}
+          text={this.state.comments[i].text}
+          timestamp={this.state.comments[i].timestamp}
+          user_id={this.state.comments[i].user_id}
+          key={this.state.comments[i].id}
         />
       );
     }
-    if (num_comments > 1) {
-      for (let i = 0; i < Math.min(num_comments, this.comments.length); i++) {
-        ret.push(
-          <Comment props={this.comments[i]} key={this.comments[i].key} />
-        );
-      }
-    }
-
     return ret;
   }
 
   closedCommentButton() {
-    if (this.comments.length > 4) {
+    if (this.state.comments.length > 4) {
       return (
         <ButtonStyled onClick={this.comment_button_event}>
           <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
@@ -356,7 +348,7 @@ class Post extends React.Component {
     }
   }
   renderCommentSection() {
-    if (this.state.comment_expand || this.comments.length <= 3) {
+    if (this.state.comment_expand || this.state.comments.length <= 3) {
       return (
         <section>
           <SectionTitleActive>Comments</SectionTitleActive>
@@ -374,7 +366,7 @@ class Post extends React.Component {
           </ButtonStyled>
           {this.renderComments(1)}
           <MoreComments>
-            {this.comments.length - 1} more comments...
+            {this.state.comments.length - 1} more comments...
           </MoreComments>
         </section>
       );
@@ -397,10 +389,8 @@ class Post extends React.Component {
           user_id: 15
         }),
       })
-        .then((response) => {
-          alert(response.status)
-          console.log(response.status);
-        })
+        .then((res) => res.json())
+        .then((json) => this.setState({ comments: [...this.state.comments, json] }))
         .catch((err) => {
           console.error(err);
         });
