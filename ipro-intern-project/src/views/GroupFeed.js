@@ -66,13 +66,17 @@ class GroupFeed extends React.Component {
       posts: [],
       comments: [],
       group: null,
-      newPost: 0
+      newPost: 0,
+      updatedPost: 0
     };
     this.newPostButton = this.newPostButton.bind(this);
     this.renderNewPost = this.renderNewPost.bind(this);
     this.feedView = this.feedView.bind(this);
     this.submitPost = this.submitPost.bind(this);
+    this.postList = this.postList.bind(this);
     this.newPosts = [];
+
+    this.renderedPosts = null;
   }
 
   newPostButton() {
@@ -104,6 +108,8 @@ class GroupFeed extends React.Component {
     } else {
       group_posts = in_posts;
       }
+
+    console.log(group_posts);
     
     for (let i = 0; i < group_posts.length; i++) {
       out_posts.push(
@@ -112,10 +118,11 @@ class GroupFeed extends React.Component {
           comments={in_comments.comments.filter(
             (comment) => comment.post_id == group_posts[i].id
           )}
+          key={i}
         />
       );
     }
-    return out_posts;
+    this.renderedPosts = out_posts;
   }
 
   renderNewPost() {
@@ -125,16 +132,6 @@ class GroupFeed extends React.Component {
       return <AddPostButton onClick={this.newPostButton}>
       <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
     </AddPostButton>
-    }
-  }
-
-  feedView() {
-    if(this.group_id == -1 && !this.state.group) {
-      this.setState({
-        group: {
-          name: "All posts", 
-          desc: "Your News Feed"
-        }});
     }
   }
 
@@ -148,6 +145,8 @@ class GroupFeed extends React.Component {
     })
       .then((res) => res.json())
       .then((json) => this.setState({ posts: [json, ...this.state.posts]}))
+      .then(() => this.renderedPosts = null)
+      .then(() => this.setState({ updatedPost: 1 }))
       .catch((err) => {
         console.error(err);
       });
@@ -155,9 +154,15 @@ class GroupFeed extends React.Component {
 
   render() {
     this.feedView();
-    
+
     if (!this.state.group) {
       return null;
+    }
+    
+    if(!this.state.updatedPost){ 
+      this.postList(this.state.posts, this.state.comments);
+    } else {
+      this.setState({updatedPost: 0})
     }
     return (
       <div>
@@ -174,13 +179,21 @@ class GroupFeed extends React.Component {
             <AddPostHeader>Add a new post...</AddPostHeader>
           {this.renderNewPost()}
           </AddPostContainer>
-          {console.log(this.state.posts)}
           <PageContent>
-            {this.postList(this.state.posts, this.state.comments)}
+            {this.renderedPosts}
           </PageContent>
         </FeedContianer>
       </div>
     );
+  }
+  feedView() {
+    if(this.group_id == -1 && !this.state.group) {
+      this.setState({
+        group: {
+          name: "All posts", 
+          desc: "Your News Feed"
+        }});
+    }
   }
 }
 
