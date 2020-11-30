@@ -79,6 +79,22 @@ def gen_fake_data():
         "St. Louis, MO"
     ]
 
+    word_list = """
+    About Akuna:
+
+Akuna Capital is a young and booming trading firm with a strong focus on cutting-edge technology, data driven decisions and automation. Our core competency is providing liquidity as an options market maker – meaning we provide competitive quotes that we are willing to both buy and sell. To do this successfully we design and implement our own low latency technologies, trading strategies and mathematical models.
+
+Our Founding Partners, including Akuna’s CEO Andrew Killion, first conceptualized Akuna in their hometown of Sydney. They opened the firm’s first office in 2011 in the heart of the derivatives industry and the options capital of the world – Chicago. Today, Akuna is proud to operate from additional offices in Sydney, Shanghai, and Boston.
+
+What you’ll do as a Development Intern on the C++ Team at Akuna:
+
+We are seeking Development Interns to join our innovative and growing technology team for our 10-week Akunacademy summer internship program. In this role you will work alongside our trading and software teams to design and implement elegant solutions to complex and interesting problems. 
+
+Development Interns at Akuna have the opportunity to use cutting-edge technology while working on high performance/low latency systems.  We offer a team-based approach to trading and software engineering, believing that productive integration of the two groups is vital for success in this industry.  Akuna loves Development interns who are self-starters and have the ability to problem solve and think outside of the box. We value innovation and hard work, and want you to make an impact in the firm. Whether you are interested in trading infrastructure, algorithms, models, exchange gateways, performance engineering, hardware, data capture and analysis, or front-end user interfaces, there’s work to be done. If you are excited to jump in and make a difference, Akuna could be the place for you. 
+
+The C++ teams work on applications where C++ is used for computational heavy-lifting and for applications that have timing-critical, low-latency processes such as trading strategies. C++ provides the flexibility and low-level control that our developers need to get maximum performance out of multi-core, super-scalar processors. No previous experience in finance or trading is required. Training and continuous education is provided for all engineers to ensure they have the skills and knowledge needed to be successful.        
+"""
+
     jobs = []
     for i in range(10):
         jobs.append(
@@ -89,8 +105,7 @@ def gen_fake_data():
                 description=lipsum.paragraph(
                     nb_sentences=15,
                     variable_nb_sentences=False,
-                    ext_word_list="the crazy brown dog jumped over the fence".
-                    split())))
+                    ext_word_list=word_list.split())))
 
     s.add_all(jobs)
     s.commit()
@@ -121,6 +136,13 @@ def gen_fake_data():
 
     # Add some posts
 
+    linkedin_shill_txt = """
+October marked my last month at Yelp. The past two years have been an incredible learning experience, and I could not be more thankful for all the training and guidance Yelp gave me as I began my professional career. I would specifically like to thank Emma Boelter, Samantha Hills, Sami Jurofsky, Darren Harris, Hunter Pawloff, and Liz Feinstein for their leadership, fostering a magnificent office culture, and developing my sales skills. I will forever remember my time at Yelp fondly.
+
+That said, as one door closes, another one opens.
+
+I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
+
     posts = []
     for i in range(100):
         posts.append(
@@ -128,13 +150,13 @@ def gen_fake_data():
                 subject=lipsum.paragraph(
                     nb_sentences=2,
                     variable_nb_sentences=False,
-                    ext_word_list="the crazy brown dog jumped over the fence".
-                    split()),
+                    ext_word_list=linkedin_shill_txt.split()
+                ),
                 body=lipsum.paragraph(
                     nb_sentences=5,
                     variable_nb_sentences=False,
-                    ext_word_list="the crazy brown dog jumped over the fence".
-                    split()),
+                    ext_word_list=linkedin_shill_txt.split()
+                ),
                 timestamp=datetime.datetime.now(),
                 job_id=random.choice(jobs).id,
                 user_id=user_id(),
@@ -154,11 +176,11 @@ def gen_fake_data():
             CommentORM(text=lipsum.paragraph(
                 nb_sentences=2,
                 variable_nb_sentences=False,
-                ext_word_list="the crazy brown dog jumped over the fence".
-                split()),
-                       timestamp=datetime.datetime.now(),
-                       post_id=post_id(),
-                       user_id=user_id()))
+                ext_word_list=linkedin_shill_txt.split()),
+
+            timestamp=datetime.datetime.now(),
+            post_id=post_id(),
+            user_id=user_id()))
     for c in comments:
         s.add(c)
     s.commit()

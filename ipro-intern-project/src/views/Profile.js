@@ -116,7 +116,7 @@ class Profile extends React.Component {
                     <GroupButton type="button">View Group</GroupButton>
                     <GroupButton type="button">Leave Group</GroupButton>
                     <GroupButton type="button">Add Member</GroupButton>
-                    <GroupButton type="button">create Post</GroupButton>
+                    <GroupButton type="button">Create Post</GroupButton>
                     <GroupButton type="button">View Statistics</GroupButton>
                   </Container>
                 );

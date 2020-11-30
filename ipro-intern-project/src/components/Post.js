@@ -483,9 +483,9 @@ class Post extends React.Component {
     return (
       <Container>
         <JobTitle>{this.state.job.name}</JobTitle>
-        <JobLocation>{this.state.job.location}</JobLocation>
+        <JobLocation>{this.state.job.company.name} - {this.state.job.location}</JobLocation>
         <GroupPost>
-          Posted by {this.state.user.fname} via {this.state.group.name} on{" "}
+          Posted by {this.state.user.fname} via {this.state.group.name} on{" "}   
           {this.post.timestamp.substring(0, 10)}
         </GroupPost>
         <HRLine />

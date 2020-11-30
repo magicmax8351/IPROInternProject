@@ -209,6 +209,7 @@ class JobModel(BaseModel):
     location: str
     description: str
     company_id: Optional[int]
+    company: Optional[CompanyModel]
 
     class Config:
         orm_mode = True

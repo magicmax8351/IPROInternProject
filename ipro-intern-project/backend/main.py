@@ -345,8 +345,10 @@ def get_job_by_id(job_id: int):
     orm_session = orm_parent_session()
     for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
         job = JobModel.from_orm(u)
-        orm_session.close()
-        return job
+        for c in orm_session.query(CompanyORM).filter(CompanyORM.id == job.company_id):
+            job.company = CompanyModel.from_orm(c)
+            orm_session.close()
+            return job
     orm_session.close()
     return
 

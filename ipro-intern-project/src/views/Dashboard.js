@@ -11,7 +11,6 @@ const Dashboard = props => (
       </Helmet>
       <PageHeader title="Dashboard" />
       <PageContent>
-        <p>This is where Dashboard components will go when built :)</p>
         <DashboardTable> </DashboardTable>
       </PageContent>
     </div>
