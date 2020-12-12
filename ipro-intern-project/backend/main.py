@@ -36,65 +36,6 @@ orm_parent_session = sessionmaker(bind=engine)
 orm_session = orm_parent_session()
 
 
-@app.get("/")
-def root(name: str) -> HelloResponse:
-    return HelloResponse(
-        name=name,
-        message=f"Hello {name}! Your lucky number is {random.randint(5, 100)}")
-
-
-class Item(BaseModel):
-    name: str
-    price: float
-
-
-@app.get("/test/{item_id}")
-def posts_test(item_id: int):
-
-    #print(f"The button was indeed clicked. {item_id}")
-
-    # Adds a user and change their name
-    '''c = s.demo()
-    orm_session = orm_parent_session()
-    for p in orm_session.query(data_types.UserORM).all():
-        print(f"{p.id} : {p.fname}")
-    print(c)
-    orm_session.query(data_types.UserORM).filter_by(fname=f"John{c}").first().fname = f"JohnNameChange{c}"
-    orm_session.commit()
-    for p in orm_session.query(data_types.UserORM).all():
-        print(f"{p.id} : {p.fname}")'''
-
-    # delete the specified user
-    '''orm_session = orm_parent_session()
-    for p in orm_session.query(data_types.UserORM).all():
-        print(f"{p.id} : {p.fname}")
-    print(orm_session.query(data_types.UserORM).count())
-    try:
-        orm_session.delete(orm_session.query(data_types.UserORM).filter_by(id=item_id).first())
-    except:
-        print(f"error deleting {item_id}")
-    orm_session.commit()
-    for p in orm_session.query(data_types.UserORM).all():
-        print(f"{p.id} : {p.fname}")
-    print(orm_session.query(data_types.UserORM).count())'''
-
-    s = self.orm_parent_session()
-
-    #for j in orm_session.query(data_types.JobORM).filter_by(id=1):
-    #    print(j.name)
-    #try:
-    #    print(orm_session.query(data_types.JobORM).filter_by(id=item_id).one().name)
-    #except:
-    #    print("query error")
-
-    for p in s.query(data_types.PostORM).all():
-        print(f"{p.id} : {p.subject} : {p.job_id} : {p.group_id}")
-    print(s.query(data_types.PostORM).count())
-
-    #print("end of posts test")
-    #return {'deletion': item_id}
-
-
 # CRUD functions for each table
 @app.post("/users/add")
 def add_user(new_user: UserModel):
