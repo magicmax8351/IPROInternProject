@@ -6,6 +6,7 @@ from src.data_types import *
 import random
 from src.session import *
 import datetime
+import bcrypt
 
 from sqlalchemy import desc, asc
 
@@ -95,12 +96,58 @@ def posts_test(item_id: int):
 
 
 # CRUD functions for each table
-# User
 @app.post("/users/add")
 def add_user(new_user: UserModel):
     """Adds a new row to user table."""
-    raise HTTPException(400, "Not implemented")
+    orm_session = orm_parent_session()
+    # Generate a salt, then hash the password. 
+    # Don't verify password strength here - do that on frontend. 
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(bytes(new_user.password, 'utf-8'), salt)
+    token = bcrypt.gensalt()
 
+    new_user_ORM = UserORM(
+        fname = new_user.fname,
+        lname = new_user.lname,
+        salt = salt,
+        hashed = hashed,
+        email = new_user.email,
+        pic = new_user.pic,
+        graddate = new_user.graddate,
+        city = new_user.city,
+        state = new_user.state
+    )
+
+    orm_session.add(new_user_ORM)
+    orm_session.commit()
+
+    new_token_ORM = TokenORM(
+        val = token,
+        user_id = new_user_ORM.id
+    )
+
+    orm_session.add(new_token_ORM)
+
+    ret = NewUserReturn(
+        user = UserModel.from_orm(new_user_ORM),
+        token = TokenModel.from_orm(new_token_ORM)
+    )
+
+    orm_session.commit()
+    orm_session.close()
+    return ret
+
+@app.get("/users/auth/token")
+def auth_user_token(token: str):
+    """Returns a user object with the given ID."""
+    orm_session = orm_parent_session()
+    t = bytes(token, "utf-8")
+    for u in orm_session.query(TokenORM).filter(TokenORM.val == t):
+        user_id = u.user_id
+        orm_session.close()
+        return get_user(user_id)
+    orm_session.close()
+    return {"message": "Auth. failed. "}
 
 @app.get("/users/get")
 def get_user(user_id: int):
@@ -111,6 +158,7 @@ def get_user(user_id: int):
         orm_session.close()
         return user
     orm_session.close()
+    return "no"
 
 
 @app.post("/users/update")
@@ -164,28 +212,10 @@ def add_post(new_post: PostModel):
         user_id=new_post.user_id,
         group_id=new_post.group_id)
 
-    # print(new_post.subject)
-    # print(new_post.body)
-    # print(new_post.timestamp)
-    # print(new_post.job_id)
-    # print(new_post.group_id)
-    # print()
-
     orm_session = orm_parent_session()
     orm_session.add(new_post_orm)
     orm_session.commit()
-
-    # for p in orm_session.query(data_types.PostORM).all():
-    #     try:
-    #         jobname = orm_session.query(
-    #             data_types.JobORM).filter_by(id=p.job_id).one().name
-    #         groupname = orm_session.query(
-    #             data_types.GroupORM).filter_by(id=p.group_id).one().name
-    #         print(
-    #             f"{p.subject} : {p.timestamp} : {p.body[:10]} : {jobname} : {groupname}"
-    #         )
-    #     except:
-    #         print("query error. a post may have invalid group id or job id")
+    orm_session.close()
 
     return PostModel.from_orm(new_post_orm)
 

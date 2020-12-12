@@ -43,8 +43,7 @@ class UserModel(BaseModel):
     id: Optional[int]
     fname: Optional[str]
     lname: Optional[str]
-    salt: Optional[str]
-    hashed: Optional[str]
+    password: Optional[str]
     email: Optional[str]
     pic: Optional[str]
     graddate: Optional[datetime.date]
@@ -281,3 +280,11 @@ class PresetitemModel(BaseModel):
     
     class Config:
         orm_mode = True
+
+
+# Composite data types
+
+class NewUserReturn(BaseModel):
+    user: UserModel
+    token: TokenModel
+
