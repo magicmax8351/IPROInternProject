@@ -65,7 +65,7 @@ def add_user(new_user: UserModel):
     except Exception as e: 
         # User failed to add. Almost certainly an IntegrityError.
         orm_session.close()
-        raise HTTPException(400, "User already exists! Detailed message: " + e)
+        raise HTTPException(400, "User already exists! Detailed message: " + str(e))
 
     new_token_ORM = TokenORM(
         val = token,
@@ -185,17 +185,15 @@ def update_post(updated_post: PostModel):
 
 
 @app.post("/posts/delete")
-def delete_post(post_id: IntegerModel):
+def delete_post(post_id: int):
     """Removes the post with the given ID."""
-    post_to_delete = post_id.i
-
     orm_session = orm_parent_session()
     try:
         orm_session.delete(
             orm_session.query(
-                data_types.PostORM).filter_by(id=post_to_delete).one())
+                data_types.PostORM).filter_by(id=post_id).one())
     except:
-        print(f"error deleting {post_to_delete}")
+        print(f"error deleting {post_id}")
     orm_session.commit()
     orm_session.close()
 

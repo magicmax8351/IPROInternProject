@@ -10,6 +10,7 @@ import NewsFeed from './views/NewsFeed'
 import Nav from './components/Nav'
 import 'antd/dist/antd.css';
 import ProfilePic from './components/ProfilePic';
+import NewUser from './components/NewUser'
 
 
 
@@ -24,6 +25,7 @@ class App extends Component {
           <Route exact path="/dashboard" component ={Dashboard}/>
           <Route exact path="/settings" component ={Settings}/>
           <Route exact path="/group/id/:id" component={GroupFeed}/>
+          <Route exact path="/newuser" component={NewUser}/>
         </div>
       </Router>
     )

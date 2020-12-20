@@ -12,9 +12,6 @@ import datetime
 Base = declarative_base()
 metadata = MetaData()
 
-class IntegerModel(BaseModel):
-    i: int
-
 class UserORM(Base):
     __tablename__ = "user"
     metadata = metadata

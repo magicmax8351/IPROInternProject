@@ -264,16 +264,6 @@ class NewPost extends React.Component {
               <Form.Label>Company Name</Form.Label>
               <Form.Control onChange={this.enter_new_company_name} placeholder="New company name" />
             </Form.Group>
-            {/* <Form.Group as={Col}>
-              <Form.Label>Company Sector</Form.Label>
-              <Form.Control as="select">
-                <option>Big Tech</option>
-                <option>Social Media</option>
-                <option>Trading</option>
-                <option>Banking</option>
-                <option>Whatever Oracle does</option>
-              </Form.Control>
-            </Form.Group> */}
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddCompany}>
             Add company
