@@ -95,48 +95,48 @@ class NewUser extends React.Component {
 
   }
 
-  render() {
+  newUserForm() {
     return (
       <div>
-        <Form>
+        <Form novalidate>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>First Name</Form.Label>
-              <Form.Control onChange={this.enter_fname} placeholder="First Name"/>
+              <Form.Control required onChange={this.enter_fname} placeholder="First Name"/>
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Last Name</Form.Label>
-              <Form.Control onChange={this.enter_lname} placeholder="Last Name"/>
+              <Form.Control required onChange={this.enter_lname} placeholder="Last Name"/>
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Email</Form.Label>
-              <Form.Control onChange={this.enter_email} placeholder="jbiden@whitehouse.gov"/>
+              <Form.Control required onChange={this.enter_email} placeholder="jbiden@whitehouse.gov"/>
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Graduation Date (MM/YYYY)</Form.Label>
-              <Form.Control onChange={this.enter_graddate} pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" placeholder="2020-08-15"/>
+              <Form.Control required onChange={this.enter_graddate} pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" placeholder="2020-08-15"/>
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Enter password</Form.Label>
-              <Form.Control type="password" onChange={this.enter_pword} placeholder=""/>
+              <Form.Control required type="password" onChange={this.enter_pword} placeholder=""/>
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Confirm password</Form.Label>
-              <Form.Control type="password" validator={this.confirm_pword} placeholder="Last Name"/>
+              <Form.Control required type="password" validator={this.confirm_pword} placeholder="Last Name"/>
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>City</Form.Label>
-              <Form.Control onChange={this.enter_city} placeholder="Chicago"/>
+              <Form.Control required onChange={this.enter_city} placeholder="Chicago"/>
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>State abbreviation</Form.Label>
-              <Form.Control onChange={this.enter_state} pattern="[A-Z]{2}" placeholder="IL"/>
+              <Form.Control required onChange={this.enter_state} pattern="[A-Z]{2}" placeholder="IL"/>
             </Form.Group>
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddUser}>
@@ -145,6 +145,10 @@ class NewUser extends React.Component {
         </Form>
       </div>
     );
+  }
+
+  render() {
+    return this.newUserForm();
   }
 }
 
