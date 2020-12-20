@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -59,8 +59,13 @@ def add_user(new_user: UserModel):
         state = new_user.state
     )
 
-    orm_session.add(new_user_ORM)
-    orm_session.commit()
+    try:
+        orm_session.add(new_user_ORM)
+        orm_session.commit()
+    except Exception as e: 
+        # User failed to add. Almost certainly an IntegrityError.
+        orm_session.close()
+        raise HTTPException(400, "User already exists! Detailed message: " + e)
 
     new_token_ORM = TokenORM(
         val = token,
