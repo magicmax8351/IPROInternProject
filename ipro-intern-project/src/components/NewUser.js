@@ -5,9 +5,8 @@ import ReactDOM from "react-dom";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import { useCookies } from 'react-cookie';
 
-import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 class NewUser extends React.Component {
   constructor(props) {
@@ -36,7 +35,10 @@ class NewUser extends React.Component {
     this.enter_state = this.enter_state.bind(this);
   }
 
+  
   processNewUser(json) {
+    const [cookies, setCookie] = useCookies(['token']);
+    setCookie('token', json.token.val);
     // Parse JSON. 
     // JSON contains a 'user' object and a 'token' object.
     // Save 'token' object as cookie. 
@@ -88,9 +90,9 @@ class NewUser extends React.Component {
         state: this.state.state
       })})
     .then((res) => res.json())
-    .then((json) => this.setState({ newUser: json.user }))
-      .catch((err) => {
-        console.error(err);
+    .then((json) => this.processNewUser(json))
+    .catch((err) => {
+      console.error(err);
       });
 
   }
@@ -98,7 +100,7 @@ class NewUser extends React.Component {
   newUserForm() {
     return (
       <div>
-        <Form novalidate>
+        <Form>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>First Name</Form.Label>
@@ -112,7 +114,7 @@ class NewUser extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Email</Form.Label>
-              <Form.Control required onChange={this.enter_email} placeholder="jbiden@whitehouse.gov"/>
+              <Form.Control type="email" required onChange={this.enter_email} placeholder="jbiden@whitehouse.gov"/>
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Graduation Date (MM/YYYY)</Form.Label>

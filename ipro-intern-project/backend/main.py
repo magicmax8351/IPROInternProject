@@ -43,6 +43,7 @@ def add_user(new_user: UserModel):
     orm_session = orm_parent_session()
     # Generate a salt, then hash the password. 
     # Don't verify password strength here - do that on frontend. 
+
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(bytes(new_user.password, 'utf-8'), salt)
     token = bcrypt.gensalt()
