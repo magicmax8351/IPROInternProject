@@ -5,8 +5,7 @@ import ReactDOM from "react-dom";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { useCookies } from 'react-cookie';
-
+import Cookies from "js-cookie";
 
 class NewUser extends React.Component {
   constructor(props) {
@@ -35,14 +34,10 @@ class NewUser extends React.Component {
     this.enter_state = this.enter_state.bind(this);
   }
 
-  
   processNewUser(json) {
-    const [cookies, setCookie] = useCookies(['token']);
-    setCookie('token', json.token.val);
-    // Parse JSON. 
-    // JSON contains a 'user' object and a 'token' object.
-    // Save 'token' object as cookie. 
-    // TODO
+    Cookies.set("token", json.token.val, { expires: 15 });
+    Cookies.set("fname", json.user.fname, { expires: 15 });
+    document.location.replace("/");
     return
   }
 

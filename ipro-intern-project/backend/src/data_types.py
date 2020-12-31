@@ -54,7 +54,7 @@ class ResumeORM(Base):
     name = Column(String(32), nullable=False)
     filename = Column(String(32), nullable=True)
     date = Column(DateTime)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class ResumeModel(BaseModel):
     class Config:
@@ -69,7 +69,7 @@ class StageORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name: Column(String(32), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class StageModel(BaseModel):
     class Config:
@@ -82,7 +82,7 @@ class TokenORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     val = Column(String(128), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class TokenModel(BaseModel):
     class Config:
@@ -94,7 +94,7 @@ class SettingsORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     visibility = Column(String(32), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class SettingsModel(BaseModel):
     class Config:
@@ -109,7 +109,7 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class GroupModel(BaseModel):
     class Config:
@@ -123,7 +123,7 @@ class MembershipORM(Base):
     __tablename__ = "membership"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
     permission = Column(Integer)
 
@@ -135,30 +135,6 @@ class MembershipModel(BaseModel):
     # [group id relationship model]
     # # [user id relationship model]  
 
-class PostORM(Base):
-    __tablename__ = "post"
-    metadata = metadata
-    id = Column(Integer, primary_key=True, nullable=False)
-    subject = Column(String(32), nullable=False)
-    body = Column(String(32), nullable=False)
-    timestamp = Column(DateTime)
-    job_id = Column(Integer, ForeignKey("job.id"))
-    user_id = Column(Integer, ForeignKey("user.id"))
-    group_id = Column(Integer, ForeignKey("group.id"))
-
-class PostModel(BaseModel):
-    class Config:
-        orm_mode = True
-    id: Optional[int]
-    subject: str
-    body: str
-    # tags: List[TagModel]
-
-    timestamp: Optional[datetime.datetime]
-    job_id: Optional[int]
-    user_id: Optional[int]
-    group_id: Optional[int]
-
 class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
@@ -166,16 +142,21 @@ class CommentORM(Base):
     text = Column(String(32), nullable=False)
     timestamp =  Column(DateTime)
     post_id = Column(Integer, ForeignKey("post.id"))
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
+
 
 class CommentModel(BaseModel):
     class Config:
         orm_mode = True
+        # arbitrary_types_allowed = True
     id: Optional[int]
     text: Optional[str]
     timestamp: Optional[datetime.datetime]
     post_id: int
-    user_id: int
+    uid: Optional[int]
+    token: Optional[str]
+    user: Optional[UserModel]
+
 
 class CompanyORM(Base):
     __tablename__ = "company"
@@ -210,6 +191,36 @@ class JobModel(BaseModel):
     class Config:
         orm_mode = True
 
+class PostORM(Base):
+    __tablename__ = "post"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    subject = Column(String(32), nullable=False)
+    body = Column(String(32), nullable=False)
+    timestamp = Column(DateTime)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
+    group_id = Column(Integer, ForeignKey("group.id"))
+
+class PostModel(BaseModel):
+    class Config:
+        orm_mode = True
+        # arbitrary_types_allowed = True
+
+    id: Optional[int]
+    subject: str
+    body: str
+    # tags: List[TagModel]
+    timestamp: Optional[datetime.datetime]
+    job_id: Optional[int]
+    uid: Optional[int]
+    group_id: Optional[int]
+    token: Optional[str]
+    user: Optional[UserModel]
+    group: Optional[GroupModel]
+    job: Optional[JobModel]
+    comments: Optional[List[CommentModel]]
+    
 class JobtagORM(Base):
     __tablename__ = "jobtag"
     metadata = metadata
@@ -232,7 +243,7 @@ class ApplicationORM(Base):
     date = Column(DateTime, nullable=False)
     job_id = Column(Integer, ForeignKey("job.id"))
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
     resume_id = Column(Integer, ForeignKey("resume.id"))
 
 class ApplicationModel(BaseModel):
@@ -240,7 +251,7 @@ class ApplicationModel(BaseModel):
     date: datetime.date
     job_id: Optional[int]
     stage_id: Optional[int]
-    user_id: Optional[int]
+    uid: Optional[int]
     resume_id: Optional[int]
 
     class Config:
@@ -251,12 +262,12 @@ class PresetORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class PresetModel(BaseModel):
     id: Optional[int]
     name = str
-    user_id: Optional[int]
+    uid: Optional[int]
 
     class Config:
         orm_mode = True
@@ -267,13 +278,13 @@ class PresetitemORM(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     preset_id = Column(Integer, ForeignKey("preset.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
-    user_id = Column(Integer, ForeignKey("user.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
 
 class PresetitemModel(BaseModel):
     id: Optional[int]
     preset_id: Optional[int]
     group_id: Optional[int]
-    user_id: Optional[int]
+    uid: Optional[int]
     
     class Config:
         orm_mode = True
@@ -285,3 +296,6 @@ class NewUserReturn(BaseModel):
     user: UserModel
     token: TokenModel
 
+class LoginData(BaseModel):
+    email: str
+    password: str

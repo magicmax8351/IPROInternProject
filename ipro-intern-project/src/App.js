@@ -12,6 +12,7 @@ import "antd/dist/antd.css";
 import ProfilePic from "./components/ProfilePic";
 import NewUser from "./components/NewUser";
 import { CookiesProvider } from "react-cookie";
+import Login from "./components/Login"
 
 class App extends Component {
   render() {
@@ -26,6 +27,7 @@ class App extends Component {
             <Route exact path="/settings" component={Settings} />
             <Route exact path="/group/id/:id" component={GroupFeed} />
             <Route exact path="/newuser" component={NewUser} />
+            <Route exact path="/login" component={Login} />
           </div>
         </Router>
       </CookiesProvider>

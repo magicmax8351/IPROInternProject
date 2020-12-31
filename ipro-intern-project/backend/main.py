@@ -7,9 +7,10 @@ import random
 from src.session import *
 import datetime
 import bcrypt
-
-from sqlalchemy import desc, asc
-
+import time
+import uuid
+from sqlalchemy import desc, asc, or_
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 app = FastAPI()
 
 origins = [
@@ -36,6 +37,10 @@ orm_parent_session = sessionmaker(bind=engine)
 orm_session = orm_parent_session()
 
 
+def gen_token():
+    tok = str(uuid.uuid4().hex)[8:] + str(round(time.time()))[:-2]
+    return tok
+
 # CRUD functions for each table
 @app.post("/users/add")
 def add_user(new_user: UserModel):
@@ -46,7 +51,7 @@ def add_user(new_user: UserModel):
 
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(bytes(new_user.password, 'utf-8'), salt)
-    token = bcrypt.gensalt()
+    token = gen_token()
 
     new_user_ORM = UserORM(
         fname = new_user.fname,
@@ -70,10 +75,30 @@ def add_user(new_user: UserModel):
 
     new_token_ORM = TokenORM(
         val = token,
-        user_id = new_user_ORM.id
+        uid = new_user_ORM.id
     )
 
     orm_session.add(new_token_ORM)
+    orm_session.commit()
+
+    # DEBUG: Add user to random number between 1 and 10 groups. 
+
+    groups = [g for g in orm_session.query(GroupORM).all()]
+
+    memberships = []
+    for g in groups:
+        if(random.randint(0, 10) == 1):
+             memberships.append(
+                    MembershipORM(
+                        uid=new_user_ORM.id,
+                        group_id=g.id,
+                        permission=random.randint(0, 3)
+                    )
+                )
+
+    for m in memberships:
+        orm_session.add(m)
+
 
     ret = NewUserReturn(
         user = UserModel.from_orm(new_user_ORM),
@@ -84,29 +109,56 @@ def add_user(new_user: UserModel):
     orm_session.close()
     return ret
 
-@app.get("/users/auth/token")
-def auth_user_token(token: str):
-    """Returns a user object with the given ID."""
+@app.post("/users/login")
+def add_user(user_creds: LoginData):
+    """Adds a new row to user table."""
     orm_session = orm_parent_session()
-    t = bytes(token, "utf-8")
-    for u in orm_session.query(TokenORM).filter(TokenORM.val == t):
-        user_id = u.user_id
-        orm_session.close()
-        return get_user(user_id)
-    orm_session.close()
-    return {"message": "Auth. failed. "}
+    # Generate a salt, then hash the password. 
+    # Don't verify password strength here - do that on frontend. 
 
-@app.get("/users/get")
-def get_user(user_id: int):
+    try:
+        user = orm_session.query(UserORM).filter(UserORM.email == user_creds.email).one()
+    except NoResultFound:
+        time.sleep(random.randrange(.5, 2))
+        orm_session.close()
+        raise HTTPException(400, "Email not found!")
+
+    hashed = bcrypt.hashpw(bytes(user_creds.password, 'utf-8'), user.salt)
+
+    if(hashed != user.hashed):
+        orm_session.close()
+        raise HTTPException(400, "Email not found!")
+
+    token = gen_token()
+
+    new_token_ORM = TokenORM(
+        val = token,
+        uid = user.id
+    )
+
+    orm_session.add(new_token_ORM)
+    orm_session.commit()
+
+    # DEBUG: Add user to random number between 1 and 10 groups. 
+
+    ret = NewUserReturn(
+        user = UserModel.from_orm(user),
+        token = TokenModel.from_orm(new_token_ORM)
+    )
+    orm_session.close()
+
+    return ret
+
+# NOT AN ENDPOINT
+def get_user(uid: int):
     """Returns a user object with the given ID."""
     orm_session = orm_parent_session()
-    for u in orm_session.query(UserORM).filter(UserORM.id == user_id):
+    for u in orm_session.query(UserORM).filter(UserORM.id == uid):
         user = UserModel.from_orm(u)
         orm_session.close()
         return user
     orm_session.close()
     return "no"
-
 
 @app.post("/users/update")
 def update_user(updated_user: UserModel):
@@ -116,36 +168,21 @@ def update_user(updated_user: UserModel):
 
 
 @app.post("/users/delete")
-def delete_user(user_id: int):
+def delete_user(uid: int):
     """Removes the user with the given ID."""
     raise HTTPException(400, "Not implemented")
-
-
-# Token
-@app.post("/tokens/add")
-def add_token(new_token: TokenModel):
-    """Adds a new row to token table."""
-    raise HTTPException(400, "Not implemented")
-
-
-@app.get("/tokens/get")
-def get_token(token_id: int):
-    """Returns a token object with the given ID."""
-    raise HTTPException(400, "Not implemented")
-
-
-@app.post("/tokens/update")
-def update_token(updated_token: TokenModel):
-    """Updates the token with the given ID with new information.
-       Checks to make sure that the token exists first."""
-    raise HTTPException(400, "Not implemented")
-
-
-@app.post("/tokens/delete")
-def delete_token(token_id: int):
-    """Removes the token with the given ID."""
-    raise HTTPException(400, "Not implemented")
-
+ 
+@app.get("/token/test")
+def get_uid_token(token: str):
+    """Tests if a token is valid. If invalid, sleep a little bit. FIXME THIS IS BAD"""
+    s = orm_parent_session()
+    try:
+        t = s.query(TokenORM).filter(TokenORM.val == token).one()
+        s.close()
+        return {"result": token, "uid": t.uid}
+    except NoResultFound:
+        s.close()
+        return {"result": 0, "uid": -1}
 
 # Post
 @app.post("/posts/add")
@@ -156,7 +193,7 @@ def add_post(new_post: PostModel):
         body=new_post.body,
         timestamp=datetime.datetime.now(),
         job_id=new_post.job_id,
-        user_id=new_post.user_id,
+        uid=new_post.uid,
         group_id=new_post.group_id)
 
     orm_session = orm_parent_session()
@@ -168,13 +205,33 @@ def add_post(new_post: PostModel):
 
 
 @app.get("/posts/get")
-def get_post():
+def get_post(token: str):
     """Returns all posts."""
+    uid = get_uid_token(token)["uid"]
+
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+
+    # Get user membership
+
     s = orm_parent_session()
-    p = [PostModel.from_orm(p) for p in s.query(data_types.PostORM).all()]
+    groups = ["%" + str(m.group_id) + "%" for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    p = []
+    
+    for post in s.query(PostORM).filter(or_(*[PostORM.group_id.like(g) for g in groups])).all():
+        p.append(PostModel(
+            subject=post.subject,
+            body=post.body,
+            timestamp=post.timestamp,
+            user=get_user(post.uid),
+            group=GroupModel.from_orm(s.query(GroupORM).filter(GroupORM.id == post.group_id).one()),
+            job=get_job_by_id(post.job_id),
+            id=post.id,
+            comments=get_comments_post_id(post.id)
+        ))
+    
     p.sort(key=lambda x: -x.id)
     s.close()
-
     return {'posts': p, 'count': len(p)}
 
 
@@ -203,37 +260,38 @@ def delete_post(post_id: int):
 @app.post("/comments/add")
 def add_comment(new_comment: CommentModel):
     """Adds a new row to comment table."""
+
+    uid = get_uid_token(new_comment.token)["uid"]
+    user = get_user(uid)
     new_comment_orm = CommentORM(
         text=new_comment.text,
         timestamp=datetime.datetime.now(),
         post_id = new_comment.post_id,
-        user_id = new_comment.user_id
+        uid=uid
     )
 
     orm_session = orm_parent_session()
     orm_session.add(new_comment_orm)
     orm_session.commit()
     ret = CommentModel.from_orm(new_comment_orm)
+    ret.user = user
     orm_session.close()
     return ret
 
 
-@app.get("/comments/get")
-def get_comment():
+def get_comments_post_id(post_id: int):
     """Returns all comments """
     orm_session = orm_parent_session()
 
-    all_comments = []
-    for p in orm_session.query(data_types.CommentORM).order_by(asc(CommentORM.id)).all():
-        all_comments.append(
-            CommentModel(id=p.id,
-                         text=p.text,
-                         timestamp=p.timestamp,
-                         post_id=p.post_id,
-                         user_id=p.user_id))
+    comments = []
+    for p in orm_session.query(CommentORM).filter(CommentORM.post_id == post_id).order_by(asc(CommentORM.id)).all():
+        c = CommentModel.from_orm(p)
+        c.user = get_user(c.uid)
+        comments.append(c)
+
     orm_session.close()
 
-    return {'comments': all_comments, 'count': len(all_comments)}
+    return comments
 
 
 @app.post("/comments/update")
@@ -254,7 +312,7 @@ def delete_comment(comment_id: int):
 def add_application(new_application: ApplicationModel):
     """Adds a new row to application table."""
 
-    # user_id and resume_id will come later
+    # uid and resume_id will come later
     new_application_orm = ApplicationORM(date=new_application.date,
                                          job_id=new_application.job_id,
                                          stage_id=new_application.stage_id)
@@ -268,7 +326,7 @@ def add_application(new_application: ApplicationModel):
 @app.get("/applications/get")
 def get_application():
     """Returns a application object with the given ID."""
-    # Normally, this function would take a user_id and only
+    # Normally, this function would take a uid and only
     # return the application records for that user
 
     orm_session = orm_parent_session()
@@ -320,10 +378,9 @@ def get_job_by_id(job_id: int):
     orm_session = orm_parent_session()
     for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
         job = JobModel.from_orm(u)
-        for c in orm_session.query(CompanyORM).filter(CompanyORM.id == job.company_id):
-            job.company = CompanyModel.from_orm(c)
-            orm_session.close()
-            return job
+        job.company = get_company_id(job.company_id)
+        orm_session.close()
+        return job
     orm_session.close()
     return
 
@@ -380,7 +437,7 @@ def get_company_id(company_id: int):
         s.close()
         return company
     s.close()
-    return
+    raise ValueError
 
 
 @app.post("/companies/update")

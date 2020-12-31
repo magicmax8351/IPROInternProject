@@ -47,7 +47,7 @@ def gen_fake_data():
     s.commit()
     print("Added sample users to DB")
 
-    def user_id():
+    def uid():
         return random.choice(s.query(data_types.UserORM).all()).id
 
     # Add some companies
@@ -126,10 +126,48 @@ The C++ teams work on applications where C++ is used for computational heavy-lif
                  icon="/var/www/images/pks_logo.png",
                  desc="I love Elon's Musk"))
 
+    # Randomly generate a heck ton of groups:
+
+    for i in range(20):
+        groups.append(
+            GroupORM(
+                name=lipsum.paragraph(
+                    nb_sentences=1,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:4],
+                icon="/fake/image.png",
+                desc=lipsum.paragraph(
+                    nb_sentences=1,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:8]
+            )
+        )
+        
     for g in groups:
         s.add(g)
     s.commit()
     print("Added sample groups to DB")
+
+    # Adding group membership
+
+    membership = []
+    for user in users:
+        for group in groups:
+            if random.randint(0, 2) == 1:
+                membership.append(
+                    MembershipORM(
+                        uid=user.id,
+                        group_id=group.id,
+                        permission=random.randint(0, 3)
+                    )
+                )
+
+    for m in membership:
+        s.add(m)
+
+    s.commit()
+    print("Added membership to DB")
+
 
     def g_id():
         return random.choice(s.query(data_types.GroupORM).all()).id
@@ -144,7 +182,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(100):
+    for i in range(1000):
         posts.append(
             PostORM(
                 subject=lipsum.paragraph(
@@ -159,7 +197,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
                 ),
                 timestamp=datetime.datetime.now(),
                 job_id=random.choice(jobs).id,
-                user_id=user_id(),
+                uid=uid(),
                 group_id=g_id()))
 
     for post in posts:
@@ -180,11 +218,11 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
 
             timestamp=datetime.datetime.now(),
             post_id=post_id(),
-            user_id=user_id()))
+            uid=uid()))
     for c in comments:
         s.add(c)
     s.commit()
-    print("Added to DB!")
+    print("Added comments to DB!")
 
 
 if __name__ == "__main__":

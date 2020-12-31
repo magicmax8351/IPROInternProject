@@ -153,35 +153,17 @@ const PostExpandButton = styled.button`
 class Comment extends React.Component {
   constructor(props) {
     super(props);
-    this.id = props.id;
     this.text = props.text;
     this.timestamp = props.timestamp;
-    this.user_id = props.user_id;
-
-    this.state = {
-      user: null,
-    };
-  }
-
-  componentDidMount() {
-    if (!this.user_id) {
-      return null;
-    }
-    fetch("http://localhost:8000/users/get?user_id=" + this.user_id)
-      .then((res) => res.json())
-      .then((json) => this.setState({ user: json }));
+    this.fname = props.fname;
+    this.pic = props.pic;
   }
 
   render() {
-    if (!this.state.user) {
-      return null;
-    }
     return (
       <div>
-        <CommentAvatar src={this.state.user.pic} />
-        <CommentAuthor>
-          {this.state.user.fname} {this.state.user.lname}
-        </CommentAuthor>
+        <CommentAvatar src={this.pic} />
+        <CommentAuthor>By: {this.fname}</CommentAuthor>
         <CommentAuthor>{this.timestamp.substring(0, 10)}</CommentAuthor>
         <CommentBody>{this.text}</CommentBody>
         <CommentHRLine />
@@ -194,6 +176,7 @@ class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      post: props.post,
       post_expand: 0,
       comment_expand: 0,
       description_expand: 0,
@@ -204,10 +187,10 @@ class Post extends React.Component {
       group: null,
       user: null,
       company: null,
-      comments: props.comments
+      comments: props.comments,
     };
 
-    this.post = props.post;
+    this.token = props.token;
 
     this.renderDescription = this.renderDescription.bind(this);
     this.renderInformation = this.renderInformation.bind(this);
@@ -224,23 +207,6 @@ class Post extends React.Component {
 
     this.submitComment = this.submitComment.bind(this);
     this.writeComment = this.writeComment.bind(this);
-  }
-
-  componentDidMount() {
-    if (!this.post) {
-      return null;
-    }
-    fetch("http://localhost:8000/jobs/get_id?job_id=" + this.post.job_id)
-      .then((res) => res.json())
-      .then((json) => this.setState({ job: json }));
-
-    fetch("http://localhost:8000/groups/get_id?group_id=" + this.post.group_id)
-      .then((res) => res.json())
-      .then((json) => this.setState({ group: json }));
-
-    fetch("http://localhost:8000/users/get?user_id=" + this.post.user_id)
-      .then((res) => res.json())
-      .then((json) => this.setState({ user: json }));
   }
 
   description_button_event() {
@@ -278,7 +244,7 @@ class Post extends React.Component {
           <ButtonStyled onClick={this.description_button_event}>
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
-          <BodyText>{this.state.job.description}</BodyText>
+          <BodyText>{this.state.post.job.description}</BodyText>
         </section>
       );
     } else {
@@ -316,28 +282,31 @@ class Post extends React.Component {
   }
   renderComments(num_comments) {
     let ret = [];
-    if (this.state.comments.length == 0) {
+    if (this.state.post.comments.length == 0) {
       return (
         <div>
           <p>Start the conversation!</p>
         </div>
       );
     }
-    for (let i = 0; i < Math.min(num_comments, this.state.comments.length); i++) {
+    for (let i = 0; i < Math.min(num_comments, this.state.post.comments.length); i++) {
       ret.push(
         <Comment
-          text={this.state.comments[i].text}
-          timestamp={this.state.comments[i].timestamp}
-          user_id={this.state.comments[i].user_id}
-          key={this.state.comments[i].id}
+          text={this.state.post.comments[i].text}
+          timestamp={this.state.post.comments[i].timestamp}
+          fname={this.state.post.comments[i].user.fname}
+          pic={this.state.post.comments[i].user.pic}
+          key={this.state.post.comments[i].id}
         />
       );
     }
+    console.log(ret);
+    console.log(this.state.post.comments);
     return ret;
   }
 
   closedCommentButton() {
-    if (this.state.comments.length > 4) {
+    if (this.state.post.comments.length > 4) {
       return (
         <ButtonStyled onClick={this.comment_button_event}>
           <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
@@ -348,7 +317,7 @@ class Post extends React.Component {
     }
   }
   renderCommentSection() {
-    if (this.state.comment_expand || this.state.comments.length <= 3) {
+    if (this.state.comment_expand || this.state.post.comments.length <= 3) {
       return (
         <section>
           <SectionTitleActive>Comments</SectionTitleActive>
@@ -366,7 +335,7 @@ class Post extends React.Component {
           </ButtonStyled>
           {this.renderComments(1)}
           <MoreComments>
-            {this.state.comments.length - 1} more comments...
+            {this.state.post.comments.length - 1} more comments...
           </MoreComments>
         </section>
       );
@@ -385,12 +354,12 @@ class Post extends React.Component {
         },
         body: JSON.stringify({
           text: this.state.new_comment,
-          post_id: this.post.id,
-          user_id: 15
+          post_id: this.state.post.id,
+          token: this.token
         }),
       })
         .then((res) => res.json())
-        .then((json) => this.setState({ comments: [...this.state.comments, json] }))
+        .then((json) => this.setState({ comments: [...this.state.post.comments, json] }))
         .catch((err) => {
           console.error(err);
         });
@@ -429,37 +398,23 @@ class Post extends React.Component {
     let body = "";
 
     if (this.state.post_expand) {
-      body = this.post.body;
+      body = this.state.post.body;
     } else {
-      if (this.post.body.length > 140) {
-        body = this.post.body.substring(0, 140) + "...";
+      if (this.state.post.body.length > 140) {
+        body = this.state.post.body.substring(0, 140) + "...";
       } else {
-        body = this.post.body;
+        body = this.state.post.body;
       }
     }
     return (
       <div>
-        <h4>{this.post.post_title}</h4>
+        <h4>{this.state.post.post_title}</h4>
         <BodyText>{body}</BodyText>
       </div>
     );
   }
 
   render() {
-    if (!this.post) {
-      return null;
-    }
-    if (!this.state.job) {
-      return null;
-    }
-    if (!this.state.group) {
-      return null;
-    }
-    if (!this.state.user) {
-      return null;
-    }
-
-
     let secondary_content;
     if (this.state.post_expand) {
       secondary_content = (
@@ -482,11 +437,11 @@ class Post extends React.Component {
 
     return (
       <Container>
-        <JobTitle>{this.state.job.name}</JobTitle>
-        <JobLocation>{this.state.job.company.name} - {this.state.job.location}</JobLocation>
+        <JobTitle>{this.state.post.job.name}</JobTitle>
+        <JobLocation>{this.state.post.job.company.name} - {this.state.post.job.location}</JobLocation>
         <GroupPost>
-          Posted by {this.state.user.fname} via {this.state.group.name} on{" "}   
-          {this.post.timestamp.substring(0, 10)}
+          Posted by PLACEHOLDER via {this.state.post.group.name} on{" "}   
+          {this.state.post.timestamp.substring(0, 10)}
         </GroupPost>
         <HRLine />
         {this.renderPost()}
