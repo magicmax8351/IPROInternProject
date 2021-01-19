@@ -188,20 +188,29 @@ def get_uid_token(token: str):
 @app.post("/posts/add")
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
+    orm_session = orm_parent_session()
+    uid = get_uid_token(new_post.token)["uid"]
+
     new_post_orm = PostORM(
         subject=new_post.subject,
         body=new_post.body,
         timestamp=datetime.datetime.now(),
         job_id=new_post.job_id,
-        uid=new_post.uid,
-        group_id=new_post.group_id)
+        uid=uid,
+        group_id=new_post.group_id
+    )
 
-    orm_session = orm_parent_session()
     orm_session.add(new_post_orm)
     orm_session.commit()
+    ret = PostModel.from_orm(new_post_orm)
     orm_session.close()
 
-    return PostModel.from_orm(new_post_orm)
+    ret.group = get_group_by_id(ret.group_id)
+    ret.comments = get_comments_post_id(ret.id)
+    ret.job = get_job_by_id(ret.job_id)
+    ret.user = get_user(ret.uid)
+
+    return ret
 
 
 @app.get("/posts/get")
@@ -217,18 +226,19 @@ def get_post(token: str):
     s = orm_parent_session()
     groups = ["%" + str(m.group_id) + "%" for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
     p = []
-    
-    for post in s.query(PostORM).filter(or_(*[PostORM.group_id.like(g) for g in groups])).all():
-        p.append(PostModel(
-            subject=post.subject,
-            body=post.body,
-            timestamp=post.timestamp,
-            user=get_user(post.uid),
-            group=GroupModel.from_orm(s.query(GroupORM).filter(GroupORM.id == post.group_id).one()),
-            job=get_job_by_id(post.job_id),
-            id=post.id,
-            comments=get_comments_post_id(post.id)
-        ))
+    membership = [m for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    for group in membership:
+        for post in s.query(PostORM).filter(PostORM.group_id == group.group_id).all():
+            p.append(PostModel(
+                subject=post.subject,
+                body=post.body,
+                timestamp=post.timestamp,
+                user=get_user(post.uid),
+                group=get_group_by_id(group.group_id),
+                job=get_job_by_id(post.job_id),
+                id=post.id,
+                comments=get_comments_post_id(post.id)
+            ))
     
     p.sort(key=lambda x: -x.id)
     s.close()
@@ -359,6 +369,10 @@ def delete_application(application_id: int):
 @app.post("/jobs/add")
 def add_job(new_job: JobModel):
     """Adds a new row to job table."""
+    uid = get_uid_token(new_job.token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
     s = orm_parent_session()
     j = JobORM(
         name=new_job.name,
@@ -372,7 +386,7 @@ def add_job(new_job: JobModel):
     return
 
 
-@app.get("/jobs/get_id")
+# Not an endpoint!
 def get_job_by_id(job_id: int):
     """Get job by job ID. """
     orm_session = orm_parent_session()
@@ -386,8 +400,12 @@ def get_job_by_id(job_id: int):
 
 
 @app.get("/jobs/get")
-def get_job():
+def get_job(token: str):
     """Returns all jobs"""
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
     s = orm_parent_session()
     j = [JobModel.from_orm(p) for p in s.query(data_types.JobORM).all()]
     s.close()
@@ -411,6 +429,10 @@ def delete_job(job_id: int):
 @app.post("/companies/add")
 def add_company(new_company: CompanyModel):
     """Adds a new row to company table."""
+    uid = get_uid_token(CompanyModel.token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
     s = orm_parent_session()
     c = CompanyORM(
         name = new_company.name
@@ -421,8 +443,11 @@ def add_company(new_company: CompanyModel):
 
 
 @app.get("/companies/get")
-def get_company():
+def get_company(token: str):
     """Returns all companies"""
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
     s = orm_parent_session()
     c = [CompanyModel.from_orm(p) for p in s.query(data_types.CompanyORM).all()]
     s.close()
@@ -551,12 +576,16 @@ def get_group_by_id(group_id: int):
 
 
 @app.get("/groups/get")
-def get_group():
-    """Returns all groups"""
+def get_user_groups(token: str):
+    """Returns all groups a user has membership in."""
     s = orm_parent_session()
-    g = [GroupModel.from_orm(p) for p in s.query(GroupORM).all()]
+    groups = []
+    uid = get_uid_token(token)["uid"]
+    membership_ids = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    for group in membership_ids:
+        groups.append(GroupModel.from_orm(s.query(GroupORM).filter(GroupORM.id == group).one()))
     s.close()
-    return g
+    return groups
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):

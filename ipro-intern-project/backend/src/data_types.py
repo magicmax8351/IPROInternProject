@@ -167,6 +167,7 @@ class CompanyORM(Base):
 class CompanyModel(BaseModel):
     id: Optional[int]
     name: str
+    token: Optional[str]
 
     class Config:
         orm_mode = True
@@ -187,6 +188,7 @@ class JobModel(BaseModel):
     description: str
     company_id: Optional[int]
     company: Optional[CompanyModel]
+    token: Optional[str]
 
     class Config:
         orm_mode = True
@@ -299,3 +301,10 @@ class NewUserReturn(BaseModel):
 class LoginData(BaseModel):
     email: str
     password: str
+
+# Misc. data types
+
+# Provide an integer ID and a user token. 
+class AuthIntModel(BaseModel):
+    val: int
+    token: str

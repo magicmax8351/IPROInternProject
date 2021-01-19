@@ -16,7 +16,7 @@ class NewPost extends React.Component {
   constructor(props) {
     super(props);
     this.func = props.func;
-
+    this.token = props.token;
     this.state = {
       company_id: 1,
       job_id: 0,
@@ -26,7 +26,6 @@ class NewPost extends React.Component {
       groups: null,
       body: null,
       subject: null,
-
       new_company_name: null
     };
 
@@ -57,15 +56,15 @@ class NewPost extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://localhost:8000/jobs/get")
+    fetch("http://localhost:8000/jobs/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ jobs: json }));
 
-    fetch("http://localhost:8000/companies/get")
+    fetch("http://localhost:8000/companies/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
 
-    fetch("http://localhost:8000/groups/get")
+    fetch("http://localhost:8000/groups/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ groups: json }));
   }
@@ -148,7 +147,8 @@ class NewPost extends React.Component {
           name: this.state.new_job_name,
           description: this.state.new_job_description,
           location: this.state.new_job_location,
-          company_id: this.state.company_id
+          company_id: this.state.company_id,
+          token: this.token
         }),
       })
         .then((response) => {
@@ -173,7 +173,7 @@ class NewPost extends React.Component {
         subject: this.state.subject,
         body: this.state.body,
         job_id: this.state.job_id,
-        user_id: 15,
+        token: this.token,
         group_id: this.state.group_id
       };
       this.func(post);
@@ -215,7 +215,7 @@ class NewPost extends React.Component {
     companies.push([-2, "Add new"])
 
     return (
-      <Form.Group controlId="companyID">
+      <Form.Group>
         <Form.Label>Company name:</Form.Label>
         {this.renderDropdown(
           "Companies",
@@ -246,7 +246,7 @@ class NewPost extends React.Component {
     }
     jobs.push([-2, "Add New"]);
     return (
-      <Form.Group controlId="jobID">
+      <Form.Group>
         <Form.Label>Job title:</Form.Label>
         {this.renderDropdown("Jobs", jobs, "job_id", this.enter_job)}
       </Form.Group>
@@ -327,10 +327,7 @@ class NewPost extends React.Component {
 
   renderWriteBody() {
     let value = "";
-
-
     let id = "body";
-
     //   Markdown editor: https://uiwjs.github.io/react-md-editor/
 
     if (this.state.job_id !== -1 && this.state.company_id !== -1) {
@@ -362,7 +359,7 @@ class NewPost extends React.Component {
       }
     }
     return (
-      <Form.Group controlId="jobID">
+      <Form.Group>
         <Form.Label>Group to Share</Form.Label>
         {this.renderDropdown("Jobs", groups, "job_id", this.enter_group)}
       </Form.Group>

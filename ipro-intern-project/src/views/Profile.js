@@ -3,6 +3,7 @@ import styled from "styled-components";
 import PageHeader from "../components/PageHeader";
 import PageContent from "../components/PageContent";
 import { Helmet } from "react-helmet";
+import Cookies from "js-cookie";
 
 const Container = styled.div`
   font-family: "Open Sans", sans-serif;
@@ -53,12 +54,13 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      groups: null
+      groups: null,
+      token: Cookies.get("token")
     }
   }
 
   componentDidMount() {
-    fetch("http://localhost:8000/groups/get")
+    fetch("http://localhost:8000/groups/get?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => {
         this.setState({ groups: json });

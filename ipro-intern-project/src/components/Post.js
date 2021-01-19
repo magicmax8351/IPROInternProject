@@ -300,8 +300,6 @@ class Post extends React.Component {
         />
       );
     }
-    console.log(ret);
-    console.log(this.state.post.comments);
     return ret;
   }
 
@@ -359,7 +357,11 @@ class Post extends React.Component {
         }),
       })
         .then((res) => res.json())
-        .then((json) => this.setState({ comments: [...this.state.post.comments, json] }))
+        .then((json) => {
+          let post_update = this.state.post; 
+          post_update.comments.push(json);
+          this.setState({ post: post_update });
+        })
         .catch((err) => {
           console.error(err);
         });

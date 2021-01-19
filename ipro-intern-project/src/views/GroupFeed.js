@@ -54,10 +54,9 @@ class GroupFeed extends React.Component {
     if (props.location == "feed") {
       this.group_id = -1;
     } else {
-      let start = props.location.pathname.search("id");
-      this.group_id = parseInt(
-        props.location.pathname.substring(start + 3, start + 100)
-      );
+      const regex = /\/id\/[0-9]+/;
+      let match = props.location.pathname.match(regex)[0];
+      this.group_id = parseInt(match.substring(4));
     }
 
     this.state = {
@@ -97,7 +96,17 @@ class GroupFeed extends React.Component {
 
     fetch("http://localhost:8000/posts/get?token=" + this.state.token)
       .then((res) => res.json())
-      .then((json) => this.setState({ posts: json.posts }));
+      .then((json) => {
+        let posts_update = json.posts.map(x => {
+          const obj = {
+            ...x,
+            key: x.id
+          };
+          delete obj.id;
+          return obj;
+        });
+        this.setState({ posts: json.posts })
+      });
 
     if (this.group_id != -1) {
       fetch("http://localhost:8000/groups/get_id?group_id=" + this.group_id)
@@ -111,7 +120,7 @@ class GroupFeed extends React.Component {
     let group_posts = null;
 
     if (this.group_id != -1) {
-      group_posts = in_posts.filter((post) => post.group_id == this.group_id);
+      group_posts = in_posts.filter((post) => post.group.id == this.group_id);
     } else {
       group_posts = in_posts;
     }
@@ -130,7 +139,7 @@ class GroupFeed extends React.Component {
 
   renderNewPost() {
     if (this.state.newPost) {
-      return <NewPost func={this.submitPost} />;
+      return <NewPost func={this.submitPost} token={this.state.token} />;
     } else {
       return (
         <AddPostButton onClick={this.newPostButton}>
@@ -149,7 +158,17 @@ class GroupFeed extends React.Component {
       body: JSON.stringify(post),
     })
       .then((res) => res.json())
-      .then((json) => this.setState({ posts: [json, ...this.state.posts] }))
+      .then((json) => {
+        let posts_update = [json, ...this.state.posts].map(x => {
+          const obj = {
+            ...x,
+            key: x.id
+          };
+          delete obj.id;
+          return obj;
+        });
+        this.setState({ posts: posts_update });
+      })
       .catch((err) => {
         console.error(err);
       });
@@ -162,7 +181,7 @@ class GroupFeed extends React.Component {
       document.location.replace("/login");
     }
     this.renderedPosts = this.postList(this.state.posts);
-    console.log(this.renderedPosts);
+    console.log(this.state.posts);
     return (
       <div>
         <Helmet>
