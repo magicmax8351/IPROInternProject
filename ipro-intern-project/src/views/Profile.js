@@ -60,7 +60,7 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://localhost:8000/groups/get?token=" + this.state.token)
+    fetch("http://wingman.justinjschmitz.com:8000/groups/get?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => {
         this.setState({ groups: json });
@@ -88,7 +88,7 @@ class Profile extends React.Component {
                       <img src={g.icon} />
                     </td>
                     <td key={"group_" + g.id}>
-                      <a href={"http://localhost:3000/group/id/" + g.id}>
+                      <a href={"http://wingman.justinjschmitz.com:3000/group/id/" + g.id}>
                         {g.name}
                       </a>
                     </td>
@@ -112,7 +112,7 @@ class Profile extends React.Component {
             {this.state.groups.map((g) => {
                 return (
                   <Container>
-                    <GroupName><TitleHyperlink href={"http://localhost:3000/group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
+                    <GroupName><TitleHyperlink href={"http://wingman.justinjschmitz.com:3000/group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
                     <GroupDescription>{g.desc}</GroupDescription>
                     <HRLine />
                     <GroupButton type="button">View Group</GroupButton>

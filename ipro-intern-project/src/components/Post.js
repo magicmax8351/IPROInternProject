@@ -345,7 +345,7 @@ class Post extends React.Component {
     if (
       this.state.new_comment.length > 2
     ) {
-      fetch("http://localhost:8000/comments/add", {
+      fetch("http://wingman.justinjschmitz.com:8000/comments/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

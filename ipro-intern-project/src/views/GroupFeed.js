@@ -90,11 +90,11 @@ class GroupFeed extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://localhost:8000/token/test?token=" + this.state.token)
+    fetch("http://wingman.justinjschmitz.com:8000/token/test?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => this.setState({ token: json.result }));
 
-    fetch("http://localhost:8000/posts/get?token=" + this.state.token)
+    fetch("http://wingman.justinjschmitz.com:8000/posts/get?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => {
         let posts_update = json.posts.map(x => {
@@ -109,7 +109,7 @@ class GroupFeed extends React.Component {
       });
 
     if (this.group_id != -1) {
-      fetch("http://localhost:8000/groups/get_id?group_id=" + this.group_id)
+      fetch("http://wingman.justinjschmitz.com:8000/groups/get_id?group_id=" + this.group_id)
         .then((res) => res.json())
         .then((json) => this.setState({ group: json }));
     }
@@ -150,7 +150,7 @@ class GroupFeed extends React.Component {
   }
 
   submitPost(post) {
-    fetch("http://localhost:8000/posts/add", {
+    fetch("http://wingman.justinjschmitz.com:8000/posts/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
