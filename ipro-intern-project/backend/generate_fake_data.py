@@ -195,7 +195,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(1000):
+    for i in range(100):
         posts.append(
             PostORM(
                 subject=lipsum.paragraph(
@@ -222,7 +222,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
         return random.choice(s.query(PostORM).all()).id
 
     comments = []
-    for i in range(1000):
+    for i in range(100):
         comments.append(
             CommentORM(text=lipsum.paragraph(
                 nb_sentences=2,
