@@ -4,13 +4,16 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from src.data_types import *
 import random
-from src.session import *
 import datetime
 import bcrypt
 import time
 import uuid
 from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
 app = FastAPI()
 
 origins = [
@@ -87,7 +90,7 @@ def add_user(new_user: UserModel):
 
     memberships = []
     for g in groups:
-        if(random.randint(0, 10) == 1):
+        if(new_user.fname == "admin" or random.randint(0, 10) == 1):
              memberships.append(
                     MembershipORM(
                         uid=new_user_ORM.id,
@@ -110,7 +113,7 @@ def add_user(new_user: UserModel):
     return ret
 
 @app.post("/users/login")
-def add_user(user_creds: LoginData):
+def login_user(user_creds: LoginData):
     """Adds a new row to user table."""
     orm_session = orm_parent_session()
     # Generate a salt, then hash the password. 
@@ -259,7 +262,7 @@ def delete_post(post_id: int):
     try:
         orm_session.delete(
             orm_session.query(
-                data_types.PostORM).filter_by(id=post_id).one())
+                PostORM).filter_by(id=post_id).one())
     except:
         print(f"error deleting {post_id}")
     orm_session.commit()
@@ -341,7 +344,7 @@ def get_application():
 
     orm_session = orm_parent_session()
     apps = []
-    for a in orm_session.query(data_types.ApplicationORM).all():
+    for a in orm_session.query(ApplicationORM).all():
         apps.append(
             ApplicationModel(id=a.id,
                              date=a.date,
@@ -407,7 +410,7 @@ def get_job(token: str):
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    j = [JobModel.from_orm(p) for p in s.query(data_types.JobORM).all()]
+    j = [JobModel.from_orm(p) for p in s.query(JobORM).all()]
     s.close()
     return j
 
@@ -449,7 +452,7 @@ def get_company(token: str):
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
     s = orm_parent_session()
-    c = [CompanyModel.from_orm(p) for p in s.query(data_types.CompanyORM).all()]
+    c = [CompanyModel.from_orm(p) for p in s.query(CompanyORM).all()]
     s.close()
     return c
 

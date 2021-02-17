@@ -7,7 +7,6 @@ import faker
 import random
 import os
 
-
 def gen_fake_data():
     # initialize
     engine = create_engine("sqlite:///test_db.db")
@@ -23,55 +22,11 @@ def gen_fake_data():
     nameFaker = faker.providers.person.Provider(fake)
     email = faker.providers.internet.Provider(fake)
     lipsum = faker.providers.lorem.Provider(fake)
-    
-    icons = [
-        "/profile_pictures/p1.svg",
-        "/profile_pictures/p2.svg",
-        "/profile_pictures/p4.svg"
-    ]
-    users = []
-    for x in range(100):
-        users.append(
-            UserORM(fname=fake.first_name(),
-                    lname=fake.last_name(),
-                    salt="hunter2",
-                    hashed="hunter3",
-                    email=email.ascii_free_email(),
-                    pic=random.choice(icons),
-                    graddate=datetime.date(year=2020, month=9, day=9),
-                    city="Chicago",
-                    state="IL"))
-
-    s.add_all(users)
-
-    s.commit()
-    print("Added sample users to DB")
-
-    def uid():
-        return random.choice(s.query(data_types.UserORM).all()).id
-
-    # Add some companies
-    companies = []
-    companies.append(CompanyORM(name="Google"))
-    companies.append(CompanyORM(name="JPMorgan Chase"))
-    companies.append(CompanyORM(name="Uber"))
-    companies.append(CompanyORM(name="Citadel"))
-    companies.append(CompanyORM(name="Boeing"))
-
-    for c in companies:
-        s.add(c)
-    s.commit()
-    print("Added sample companies to DB")
-
-    def comp_id():
-        return random.choice(s.query(data_types.CompanyORM).all()).id
-
-    # Add some jobs
 
     fake_job_titles = [
-        "Machine Learning Sales Specialist", "Research Intern",
-        "Junior Software Developer", "Android Developer", "Product Manager",
-        "UI Designer", "Quant Researcher", "Trader", "Software Engineer", "DBA"
+    "Machine Learning Sales Specialist", "Research Intern",
+    "Junior Software Developer", "Android Developer", "Product Manager",
+    "UI Designer", "Quant Researcher", "Trader", "Software Engineer", "DBA"
     ]
 
     fake_locations = [
@@ -82,35 +37,19 @@ def gen_fake_data():
     word_list = """
     About Akuna:
 
-Akuna Capital is a young and booming trading firm with a strong focus on cutting-edge technology, data driven decisions and automation. Our core competency is providing liquidity as an options market maker – meaning we provide competitive quotes that we are willing to both buy and sell. To do this successfully we design and implement our own low latency technologies, trading strategies and mathematical models.
+    Akuna Capital is a young and booming trading firm with a strong focus on cutting-edge technology, data driven decisions and automation. Our core competency is providing liquidity as an options market maker – meaning we provide competitive quotes that we are willing to both buy and sell. To do this successfully we design and implement our own low latency technologies, trading strategies and mathematical models.
 
-Our Founding Partners, including Akuna’s CEO Andrew Killion, first conceptualized Akuna in their hometown of Sydney. They opened the firm’s first office in 2011 in the heart of the derivatives industry and the options capital of the world – Chicago. Today, Akuna is proud to operate from additional offices in Sydney, Shanghai, and Boston.
+    Our Founding Partners, including Akuna’s CEO Andrew Killion, first conceptualized Akuna in their hometown of Sydney. They opened the firm’s first office in 2011 in the heart of the derivatives industry and the options capital of the world – Chicago. Today, Akuna is proud to operate from additional offices in Sydney, Shanghai, and Boston.
 
-What you’ll do as a Development Intern on the C++ Team at Akuna:
+    What you’ll do as a Development Intern on the C++ Team at Akuna:
 
-We are seeking Development Interns to join our innovative and growing technology team for our 10-week Akunacademy summer internship program. In this role you will work alongside our trading and software teams to design and implement elegant solutions to complex and interesting problems. 
+    We are seeking Development Interns to join our innovative and growing technology team for our 10-week Akunacademy summer internship program. In this role you will work alongside our trading and software teams to design and implement elegant solutions to complex and interesting problems. 
 
-Development Interns at Akuna have the opportunity to use cutting-edge technology while working on high performance/low latency systems.  We offer a team-based approach to trading and software engineering, believing that productive integration of the two groups is vital for success in this industry.  Akuna loves Development interns who are self-starters and have the ability to problem solve and think outside of the box. We value innovation and hard work, and want you to make an impact in the firm. Whether you are interested in trading infrastructure, algorithms, models, exchange gateways, performance engineering, hardware, data capture and analysis, or front-end user interfaces, there’s work to be done. If you are excited to jump in and make a difference, Akuna could be the place for you. 
+    Development Interns at Akuna have the opportunity to use cutting-edge technology while working on high performance/low latency systems.  We offer a team-based approach to trading and software engineering, believing that productive integration of the two groups is vital for success in this industry.  Akuna loves Development interns who are self-starters and have the ability to problem solve and think outside of the box. We value innovation and hard work, and want you to make an impact in the firm. Whether you are interested in trading infrastructure, algorithms, models, exchange gateways, performance engineering, hardware, data capture and analysis, or front-end user interfaces, there’s work to be done. If you are excited to jump in and make a difference, Akuna could be the place for you. 
 
-The C++ teams work on applications where C++ is used for computational heavy-lifting and for applications that have timing-critical, low-latency processes such as trading strategies. C++ provides the flexibility and low-level control that our developers need to get maximum performance out of multi-core, super-scalar processors. No previous experience in finance or trading is required. Training and continuous education is provided for all engineers to ensure they have the skills and knowledge needed to be successful.        
-"""
-
-    jobs = []
-    for i in range(10):
-        jobs.append(
-            JobORM(
-                name=random.choice(fake_job_titles),
-                location=random.choice(fake_locations),
-                company_id=comp_id(),
-                description=lipsum.paragraph(
-                    nb_sentences=15,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split())))
-
-    s.add_all(jobs)
-    s.commit()
-    print("Added sample jobs to DB")
-
+    The C++ teams work on applications where C++ is used for computational heavy-lifting and for applications that have timing-critical, low-latency processes such as trading strategies. C++ provides the flexibility and low-level control that our developers need to get maximum performance out of multi-core, super-scalar processors. No previous experience in finance or trading is required. Training and continuous education is provided for all engineers to ensure they have the skills and knowledge needed to be successful.        
+    """
+    
     # Add some groups
     groups = []
     groups.append(
@@ -146,7 +85,81 @@ The C++ teams work on applications where C++ is used for computational heavy-lif
     for g in groups:
         s.add(g)
     s.commit()
-    print("Added sample groups to DB")
+
+    icons = [
+        "/profile_pictures/p1.svg",
+        "/profile_pictures/p2.svg",
+        "/profile_pictures/p4.svg"
+    ]
+    users = []
+    for x in range(100):
+        users.append(
+            UserModel(fname=fake.first_name(),
+                    lname=fake.last_name(),
+                    password=fake.last_name(),
+                    email=email.ascii_free_email(),
+                    pic=random.choice(icons),
+                    graddate=datetime.date(year=2020, month=9, day=9),
+                    city="Chicago",
+                    state="IL"))
+
+    users.append(
+        UserModel(
+            fname="admin",
+            lname="admin",
+            password="admin",
+            email="admin",
+            pic=random.choice(icons),
+            graddate=datetime.date(year=2020, month=9, day=9),
+            city="Chicago",
+            state="IL"
+        )
+    )
+
+    [add_user(user) for user in users]
+
+    print("Added sample users to DB")
+
+    def uid():
+        return random.choice(s.query(UserORM).all()).id
+
+    # Add some companies
+    companies = []
+    companies.append(CompanyORM(name="Google"))
+    companies.append(CompanyORM(name="JPMorgan Chase"))
+    companies.append(CompanyORM(name="Uber"))
+    companies.append(CompanyORM(name="Citadel"))
+    companies.append(CompanyORM(name="Boeing"))
+
+    for c in companies:
+        s.add(c)
+    s.commit()
+    print("Added sample companies to DB")
+
+    def comp_id():
+        return random.choice(s.query(CompanyORM).all()).id
+
+    # Add some jobs
+
+
+
+    jobs = []
+    for i in range(10):
+        jobs.append(
+            JobORM(
+                name=random.choice(fake_job_titles),
+                location=random.choice(fake_locations),
+                company_id=comp_id(),
+                description=lipsum.paragraph(
+                    nb_sentences=15,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())))
+
+    s.add_all(jobs)
+    s.commit()
+    print("Added sample jobs to DB")
+
+ 
 
     # Adding group membership
 
@@ -170,7 +183,7 @@ The C++ teams work on applications where C++ is used for computational heavy-lif
 
 
     def g_id():
-        return random.choice(s.query(data_types.GroupORM).all()).id
+        return random.choice(s.query(GroupORM).all()).id
 
     # Add some posts
 
@@ -206,7 +219,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     s.commit()
 
     def post_id():
-        return random.choice(s.query(data_types.PostORM).all()).id
+        return random.choice(s.query(PostORM).all()).id
 
     comments = []
     for i in range(1000):
@@ -215,7 +228,6 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
                 nb_sentences=2,
                 variable_nb_sentences=False,
                 ext_word_list=linkedin_shill_txt.split()),
-
             timestamp=datetime.datetime.now(),
             post_id=post_id(),
             uid=uid()))
