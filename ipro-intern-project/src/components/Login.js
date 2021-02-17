@@ -38,7 +38,7 @@ class Login extends React.Component {
   
   submitLogin(event) {
     event.preventDefault()
-    fetch("http://localhost:8000/users/login", {
+    fetch("http://wingman.justinjschmitz.com:8000/users/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
