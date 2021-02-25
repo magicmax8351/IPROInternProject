@@ -9,6 +9,8 @@ import os
 
 def gen_fake_data():
     # initialize
+    os.remove("test_db.db")
+
     engine = create_engine("sqlite:///test_db.db")
     orm_parent_session = sessionmaker(bind=engine)
     metadata.create_all(engine)
@@ -92,17 +94,6 @@ def gen_fake_data():
         "/profile_pictures/p4.svg"
     ]
     users = []
-    for x in range(100):
-        users.append(
-            UserModel(fname=fake.first_name(),
-                    lname=fake.last_name(),
-                    password=fake.last_name(),
-                    email=email.ascii_free_email(),
-                    pic=random.choice(icons),
-                    graddate=datetime.date(year=2020, month=9, day=9),
-                    city="Chicago",
-                    state="IL"))
-
     users.append(
         UserModel(
             fname="admin",
@@ -115,8 +106,20 @@ def gen_fake_data():
             state="IL"
         )
     )
-
+    for x in range(3):
+        users.append(
+            UserModel(fname=fake.first_name(),
+                    lname=fake.last_name(),
+                    password=fake.last_name(),
+                    email=email.ascii_free_email(),
+                    pic=random.choice(icons),
+                    graddate=datetime.date(year=2020, month=9, day=9),
+                    city="Chicago",
+                    state="IL"))
+    
     [add_user(user) for user in users]
+
+    adminUser = get_user(1)
 
     print("Added sample users to DB")
 
@@ -159,8 +162,6 @@ def gen_fake_data():
     s.commit()
     print("Added sample jobs to DB")
 
- 
-
     # Adding group membership
 
     membership = []
@@ -195,7 +196,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(100):
+    for i in range(10):
         posts.append(
             PostORM(
                 subject=lipsum.paragraph(
@@ -222,7 +223,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
         return random.choice(s.query(PostORM).all()).id
 
     comments = []
-    for i in range(100):
+    for i in range(10):
         comments.append(
             CommentORM(text=lipsum.paragraph(
                 nb_sentences=2,
@@ -236,6 +237,55 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     s.commit()
     print("Added comments to DB!")
 
+    # Adding fake stages to the database
+
+    stages = [] 
+    for stage in ["Applied", "Round 1", "Round 2", "Round 3", "Offer"]:
+        stages.append(StageORM(name=stage))
+
+    s.add_all(stages)
+    s.commit()
+    
+    # Adding a fake resume to the admin user
+
+
+    admin_resume = ResumeORM(
+        name="admin_resume",
+        filename="/var/www/resume.pdf",
+        date=datetime.datetime.now(),
+        uid=adminUser.id
+    )
+
+    s.add(admin_resume)
+    s.commit()
+    
+    application_base_list = []
+    for job in jobs:
+        application_base_list.append(
+            ApplicationBaseORM(
+                job_id = job.id,
+                resume_id = admin_resume.id,
+                uid = adminUser.id
+            )
+        )
+
+    s.add_all(application_base_list)
+    s.commit()
+
+    application_event = []
+    for app in application_base_list:
+        for stage in stages[0:(random.randint(0, len(stages)))]:
+            application_event.append(
+                ApplicationEventORM(
+                    date=datetime.datetime.now(),
+                    applicationBaseId=app.id,
+                    stage_id=stage.id,
+                    status=(random.randint(0,3))
+                )
+            )
+
+    s.add_all(application_event)
+    s.commit()
 
 if __name__ == "__main__":
     print("Generating sample data...")

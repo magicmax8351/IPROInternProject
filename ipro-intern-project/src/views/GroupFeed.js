@@ -91,8 +91,7 @@ class GroupFeed extends React.Component {
 
   componentDidMount() {
     fetch("http://wingman.justinjschmitz.com:8000/token/test?token=" + this.state.token)
-      .then((res) => res.json())
-      .then((json) => this.setState({ token: json.result }));
+
 
     fetch("http://wingman.justinjschmitz.com:8000/posts/get?token=" + this.state.token)
       .then((res) => res.json())

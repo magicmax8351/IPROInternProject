@@ -29,7 +29,7 @@ class UserORM(Base):
     resumes = relationship("ResumeORM")
     settings = relationship("SettingsORM")
     groups = relationship("GroupORM")
-    applications = relationship("ApplicationORM")
+    applications = relationship("ApplicationBaseORM")
     presets = relationship("PresetORM")
     tokens = relationship("TokenORM")
 
@@ -68,14 +68,13 @@ class StageORM(Base):
     __tablename__ = "stage"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    name: Column(String(32), nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
+    name = Column(String(32), nullable=False)
 
 class StageModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
     name: str
-    # [user id relationship model] 
 
 class TokenORM(Base):
     __tablename__ = "token"
@@ -238,26 +237,43 @@ class JobtagModel(BaseModel):
     class Config:
         orm_mode = True
 
-class ApplicationORM(Base):
-    __tablename__ = "application"
+class ApplicationEventModel(BaseModel):
+    id: Optional[int]
+    date: datetime.date
+    status: int
+    stage_id: int
+    
+    class Config:
+        orm_mode = True
+
+class ApplicationBaseORM(Base):
+    __tablename__ = "applicationBase"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    resume_id = Column(Integer, ForeignKey("resume.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
+
+class ApplicationEventORM(Base):
+    __tablename__ = "applicationEvent"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     date = Column(DateTime, nullable=False)
-    job_id = Column(Integer, ForeignKey("job.id"))
+    status = Column(Integer, nullable=False)
+    applicationBaseId = Column(Integer, ForeignKey("applicationBase.id"))
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    uid = Column(Integer, ForeignKey("user.id"))
-    resume_id = Column(Integer, ForeignKey("resume.id"))
 
-class ApplicationModel(BaseModel):
+class ApplicationBaseModel(BaseModel):
     id: Optional[int]
-    date: datetime.date
     job_id: Optional[int]
     stage_id: Optional[int]
     uid: Optional[int]
     resume_id: Optional[int]
+    applicationEvents: Optional[List[ApplicationEventModel]]
 
     class Config:
         orm_mode = True
+
 
 class PresetORM(Base):
     __tablename__ = "preset"
@@ -308,3 +324,7 @@ class LoginData(BaseModel):
 class AuthIntModel(BaseModel):
     val: int
     token: str
+
+class ApplicationDataModel(BaseModel):
+    applicationData: List[ApplicationBaseModel]
+    stages: List[StageModel]

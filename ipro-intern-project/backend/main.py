@@ -161,7 +161,7 @@ def get_user(uid: int):
         orm_session.close()
         return user
     orm_session.close()
-    return "no"
+    raise ValueError("uid not found!")
 
 @app.post("/users/update")
 def update_user(updated_user: UserModel):
@@ -306,23 +306,39 @@ def get_comments_post_id(post_id: int):
 
     return comments
 
+@app.get("/applications/get")
+def get_applications(token: str):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+    
+    s = orm_parent_session()
+    apps_orm = {}
+    apps_model = []
+    stages = [StageModel.from_orm(x) for x in s.query(StageORM)]
+    for a in s.query(ApplicationBaseORM, ApplicationEventORM).join(ApplicationEventORM):
+        if(a[0] in apps_orm):
+            apps_orm[a[0]].append(a[1])
+        else:
+            apps_orm[a[0]] = [a[1]]
 
-@app.post("/comments/update")
-def update_comment(updated_comment: CommentModel):
-    """Updates the comment with the given ID with new information.
-       Checks to make sure that the comment exists first."""
-    raise HTTPException(400, "Not implemented")
-
-
-@app.post("/comments/delete")
-def delete_comment(comment_id: int):
-    """Removes the comment with the given ID."""
-    raise HTTPException(400, "Not implemented")
-
+    for (app_base, app_event) in apps_orm.items():
+        app_base_model = ApplicationBaseModel.from_orm(app_base)
+        applicationEvents = []
+        for event in app_event:
+            newEvent = ApplicationEventModel.from_orm(event)
+            applicationEvents.append(newEvent)
+        app_base_model.applicationEvents = applicationEvents
+        apps_model.append(app_base_model)
+    
+    return ApplicationDataModel(
+        applicationData=apps_model,
+        stages=stages
+    )
 
 # Application
 @app.post("/applications/add")
-def add_application(new_application: ApplicationModel):
+def add_application(new_application: ApplicationBaseModel):
     """Adds a new row to application table."""
 
     # uid and resume_id will come later
@@ -336,27 +352,9 @@ def add_application(new_application: ApplicationModel):
     orm_session.close()
 
 
-@app.get("/applications/get")
-def get_application():
-    """Returns a application object with the given ID."""
-    # Normally, this function would take a uid and only
-    # return the application records for that user
-
-    orm_session = orm_parent_session()
-    apps = []
-    for a in orm_session.query(ApplicationORM).all():
-        apps.append(
-            ApplicationModel(id=a.id,
-                             date=a.date,
-                             job_id=a.job_id,
-                             stage_id=a.stage_id))
-    orm_session.close()
-
-    return {'applications': apps}
-
 
 @app.post("/applications/update")
-def update_application(updated_application: ApplicationModel):
+def update_application(updated_application: ApplicationBaseModel):
     """Updates the application with the given ID with new information.
        Checks to make sure that the application exists first."""
     raise HTTPException(400, "Not implemented")
