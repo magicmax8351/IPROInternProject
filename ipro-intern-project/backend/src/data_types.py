@@ -266,7 +266,6 @@ class ApplicationEventORM(Base):
 class ApplicationBaseModel(BaseModel):
     id: Optional[int]
     job_id: Optional[int]
-    stage_id: Optional[int]
     uid: Optional[int]
     resume_id: Optional[int]
     applicationEvents: Optional[List[ApplicationEventModel]]
