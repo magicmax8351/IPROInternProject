@@ -240,7 +240,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     # Adding fake stages to the database
 
     stages = [] 
-    for stage in ["Applied", "Round 1", "Round 2", "Round 3", "Offer"]:
+    for stage in ["Unknown", "Applied", "Round 1", "Round 2", "Round 3", "Offer"]:
         stages.append(StageORM(name=stage))
 
     s.add_all(stages)
