@@ -4,7 +4,7 @@ import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
 import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory from 'react-bootstrap-table2-editor'
 import ToolkitProvider from "react-bootstrap-table2-toolkit";
-
+import Table from 'react-bootstrap/Table'
 
 
 class App extends Component {
@@ -16,8 +16,9 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: null,
-      token: props.token
+      token: props.token,
+      applications: null,
+      stages: null
     }
   }
 
@@ -28,13 +29,76 @@ class App extends Component {
       "headers": {}
     })
     .then((res) => res.json())
-    .then((json) => this.setState({ data: json.result }));
+    .then((json) => {
+      this.setState({ applications: json.applicationData });
+      this.setState({ stages: json.stages})
+    });
   }
-  
-  render() {
-    console.log(this.state.data);
+
+  buildDashboardTable(applications, stages) {
+    let header = this.buildDashboardTableHeader(stages);
+    let body = this.buildDashboardData(applications);
     return (
-      <h1>Dashboard table is kill</h1>
+      <Table responsive="sm">
+        {header}
+        {body}
+      </Table>
+    )
+  }
+
+  buildDashboardTableHeader(stages) {
+    let tableHeaderData = [];
+    let metadata_stages = ["Job ID", "Resume ID"];
+    // Include metadata as specified by body. See `buildDashboardTableRow`. 
+
+
+    for(let i = 0; i < metadata_stages.length; i++) {
+      tableHeaderData.push(<th>{metadata_stages[i]}</th>)
+    }
+    for(let i = 0; i < stages.length; i++) {
+      tableHeaderData.push(<th>{stages[i].name}</th>)
+    }
+    return (
+      <thead>
+        <tr>
+          {tableHeaderData}
+        </tr>
+      </thead>
+    )
+  }
+
+  buildDashboardData(applications) {
+    let dashboardData = [];
+    for(let i = 0; i < applications.length; i++) {
+      dashboardData.push(
+        this.buildDashboardTableRow(applications[i]));
+    }
+    return <tbody>{dashboardData}</tbody>;
+  }
+
+  buildDashboardTableRow(applicationBase) {
+    let tableRowData = [];
+    
+    // Include metadata as specified by header. See `buildDashboardTableHeader`. 
+    applicationBase.applicationEvents.sort((x, y) => (x.stage_id > y.stage_id));
+    tableRowData.push(<td>{applicationBase.job_id}</td>);
+    tableRowData.push(<td>{applicationBase.resume_id}</td>);
+
+    for(let i = 0; i < applicationBase.applicationEvents.length; i++) {
+      tableRowData.push(<td>{applicationBase.applicationEvents[i].status}</td>)
+    }
+    return <tr>{tableRowData}</tr>
+  }
+
+  
+
+  render() {
+    if(this.state.stages == null || this.state.applications == null) {
+      return null;
+    }
+    let table = this.buildDashboardTable(this.state.applications, this.state.stages);
+    return (
+      table
     );
   }
 }

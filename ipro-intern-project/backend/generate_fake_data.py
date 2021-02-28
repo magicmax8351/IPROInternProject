@@ -147,7 +147,7 @@ def gen_fake_data():
 
 
     jobs = []
-    for i in range(10):
+    for i in range(100):
         jobs.append(
             JobORM(
                 name=random.choice(fake_job_titles),
@@ -261,13 +261,14 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     
     application_base_list = []
     for job in jobs:
-        application_base_list.append(
-            ApplicationBaseORM(
-                job_id = job.id,
-                resume_id = admin_resume.id,
-                uid = adminUser.id
+        if(random.randint(0, 2) == 1):
+            application_base_list.append(
+                ApplicationBaseORM(
+                    job_id = job.id,
+                    resume_id = admin_resume.id,
+                    uid = adminUser.id
+                )
             )
-        )
 
     s.add_all(application_base_list)
     s.commit()
