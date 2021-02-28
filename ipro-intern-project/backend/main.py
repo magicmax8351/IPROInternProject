@@ -340,14 +340,30 @@ def get_applications(token: str):
 @app.post("/applications/add")
 def add_application(new_application: ApplicationBaseModel):
     """Adds a new row to application table."""
-
-    # uid and resume_id will come later
-    new_application_orm = ApplicationORM(date=new_application.date,
-                                         job_id=new_application.job_id,
-                                         stage_id=new_application.stage_id)
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
 
     orm_session = orm_parent_session()
-    orm_session.add(new_application_orm)
+
+    new_application_base_orm = ApplicationBaseORM(
+        job_id = new_application.job_id,
+        resume_id = new_application.resume_id,
+        uid = uid
+    )
+
+    orm_session.add(new_application_base_orm)
+    orm_session.flush()
+
+    events = []
+    for s in orm_session.query(StageORM).all():
+        orm_session.add(ApplicationEventORM(
+            date = datetime.now(),
+            status = 0,
+            application_id = new_application_base_orm.id,
+            stage_id = s.id
+        ))
+
     orm_session.commit()
     orm_session.close()
 
