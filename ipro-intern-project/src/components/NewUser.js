@@ -69,7 +69,7 @@ class NewUser extends React.Component {
   
   submitAddUser(event) {
     event.preventDefault()
-    fetch("http://wingman.justinjschmitz.com:8000/users/add", {
+    fetch("http://" + window.location.hostname + ":8000/users/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

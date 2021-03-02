@@ -60,7 +60,7 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://wingman.justinjschmitz.com:8000/groups/get?token=" + this.state.token)
+    fetch("http://" + window.location.hostname + ":8000/groups/get?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => {
         this.setState({ groups: json });

@@ -56,15 +56,15 @@ class NewPost extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://wingman.justinjschmitz.com:8000/jobs/get?token=" + this.token)
+    fetch("http://" + window.location.hostname + ":8000/jobs/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ jobs: json }));
 
-    fetch("http://wingman.justinjschmitz.com:8000/companies/get?token=" + this.token)
+    fetch("http://" + window.location.hostname + ":8000/companies/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
 
-    fetch("http://wingman.justinjschmitz.com:8000/groups/get?token=" + this.token)
+    fetch("http://" + window.location.hostname + ":8000/groups/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ groups: json }));
   }
@@ -115,7 +115,7 @@ class NewPost extends React.Component {
   submitAddCompany(event) {
     event.preventDefault()
     if(this.state.new_company_name.length > 2) {
-      fetch("http://wingman.justinjschmitz.com:8000/companies/add", {
+      fetch("http://" + window.location.hostname + ":8000/companies/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ class NewPost extends React.Component {
   submitAddJob(event) {
     event.preventDefault()
     if(this.state.new_job_name.length > 2 && this.state.company_id > 0 ) {
-      fetch("http://wingman.justinjschmitz.com:8000/jobs/add", {
+      fetch("http://" + window.location.hostname + ":8000/jobs/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
