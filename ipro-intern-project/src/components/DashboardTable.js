@@ -24,7 +24,7 @@ class App extends Component {
 
   componentDidMount() {
     console.log(this.state.token);
-    fetch("http://localhost:8000/applications/get?token=" + this.state.token, {
+    fetch("http://" + window.location.hostname + ":8000/applications/get?token=" + this.state.token, {
       "method": "GET",
       "headers": {}
     })
