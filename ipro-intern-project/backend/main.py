@@ -12,7 +12,7 @@ from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy.exc import IntegrityError
 
 app = FastAPI()
 
@@ -352,18 +352,23 @@ def add_application(new_application: ApplicationBaseModel):
         uid = uid
     )
 
-    orm_session.add(new_application_base_orm)
-    orm_session.flush()
+    try: 
+        orm_session.add(new_application_base_orm)
+        orm_session.flush()
 
-    for s in orm_session.query(StageORM).all():
-        orm_session.add(ApplicationEventORM(
-            date = datetime.datetime.now(),
-            status = 0,
-            applicationBaseId = new_application_base_orm.id,
-            stage_id = s.id
-        ))
 
-    orm_session.commit()
+        for s in orm_session.query(StageORM).all():
+            orm_session.add(ApplicationEventORM(
+                date = datetime.datetime.now(),
+                status = 0,
+                applicationBaseId = new_application_base_orm.id,
+                stage_id = s.id
+            ))
+
+        orm_session.commit()
+    except IntegrityError:
+        raise HTTPException(411, "Job already added!")
+
     orm_session.close()
 
 

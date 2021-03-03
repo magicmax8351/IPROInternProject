@@ -5,6 +5,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel, constr
 import datetime
+from sqlalchemy.schema import UniqueConstraint
+
 
 # See https://docs.sqlalchemy.org/en/13/orm/basic_relationships.html
 # for more information.
@@ -253,6 +255,8 @@ class ApplicationBaseORM(Base):
     job_id = Column(Integer, ForeignKey("job.id"))
     resume_id = Column(Integer, ForeignKey("resume.id"))
     uid = Column(Integer, ForeignKey("user.id"))
+    __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
+                     )
 
 class ApplicationEventORM(Base):
     __tablename__ = "applicationEvent"
