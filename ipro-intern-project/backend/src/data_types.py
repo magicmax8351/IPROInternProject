@@ -163,12 +163,13 @@ class CompanyORM(Base):
     __tablename__ = "company"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String(32), nullable=False)
+    name = Column(String(32), nullable=False) 
 
 class CompanyModel(BaseModel):
     id: Optional[int]
     name: str
     token: Optional[str]
+    key: Optional[int]
 
     class Config:
         orm_mode = True
@@ -190,6 +191,7 @@ class JobModel(BaseModel):
     company_id: Optional[int]
     company: Optional[CompanyModel]
     token: Optional[str]
+    key: Optional[int]
 
     class Config:
         orm_mode = True
@@ -255,7 +257,7 @@ class ApplicationBaseORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     job_id = Column(Integer, ForeignKey("job.id"))
-    resume_id = Column(Integer, ForeignKey("resume.id"))
+    resume_id = Column(Integer, ForeignKey("resume.id"), nullable=True)
     uid = Column(Integer, ForeignKey("user.id"))
     __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
                      )
@@ -276,6 +278,7 @@ class ApplicationBaseModel(BaseModel):
     resume_id: Optional[int]
     applicationEvents: Optional[List[ApplicationEventModel]]
     token: Optional[str]
+    key: Optional[int]
 
     class Config:
         orm_mode = True

@@ -329,8 +329,10 @@ def get_applications(token: str):
             newEvent = ApplicationEventModel.from_orm(event)
             applicationEvents.append(newEvent)
         app_base_model.applicationEvents = applicationEvents
+        app_base_model.key = app_base_model.id
         apps_model.append(app_base_model)
-    
+        
+    s.close()
     return ApplicationDataModel(
         applicationData=apps_model,
         stages=stages
@@ -339,7 +341,20 @@ def get_applications(token: str):
 # Application
 @app.post("/applications/add")
 def add_application(new_application: ApplicationBaseModel):
-    """Adds a new row to application table."""
+    """Adds a new row to application table.
+    
+    Test CURL: 
+    
+    curl --request POST \
+    --url 'http://localhost:8000/applications/add?token=ccab4e01998b735345a702ce16147378' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "job_id": 6939,
+        "token": "ccab4e01998b735345a702ce16147378",
+        "resume_id": 1
+    }'
+    """
+
     uid = get_uid_token(new_application.token)["uid"]
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
@@ -352,24 +367,33 @@ def add_application(new_application: ApplicationBaseModel):
         uid = uid
     )
 
+    r = []
+
     try: 
         orm_session.add(new_application_base_orm)
-        orm_session.flush()
-
 
         for s in orm_session.query(StageORM).all():
-            orm_session.add(ApplicationEventORM(
+            e = ApplicationEventORM(
                 date = datetime.datetime.now(),
                 status = 0,
                 applicationBaseId = new_application_base_orm.id,
                 stage_id = s.id
-            ))
+            )
+        
+            orm_session.add(e)
+            r.append(e)
 
         orm_session.commit()
+
     except IntegrityError:
         raise HTTPException(411, "Job already added!")
 
+    ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
+    ret_app.applicationEvents = [ApplicationEventModel.from_orm(e) for e in r]
     orm_session.close()
+
+    ret_app.key = ret_app.id
+    return ret_app
 
 
 
@@ -442,8 +466,10 @@ def add_job(new_job: JobModel):
     )
     s.add(j)
     s.commit()
+    r = JobModel.from_orm(j)
+    r.key = r.id
     s.close()
-    return
+    return r
 
 
 # Not an endpoint!
@@ -467,7 +493,11 @@ def get_job(token: str):
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    j = [JobModel.from_orm(p) for p in s.query(JobORM).all()]
+    j = []
+    for p in s.query(JobORM):
+        t = JobModel.from_orm(p)
+        t.key = t.id
+        j.append(t)
     s.close()
     return j
 
@@ -489,7 +519,7 @@ def delete_job(job_id: int):
 @app.post("/companies/add")
 def add_company(new_company: CompanyModel):
     """Adds a new row to company table."""
-    uid = get_uid_token(CompanyModel.token)["uid"]
+    uid = get_uid_token(new_company.token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
@@ -499,7 +529,10 @@ def add_company(new_company: CompanyModel):
     )
     s.add(c)
     s.commit()
+    r = CompanyModel.from_orm(c)
+    r.key = r.id
     s.close()
+    return r
 
 
 @app.get("/companies/get")
@@ -509,7 +542,11 @@ def get_company(token: str):
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
     s = orm_parent_session()
-    c = [CompanyModel.from_orm(p) for p in s.query(CompanyORM).all()]
+    c = []
+    for p in s.query(CompanyORM):
+        t = CompanyModel.from_orm(p)
+        t.key = t.id
+        c.append(t)
     s.close()
     return c
 
