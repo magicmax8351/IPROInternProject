@@ -241,9 +241,11 @@ class JobtagModel(BaseModel):
 
 class ApplicationEventModel(BaseModel):
     id: Optional[int]
-    date: datetime.date
+    date: Optional[datetime.date]
     status: int
-    stage_id: int
+    stage_id: Optional[int]
+    token: Optional[str]
+    applicationBaseId: Optional[int]
     
     class Config:
         orm_mode = True

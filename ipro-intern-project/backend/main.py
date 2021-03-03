@@ -374,10 +374,49 @@ def add_application(new_application: ApplicationBaseModel):
 
 
 @app.post("/applications/update")
-def update_application(updated_application: ApplicationBaseModel):
+def update_application(newApplicationEvent: ApplicationEventModel):
     """Updates the application with the given ID with new information.
-       Checks to make sure that the application exists first."""
-    raise HTTPException(400, "Not implemented")
+       Checks to make sure that the application exists first.
+       
+       Test request code: 
+       curl --request POST \
+        --url http://localhost:8000/applications/update \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "id": 4,
+            "status": 0,
+            "stage_id": 0,
+            "token": "c0144c49bc667fb90885b6d016147410",
+            "applicationBaseId": 1
+        }'
+    """
+
+    uid = get_uid_token(newApplicationEvent.token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+
+    orm_session = orm_parent_session()
+
+    base = orm_session.query(ApplicationBaseORM).filter(
+        ApplicationBaseORM.uid == uid,
+        ApplicationBaseORM.id == newApplicationEvent.applicationBaseId
+    ).one()
+    
+    if base == None:
+        raise HTTPException(411, "Couldn't match Base ID to user!")
+
+    event_obj = orm_session.query(ApplicationEventORM).filter(
+                    ApplicationEventORM.id == newApplicationEvent.id).one()
+                    
+    if(event_obj == None):
+        raise HTTPException(412, "Event ID not found!")
+
+    event_obj.status = newApplicationEvent.status
+    ret = ApplicationEventModel.from_orm(event_obj)
+    orm_session.commit()
+    orm_session.close()
+    return ret
+
 
 
 @app.post("/applications/delete")
