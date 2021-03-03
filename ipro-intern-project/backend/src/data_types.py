@@ -269,6 +269,7 @@ class ApplicationBaseModel(BaseModel):
     uid: Optional[int]
     resume_id: Optional[int]
     applicationEvents: Optional[List[ApplicationEventModel]]
+    token: Optional[str]
 
     class Config:
         orm_mode = True
