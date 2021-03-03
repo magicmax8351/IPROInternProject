@@ -90,21 +90,24 @@ class GroupFeed extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://" + window.location.hostname + ":8000/token/test?token=" + this.state.token)
-
-
     fetch("http://" + window.location.hostname + ":8000/posts/get?token=" + this.state.token)
-      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        if(res.status != 200) {
+          window.location.replace("/login")
+        }
+        return res.json();
+      })
       .then((json) => {
-        let posts_update = json.posts.map(x => {
-          const obj = {
-            ...x,
-            key: x.id
-          };
-          delete obj.id;
-          return obj;
-        });
-        this.setState({ posts: json.posts })
+          let posts_update = json.posts.map(x => {
+            const obj = {
+              ...x,
+              key: x.id
+            };
+            delete obj.id;
+            return obj;
+          });
+          this.setState({ posts: posts_update })
       });
 
     if (this.group_id != -1) {
