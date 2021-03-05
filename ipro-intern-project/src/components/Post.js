@@ -147,7 +147,7 @@ const PostExpandButton = styled.button`
   font-style: italic;
   width: 100%;
   margin-left: auto;
-  margin-rigth: auto;
+  margin-right: auto;
 `;
 
 class Comment extends React.Component {

@@ -19,12 +19,13 @@ class Icon extends Component {
       applicationBaseId: props.applicationBaseId,
       status: props.status
     }
-  this.status_list = ["❔", "😢", "😊", "🍆"];
+  this.status_list = ["❔", "😢", "😊"];
   this.updateStatus = this.updateStatus.bind(this);
   }
 
   updateStatus() {
     let newStatus = (this.state.status + 1) % this.status_list.length;
+    this.setState({status: newStatus});
     fetch("http://" + window.location.hostname + ":8000/applications/update", {
       "method": "POST",
       "headers": {
@@ -36,12 +37,15 @@ class Icon extends Component {
         "token": this.state.token,
         "applicationBaseId": this.state.applicationBaseId
       })})
-      .then((res) => res.json())
-      .then((json) => {
-        this.setState({status: json.status})
+      .then((res) => res.status)
+      .then((status) => {
+        if(status != 200) {
+          throw new Error("Weird error!")
+        }
       })
       .catch(err => {
         console.error(err);
+        alert(err);
       });
   }
 

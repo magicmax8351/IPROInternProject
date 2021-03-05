@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // Logic for adding posts is broken.
 // Use https://formik.org/docs/overview to handle adding things to the database.
 
-class NewPost extends React.Component {
+class NewDashboardTableEntry extends React.Component {
   constructor(props) {
     super(props);
     this.func = props.func;
@@ -38,8 +38,6 @@ class NewPost extends React.Component {
     this.submitAddJob = this.submitAddJob.bind(this);
     
   }
-
-
 
   componentDidMount() {
     fetch("http://" + window.location.hostname + ":8000/jobs/get?token=" + this.token)
@@ -271,4 +269,4 @@ class NewPost extends React.Component {
   }
 }
 
-export default NewPost;
+export default NewDashboardTableEntry;
