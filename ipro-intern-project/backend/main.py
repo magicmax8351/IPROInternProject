@@ -340,7 +340,7 @@ def get_applications(token: str):
 
 # Application
 @app.post("/applications/add")
-def add_application(new_application: ApplicationBaseModel):
+def add_application(new_application: ApplicationBaseModel, applied:bool = False):
     """Adds a new row to application table.
     
     Test CURL: 
@@ -379,6 +379,10 @@ def add_application(new_application: ApplicationBaseModel):
                 applicationBaseId = new_application_base_orm.id,
                 stage_id = s.id
             )
+
+            if s.id == 1 and applied:
+                e.status = 1
+                print("applied!")
         
             orm_session.add(e)
             r.append(e)
@@ -394,8 +398,6 @@ def add_application(new_application: ApplicationBaseModel):
 
     ret_app.key = ret_app.id
     return ret_app
-
-
 
 @app.post("/applications/update")
 def update_application(newApplicationEvent: ApplicationEventModel):
