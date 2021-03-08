@@ -369,6 +369,8 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
 
     r = []
 
+    print(new_application.job_id)
+
     try: 
         orm_session.add(new_application_base_orm)
 

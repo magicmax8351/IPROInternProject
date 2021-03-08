@@ -206,6 +206,7 @@ class Post extends React.Component {
       user: null,
       company: null,
       comments: props.comments,
+      addJobButtonText: "Add job to Dashboard"
     };
 
     this.token = props.token;
@@ -222,6 +223,7 @@ class Post extends React.Component {
     this.comment_button_event = this.comment_button_event.bind(this);
     this.post_button_event = this.post_button_event.bind(this);
     this.post_comment_event = this.post_comment_event.bind(this);
+    this.addJobFromPost = this.addJobFromPost.bind(this);
 
     this.submitComment = this.submitComment.bind(this);
     this.writeComment = this.writeComment.bind(this);
@@ -412,7 +414,32 @@ class Post extends React.Component {
     }
   }
 
-
+  addJobFromPost() {
+    fetch("http://" + window.location.hostname + ":8000/applications/add", {
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": JSON.stringify({
+        job_id: this.state.post.job.id,
+        token: this.token,
+        resume_id: 1
+      })
+    })
+    .then((res) => {
+      if(res.status == 200) {
+        this.setState({addJobButtonText: "Added!"});
+      } else if (res.status == 411) {
+        //throw new Error("Job already added!");
+        this.setState({addJobButtonText: "Already added!"}); // this can be handled better
+                                                             // for example, display "added" on post load
+      } else {
+        throw new Error("Something else broke!");
+      }
+    }).catch(error => {
+      alert(error);
+    })
+  }
 
   renderPost() {
     let body = "";
@@ -467,7 +494,7 @@ class Post extends React.Component {
         <HRLine />
         {this.renderPost()}
         {secondary_content}
-        <AddJobButton>Add job to Dashboard</AddJobButton>
+        <AddJobButton onClick={this.addJobFromPost}>{this.state.addJobButtonText}</AddJobButton>
       </Container>
     );
   }
