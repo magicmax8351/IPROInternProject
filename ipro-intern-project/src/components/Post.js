@@ -126,6 +126,24 @@ const ButtonStyled = styled.button`
   margin-top: -40px;
 `;
 
+const AddJobButton = styled.button`
+    margin: 0;
+    color: white;
+    background-color: #06094f;
+    border-color: #06094f;
+    border-radius: 12px;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    margin-top: 15px;
+    font-weight: bold;
+    :hover{
+      background-color :#185ea3;
+      border-color: #185ea3;
+      box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+`;
+
 const MoreComments = styled.p`
   font-style: italic;
   margin-left: 15px;
@@ -439,6 +457,7 @@ class Post extends React.Component {
 
     return (
       <Container>
+        
         <JobTitle>{this.state.post.job.name}</JobTitle>
         <JobLocation>{this.state.post.job.company.name} - {this.state.post.job.location}</JobLocation>
         <GroupPost>
@@ -448,6 +467,7 @@ class Post extends React.Component {
         <HRLine />
         {this.renderPost()}
         {secondary_content}
+        <AddJobButton>Add job to Dashboard</AddJobButton>
       </Container>
     );
   }
