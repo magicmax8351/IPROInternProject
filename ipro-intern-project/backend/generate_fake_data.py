@@ -69,7 +69,7 @@ def gen_fake_data():
 
     # Randomly generate a heck ton of groups:
 
-    for i in range(20):
+    for i in range(3):
         groups.append(
             GroupORM(
                 name=lipsum.paragraph(
@@ -147,7 +147,7 @@ def gen_fake_data():
 
 
     jobs = []
-    for i in range(100):
+    for i in range(8):
         jobs.append(
             JobORM(
                 name=random.choice(fake_job_titles),
@@ -196,7 +196,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(10):
+    for i in range(100):
         posts.append(
             PostORM(
                 subject=lipsum.paragraph(
