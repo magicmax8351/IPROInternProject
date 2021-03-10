@@ -82,7 +82,7 @@ class Profile extends React.Component {
             {this.state.groups.map((g) => {
                 return (
                   <Container>
-                    <GroupName><TitleHyperlink href={"../group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
+                    <GroupName><TitleHyperlink href={"/group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
                     <GroupDescription>{g.desc}</GroupDescription>
                     <HRLine />
                     <GroupButton type="button">View Group</GroupButton>
