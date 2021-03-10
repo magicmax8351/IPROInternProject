@@ -51,12 +51,13 @@ const FeedContianer = styled.div`
 class GroupFeed extends React.Component {
   constructor(props) {
     super(props);
-    if (props.location == "feed") {
-      this.group_id = -1;
-    } else {
+    if(document.location.pathname.includes("id")) {
       const regex = /\/id\/[0-9]+/;
-      let match = props.location.pathname.match(regex)[0];
+      let match = document.location.pathname.match(regex)[0];
       this.group_id = parseInt(match.substring(4));
+      console.log("hi there");
+    } else {
+      this.group_id = -1;
     }
 
     this.state = {
@@ -92,7 +93,6 @@ class GroupFeed extends React.Component {
   componentDidMount() {
     fetch("http://" + window.location.hostname + ":8000/posts/get?token=" + this.state.token)
       .then((res) => {
-        console.log(res);
         if(res.status != 200) {
           window.location.replace("/login")
         }
@@ -182,8 +182,10 @@ class GroupFeed extends React.Component {
       console.log(this.state.token);
       document.location.replace("/login");
     }
-    this.renderedPosts = this.postList(this.state.posts);
+    let renderedPosts = this.postList(this.state.posts);
+    console.log("Posts: ")
     console.log(this.state.posts);
+    console.log(renderedPosts);
     return (
       <div>
         <Helmet>
@@ -195,7 +197,7 @@ class GroupFeed extends React.Component {
             <AddPostHeader>Add a new post...</AddPostHeader>
             {this.renderNewPost()}
           </AddPostContainer>
-          <PageContent>{this.renderedPosts}</PageContent>
+          <PageContent>{renderedPosts}</PageContent>
         </FeedContianer>
       </div>
     );
