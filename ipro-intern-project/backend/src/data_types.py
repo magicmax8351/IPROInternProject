@@ -195,6 +195,7 @@ class JobORM(Base):
     description = Column(String(5000), nullable=True)
     location = Column(String(32), nullable=False)
     company_id = Column(Integer, ForeignKey("company.id"))
+    company = relationship("CompanyORM")
 
 class JobModel(BaseModel):
     id: Optional[int]
