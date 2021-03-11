@@ -147,7 +147,7 @@ def gen_fake_data():
 
 
     jobs = []
-    for i in range(8):
+    for i in range(10):
         jobs.append(
             JobORM(
                 name=random.choice(fake_job_titles),
@@ -259,34 +259,60 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     s.add(admin_resume)
     s.commit()
     
-    # application_base_list = []
-    # for job in jobs:
-    #     if(random.randint(0, 2) == 1):
-    #         application_base_list.append(
-    #             ApplicationBaseORM(
-    #                 job_id = job.id,
-    #                 resume_id = admin_resume.id,
-    #                 uid = adminUser.id
-    #             )
-    #         )
+    application_base_list = []
+    for job in jobs:
+        if(random.randint(0, 2) == 1):
+            application_base_list.append(
+                ApplicationBaseORM(
+                    job_id = job.id,
+                    resume_id = admin_resume.id,
+                    uid = adminUser.id
+                )
+            )
 
-    # s.add_all(application_base_list)
-    # s.commit()
-
-    # application_event = []
-    # for app in application_base_list:
-    #     for stage in stages:
-    #         application_event.append(
-    #             ApplicationEventORM(
-    #                 date=datetime.datetime.now(),
-    #                 applicationBaseId=app.id,
-    #                 stage_id=stage.id,
-    #                 status=(random.randint(0,3))
-    #             )
-    #         )
-
-    # s.add_all(application_event)
+    s.add_all(application_base_list)
     s.commit()
+
+    application_event = []
+    for app in application_base_list:
+        for stage in stages:
+            application_event.append(
+                ApplicationEventORM(
+                    date=datetime.datetime.now(),
+                    applicationBaseId=app.id,
+                    stage_id=stage.id,
+                    status=(random.randint(0,2))
+                )
+            )
+
+    s.add_all(application_event)
+    s.commit()
+
+
+    print("Adding some tags...")
+
+    tags = []
+    for word in set(word_list.split()):
+        tags.append(TagORM(tag=word))
+    
+    s.add_all(tags)
+    s.commit()
+    jobtags = []
+
+    for job in jobs:
+        for tag in tags:
+            if(random.randint(0, 10) == 5):
+                jobtags.append(JobTagORM(
+                    job_id=job.id,
+                    tag_id=tag.id
+                ))
+                
+    
+    s.add_all(jobtags)
+    s.commit()
+
+
+
 
 if __name__ == "__main__":
     print("Generating sample data...")
