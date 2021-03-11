@@ -524,6 +524,7 @@ def get_jobs(token: str):
             j[job.id] = job
             job.key = job.id
             job.tags = []
+            job.company = get_company_id(job.company_id)
         
         if(p[1]):
             j[job.id].tags.append(tag_map[p[1].tag_id])
