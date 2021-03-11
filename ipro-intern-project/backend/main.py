@@ -41,7 +41,7 @@ orm_session = orm_parent_session()
 
 
 def gen_token():
-    tok = str(uuid.uuid4().hex)[8:] + str(round(time.time()))[:-2]
+    tok = str(uuid.uuid4().hex)[8:] + str(uuid.uuid4().hex)[8:]
     return tok
 
 # CRUD functions for each table
@@ -312,10 +312,14 @@ def get_applications(token: str):
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
     
+    jobs = {j.id: j for j in get_jobs(token)}
+
     s = orm_parent_session()
     apps_orm = {}
     apps_model = []
+
     stages = [StageModel.from_orm(x) for x in s.query(StageORM)]
+
     for a in s.query(ApplicationBaseORM, ApplicationEventORM).join(ApplicationEventORM):
         if(a[0] in apps_orm):
             apps_orm[a[0]].append(a[1])
@@ -324,6 +328,7 @@ def get_applications(token: str):
 
     for (app_base, app_event) in apps_orm.items():
         app_base_model = ApplicationBaseModel.from_orm(app_base)
+        app_base_model.job = jobs[app_base_model.job_id]
         applicationEvents = []
         for event in app_event:
             newEvent = ApplicationEventModel.from_orm(event)
@@ -333,6 +338,7 @@ def get_applications(token: str):
         apps_model.append(app_base_model)
         
     s.close()
+
     return ApplicationDataModel(
         applicationData=apps_model,
         stages=stages
@@ -486,20 +492,31 @@ def get_job_by_id(job_id: int):
 
 
 @app.get("/jobs/get")
-def get_job(token: str):
+def get_jobs(token: str):
     """Returns all jobs"""
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    j = []
-    for p in s.query(JobORM):
-        t = JobModel.from_orm(p)
-        t.key = t.id
-        j.append(t)
+
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+    
+    j = {}
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True):
+        job = JobModel.from_orm(p[0])
+        if(job.id) not in j:
+            j[job.id] = job
+            job.key = job.id
+            job.tags = []
+        
+        if(p[1]):
+            j[job.id].tags.append(tag_map[p[1].tag_id])
+    
     s.close()
-    return j
+    return list(j.values())
 
 
 @app.post("/jobs/update")

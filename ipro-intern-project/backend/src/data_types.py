@@ -30,7 +30,7 @@ class UserORM(Base):
     
     resumes = relationship("ResumeORM")
     settings = relationship("SettingsORM")
-    groups = relationship("GroupORM")
+    membership = relationship("MembershipORM")
     applications = relationship("ApplicationBaseORM")
     presets = relationship("PresetORM")
     tokens = relationship("TokenORM")
@@ -110,7 +110,6 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
 
 class GroupModel(BaseModel):
     class Config:
@@ -174,6 +173,20 @@ class CompanyModel(BaseModel):
     class Config:
         orm_mode = True
 
+class TagORM(Base):
+    __tablename__ = "tag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    tag = Column(String(32), nullable=False, unique=True)
+
+class TagModel(BaseModel):
+    id: Optional[int]
+    tag: str
+
+    class Config:
+        orm_mode = True
+
+
 class JobORM(Base):
     __tablename__ = "job"
     metadata = metadata
@@ -192,6 +205,26 @@ class JobModel(BaseModel):
     company: Optional[CompanyModel]
     token: Optional[str]
     key: Optional[int]
+    tags: Optional[List[TagModel]]
+
+    class Config:
+        orm_mode = True
+
+class JobTagORM(Base):
+    __tablename__ = "jobtag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    tag_id = Column(Integer, ForeignKey("tag.id")) 
+
+    jobs = relationship("JobORM")
+    tags = relationship("TagORM")
+
+class JobtagModel(BaseModel):
+    job_id: int
+    tag_id: int
+    job: Optional[JobModel]
+    tag: Optional[TagModel]
 
     class Config:
         orm_mode = True
@@ -226,20 +259,7 @@ class PostModel(BaseModel):
     job: Optional[JobModel]
     comments: Optional[List[CommentModel]]
     
-class JobtagORM(Base):
-    __tablename__ = "jobtag"
-    metadata = metadata
-    id = Column(Integer, primary_key=True, nullable=False)
-    tag = Column(String(32), nullable=False)
-    job_id = Column(Integer, ForeignKey("job.id"))
 
-class JobtagModel(BaseModel):
-    id: Optional[int]
-    tag: str
-    job_id: Optional[int]
-
-    class Config:
-        orm_mode = True
 
 class ApplicationEventModel(BaseModel):
     id: Optional[int]
@@ -262,6 +282,8 @@ class ApplicationBaseORM(Base):
     __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
                      )
 
+    events = relationship("ApplicationEventORM")
+
 class ApplicationEventORM(Base):
     __tablename__ = "applicationEvent"
     metadata = metadata
@@ -279,6 +301,7 @@ class ApplicationBaseModel(BaseModel):
     applicationEvents: Optional[List[ApplicationEventModel]]
     token: Optional[str]
     key: Optional[int]
+    job: Optional[JobModel]
 
     class Config:
         orm_mode = True
