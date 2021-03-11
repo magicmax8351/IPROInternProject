@@ -7,6 +7,22 @@ import ToolkitProvider from "react-bootstrap-table2-toolkit";
 import Table from 'react-bootstrap/Table'
 import Icon from './DashboardIcon'
 import NewDashboardTableEntry from './NewDashboardTableEntry'
+import styled from "styled-components";
+import Form from "react-bootstrap/Form";
+
+
+const DashboardTag = styled.p`
+  background: #EEEEEEEE;
+  text-align: center;
+  margin: 2px;
+  border-radius: 30px;
+  display: inline-block;
+  padding: 5px;
+`
+
+const DashboardContainer = styled.div`
+  width: 100%;
+`
 
 
 class App extends Component {
@@ -19,11 +35,19 @@ class App extends Component {
       token: props.token,
       applications: [],
       stages: null,
-      addJob: 0
+      addJob: 0,
+      filter_tag: ""
     }
 
     this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
     this.addJob = this.addJob.bind(this);
+    this.filterDashboardTableRow = this.filterDashboardTableRow.bind(this);
+    this.tagStringMatch = this.tagStringMatch.bind(this);
+    this.enter_filter_tag = this.enter_filter_tag.bind(this);
+  }
+
+  enter_filter_tag(event) {
+    this.setState({ filter_tag: event.target.value });
   }
 
   addJob(job_id) {
@@ -55,7 +79,6 @@ class App extends Component {
   
 
   componentDidMount() {
-    console.log(this.state.token);
     fetch("http://" + window.location.hostname + ":8000/applications/get?token=" + this.state.token, {
       "method": "GET",
       "headers": {}
@@ -90,6 +113,13 @@ class App extends Component {
     for(let i = 0; i < metadata_stages.length; i++) {
       tableHeaderData.push(<th>{metadata_stages[i]}</th>)
     }
+
+    tableHeaderData.push(
+      <th>
+        <input onChange={this.enter_filter_tag} placeholder="Tags"/>
+      </th>
+    )
+
     for(let i = 0; i < stages.length; i++) {
       tableHeaderData.push(<th>{stages[i].name}</th>)
     }
@@ -104,9 +134,11 @@ class App extends Component {
 
   buildDashboardData(applications) {
     let dashboardData = [];
-    for(let i = 0; i < applications.length; i++) {
+    let filtered_apps = applications.filter(this.filterDashboardTableRow)
+
+    for(let i = 0; i < filtered_apps.length; i++) {
       dashboardData.push(
-        this.buildDashboardTableRow(applications[i]));
+        this.buildDashboardTableRow(filtered_apps[i]));
     }
     return <tbody>{dashboardData}</tbody>;
   }
@@ -117,6 +149,14 @@ class App extends Component {
     applicationBase.applicationEvents.sort((x, y) => (x.stage_id > y.stage_id));
     tableRowData.push(<td>{applicationBase.job_id}</td>);
     tableRowData.push(<td>{applicationBase.resume_id}</td>);
+
+    let tags = [];
+    let jobTags_filtered = applicationBase.job.tags.filter((x) => this.tagStringMatch(x.tag));
+    for(let i = 0; i < jobTags_filtered.length; i++) {
+      tags.push(<DashboardTag>{jobTags_filtered[i].tag}</DashboardTag>)
+    }
+
+    tableRowData.push(<td><DashboardContainer>{tags}</DashboardContainer></td>);
 
     for(let i = 0; i < applicationBase.applicationEvents.length; i++) {
       let e = applicationBase.applicationEvents[i]
@@ -129,6 +169,44 @@ class App extends Component {
         /></td>)
     }
     return <tr>{tableRowData}</tr>
+  }
+
+  filterDashboardTableRow(applicationBase) {
+    /* Filters based on this.state.filter_tag. Returns "false" if the object should 
+    *  be filtered, and "true" otherwise. 
+    *  Job-based filtering is done in buildDashboardData. 
+    *  If "this.state.show_all_tags" is 0, then some other filtering is done 
+    *  in buildDashboardTableRow - tags are checked against the same predicate, 
+    *  and if they don't match, are removed. May be a better user experience. 
+    *  
+    *  TODO: Refactor to include logcial "OR", rather than just "AND". 
+    */
+    let tag_found, test_tag;
+    for(let j = 0; j < applicationBase.job.tags.length; j++) {
+      test_tag = applicationBase.job.tags[j].tag;
+      if(this.tagStringMatch(test_tag)) {
+        tag_found = true;
+      }
+    }
+    if(!tag_found) {
+      return false;
+    }
+    return true;
+  }
+
+  tagStringMatch(test_tag) {
+    let query_tags = this.state.filter_tag.split(",");
+    if(query_tags.length == 0) {
+      return true;
+    }
+    let query_tag;
+    for(let i = 0; i < query_tags.length; i++) {
+      query_tag = query_tags[i]
+      if(test_tag.toLowerCase().includes(query_tag.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   render() {

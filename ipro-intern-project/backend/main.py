@@ -392,10 +392,12 @@ def add_application(new_application: ApplicationBaseModel):
         orm_session.commit()
 
     except IntegrityError:
+        orm_session.close()
         raise HTTPException(411, "Job already added!")
 
     ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
     ret_app.applicationEvents = [ApplicationEventModel.from_orm(e) for e in r]
+    ret_app.job = get_job_by_id(ret_app.job_id)
     orm_session.close()
 
     ret_app.key = ret_app.id
@@ -433,12 +435,14 @@ def update_application(newApplicationEvent: ApplicationEventModel):
     ).one()
     
     if base == None:
+        orm_session.close()
         raise HTTPException(411, "Couldn't match Base ID to user!")
 
     event_obj = orm_session.query(ApplicationEventORM).filter(
                     ApplicationEventORM.id == newApplicationEvent.id).one()
                     
     if(event_obj == None):
+        orm_session.close()
         raise HTTPException(412, "Event ID not found!")
 
     event_obj.status = newApplicationEvent.status
@@ -481,14 +485,23 @@ def add_job(new_job: JobModel):
 # Not an endpoint!
 def get_job_by_id(job_id: int):
     """Get job by job ID. """
-    orm_session = orm_parent_session()
-    for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
-        job = JobModel.from_orm(u)
-        job.company = get_company_id(job.company_id)
-        orm_session.close()
-        return job
-    orm_session.close()
-    return
+    s = orm_parent_session()
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+
+    job = None
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True).filter(JobORM.id==job_id):
+        if(not job):
+            job = JobModel.from_orm(p[0])
+            job.key = job.id
+            job.tags = []
+        
+        if(p[1]):
+            job.tags.append(tag_map[p[1].tag_id])
+    
+    s.close()
+    return job
 
 
 @app.get("/jobs/get")
