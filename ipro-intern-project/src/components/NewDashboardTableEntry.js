@@ -90,7 +90,8 @@ class NewDashboardTableEntry extends React.Component {
       .then((json) => {
         this.setState({
           companies: [...this.state.companies, json],
-          company_id: this.state.companies.length
+          company_id: this.state.companies.length,
+          job_id: 0
         });
       });
     }

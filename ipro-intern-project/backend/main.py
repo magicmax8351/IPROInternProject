@@ -41,7 +41,7 @@ orm_session = orm_parent_session()
 
 
 def gen_token():
-    tok = str(uuid.uuid4().hex)[8:] + str(round(time.time()))[:-2]
+    tok = str(uuid.uuid4().hex)[8:] + str(uuid.uuid4().hex)[8:]
     return tok
 
 # CRUD functions for each table
@@ -312,10 +312,14 @@ def get_applications(token: str):
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
     
+    jobs = {j.id: j for j in get_jobs(token)}
+
     s = orm_parent_session()
     apps_orm = {}
     apps_model = []
+
     stages = [StageModel.from_orm(x) for x in s.query(StageORM)]
+
     for a in s.query(ApplicationBaseORM, ApplicationEventORM).join(ApplicationEventORM):
         if(a[0] in apps_orm):
             apps_orm[a[0]].append(a[1])
@@ -324,6 +328,7 @@ def get_applications(token: str):
 
     for (app_base, app_event) in apps_orm.items():
         app_base_model = ApplicationBaseModel.from_orm(app_base)
+        app_base_model.job = jobs[app_base_model.job_id]
         applicationEvents = []
         for event in app_event:
             newEvent = ApplicationEventModel.from_orm(event)
@@ -333,6 +338,7 @@ def get_applications(token: str):
         apps_model.append(app_base_model)
         
     s.close()
+
     return ApplicationDataModel(
         applicationData=apps_model,
         stages=stages
@@ -392,10 +398,12 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
         orm_session.commit()
 
     except IntegrityError:
+        orm_session.close()
         raise HTTPException(411, "Job already added!")
 
     ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
     ret_app.applicationEvents = [ApplicationEventModel.from_orm(e) for e in r]
+    ret_app.job = get_job_by_id(ret_app.job_id)
     orm_session.close()
 
     ret_app.key = ret_app.id
@@ -431,12 +439,14 @@ def update_application(newApplicationEvent: ApplicationEventModel):
     ).one()
     
     if base == None:
+        orm_session.close()
         raise HTTPException(411, "Couldn't match Base ID to user!")
 
     event_obj = orm_session.query(ApplicationEventORM).filter(
                     ApplicationEventORM.id == newApplicationEvent.id).one()
                     
     if(event_obj == None):
+        orm_session.close()
         raise HTTPException(412, "Event ID not found!")
 
     event_obj.status = newApplicationEvent.status
@@ -479,31 +489,52 @@ def add_job(new_job: JobModel):
 # Not an endpoint!
 def get_job_by_id(job_id: int):
     """Get job by job ID. """
-    orm_session = orm_parent_session()
-    for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
-        job = JobModel.from_orm(u)
-        job.company = get_company_id(job.company_id)
-        orm_session.close()
-        return job
-    orm_session.close()
-    return
+    s = orm_parent_session()
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+
+    job = None
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True).filter(JobORM.id==job_id):
+        if(not job):
+            job = JobModel.from_orm(p[0])
+            job.key = job.id
+            job.tags = []
+        
+        if(p[1]):
+            job.tags.append(tag_map[p[1].tag_id])
+    
+    s.close()
+    return job
 
 
 @app.get("/jobs/get")
-def get_job(token: str):
+def get_jobs(token: str):
     """Returns all jobs"""
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    j = []
-    for p in s.query(JobORM):
-        t = JobModel.from_orm(p)
-        t.key = t.id
-        j.append(t)
+
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+    
+    j = {}
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True):
+        job = JobModel.from_orm(p[0])
+        if(job.id) not in j:
+            j[job.id] = job
+            job.key = job.id
+            job.tags = []
+            job.company = get_company_id(job.company_id)
+        
+        if(p[1]):
+            j[job.id].tags.append(tag_map[p[1].tag_id])
+    
     s.close()
-    return j
+    return list(j.values())
 
 
 @app.post("/jobs/update")
