@@ -36,7 +36,8 @@ class App extends Component {
       applications: [],
       stages: null,
       addJob: 0,
-      filter_tag: ""
+      filter_tag: "",
+      filter_metadata: ""
     }
 
     this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
@@ -76,7 +77,6 @@ class App extends Component {
       alert(error);
     })
   }
-  
 
   componentDidMount() {
     fetch("http://" + window.location.hostname + ":8000/applications/get?token=" + this.state.token, {
@@ -108,7 +108,7 @@ class App extends Component {
 
   buildDashboardTableHeader(stages) {
     let tableHeaderData = [];
-    let metadata_stages = ["Job ID", "Resume ID"];
+    let metadata_stages = ["Job ID", "Company ID", "Location", "Resume ID"];
     // Include metadata as specified by body. See `buildDashboardTableRow`. 
     for(let i = 0; i < metadata_stages.length; i++) {
       tableHeaderData.push(<th>{metadata_stages[i]}</th>)
@@ -116,7 +116,7 @@ class App extends Component {
 
     tableHeaderData.push(
       <th>
-        <input onChange={this.enter_filter_tag} placeholder="Tags"/>
+        <input onChange={this.enter_filter_tag} placeholder="Tags, Name, Location, Company..."/>
       </th>
     )
 
@@ -148,6 +148,8 @@ class App extends Component {
     // Include metadata as specified by header. See `buildDashboardTableHeader`.
     applicationBase.applicationEvents.sort((x, y) => (x.stage_id > y.stage_id));
     tableRowData.push(<td>{applicationBase.job_id}</td>);
+    tableRowData.push(<td>{applicationBase.job.company_id}</td>);
+    tableRowData.push(<td>{applicationBase.job.location}</td>);
     tableRowData.push(<td>{applicationBase.resume_id}</td>);
 
     let tags = [];
@@ -181,17 +183,25 @@ class App extends Component {
     *  
     *  TODO: Refactor to include logcial "OR", rather than just "AND". 
     */
-    let tag_found, test_tag;
+
+    // filter by tags
+    let tag_found = false, test_tag;
     for(let j = 0; j < applicationBase.job.tags.length; j++) {
       test_tag = applicationBase.job.tags[j].tag;
       if(this.tagStringMatch(test_tag)) {
         tag_found = true;
       }
     }
-    if(!tag_found) {
-      return false;
+
+    // filter by metadata
+    if(this.tagStringMatch(applicationBase.job.name) ||
+        this.tagStringMatch(applicationBase.job.location) ||
+        this.tagStringMatch(applicationBase.job.company.name))
+    {
+      tag_found = true;
     }
-    return true;
+
+    return tag_found;
   }
 
   tagStringMatch(test_tag) {
