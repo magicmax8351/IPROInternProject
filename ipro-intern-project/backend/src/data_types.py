@@ -240,6 +240,10 @@ class PostORM(Base):
     job_id = Column(Integer, ForeignKey("job.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
+    group = relationship("GroupORM")
+    job = relationship("JobORM")
+    comments = relationship("CommentORM")
+    user = relationship("UserORM")
 
 class PostModel(BaseModel):
     class Config:
