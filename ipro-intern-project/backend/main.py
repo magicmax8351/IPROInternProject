@@ -232,16 +232,7 @@ def get_post(token: str):
     membership = [m for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
     for group in membership:
         for post in s.query(PostORM).filter(PostORM.group_id == group.group_id).all():
-            p.append(PostModel(
-                subject=post.subject,
-                body=post.body,
-                timestamp=post.timestamp,
-                user=get_user(post.uid),
-                group=get_group_by_id(group.group_id),
-                job=get_job_by_id(post.job_id),
-                id=post.id,
-                comments=get_comments_post_id(post.id)
-            ))
+            p.append(PostModel.from_orm(post))
     
     p.sort(key=lambda x: -x.id)
     s.close()
