@@ -108,7 +108,7 @@ class App extends Component {
 
   buildDashboardTableHeader(stages) {
     let tableHeaderData = [];
-    let metadata_stages = ["Job ID", "Company ID", "Location", "Resume ID"];
+    let metadata_stages = ["Job Name", "Company Name", "Location", "Resume ID"];
     // Include metadata as specified by body. See `buildDashboardTableRow`. 
     for(let i = 0; i < metadata_stages.length; i++) {
       tableHeaderData.push(<th>{metadata_stages[i]}</th>)
@@ -147,8 +147,8 @@ class App extends Component {
     let tableRowData = [];
     // Include metadata as specified by header. See `buildDashboardTableHeader`.
     applicationBase.applicationEvents.sort((x, y) => (x.stage_id > y.stage_id));
-    tableRowData.push(<td>{applicationBase.job_id}</td>);
-    tableRowData.push(<td>{applicationBase.job.company_id}</td>);
+    tableRowData.push(<td>{applicationBase.job.name}</td>);
+    tableRowData.push(<td>{applicationBase.job.company.name}</td>);
     tableRowData.push(<td>{applicationBase.job.location}</td>);
     tableRowData.push(<td>{applicationBase.resume_id}</td>);
 
