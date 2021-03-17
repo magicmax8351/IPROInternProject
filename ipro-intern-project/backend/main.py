@@ -229,10 +229,10 @@ def get_post(token: str):
     s = orm_parent_session()
     groups = ["%" + str(m.group_id) + "%" for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
     p = []
-    membership = [m for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    for group in membership:
-        for post in s.query(PostORM).filter(PostORM.group_id == group.group_id).all():
-            p.append(PostModel.from_orm(post))
+    membership = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    
+    for post in s.query(PostORM).filter(PostORM.group_id.in_(membership)).all():
+        p.append(PostModel.from_orm(post))
     
     p.sort(key=lambda x: -x.id)
     s.close()
