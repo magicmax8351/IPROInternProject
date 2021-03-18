@@ -206,37 +206,52 @@ def add_post(new_post: PostModel):
     orm_session.add(new_post_orm)
     orm_session.commit()
     ret = PostModel.from_orm(new_post_orm)
+    ret.key = ret.id
+    applied = orm_session.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
+    if applied:
+        ret.applied = 1
+    else:
+        ret.applied = 0
+
     orm_session.close()
-
-    ret.group = get_group_by_id(ret.group_id)
-    ret.comments = get_comments_post_id(ret.id)
-    ret.job = get_job_by_id(ret.job_id)
-    ret.user = get_user(ret.uid)
-
     return ret
 
 
 @app.get("/posts/get")
-def get_post(token: str):
+def get_post(token: str, count: int, start_id: int, group_id: int):
     """Returns all posts."""
     uid = get_uid_token(token)["uid"]
-
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
 
-    # Get user membership
-
     s = orm_parent_session()
-    groups = ["%" + str(m.group_id) + "%" for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    p = []
     membership = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    
-    for post in s.query(PostORM).filter(PostORM.group_id.in_(membership)).all():
-        p.append(PostModel.from_orm(post))
-    
-    p.sort(key=lambda x: -x.id)
+    applications = {a.job_id: a for a in s.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)}
+    posts = []
+
+    if(group_id == -1):
+        if (start_id == -1):
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).order_by(PostORM.id.desc()).limit(count).all()
+        else:
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+    else:
+        if (start_id == -1):
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+        else:
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+
+    for post in query:
+        post_model = PostModel.from_orm(post)
+        if post.job.id in applications:
+            post_model.applied = 1
+        else:
+            post_model.applied = 0
+            
+        post_model.key = post_model.id
+        posts.append(post_model)
     s.close()
-    return {'posts': p, 'count': len(p)}
+
+    return {'posts': posts, 'count': len(posts)}
 
 
 @app.post("/posts/update")

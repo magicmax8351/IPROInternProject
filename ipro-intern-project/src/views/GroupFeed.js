@@ -51,11 +51,10 @@ const FeedContianer = styled.div`
 class GroupFeed extends React.Component {
   constructor(props) {
     super(props);
-    if(document.location.pathname.includes("id")) {
+    if (document.location.pathname.includes("id")) {
       const regex = /\/id\/[0-9]+/;
       let match = document.location.pathname.match(regex)[0];
       this.group_id = parseInt(match.substring(4));
-      console.log("hi there");
     } else {
       this.group_id = -1;
     }
@@ -71,18 +70,22 @@ class GroupFeed extends React.Component {
         name: null,
         desc: null,
       },
+      start_id: -1,
     };
+    this.count = 10;
+
     this.newPostButton = this.newPostButton.bind(this);
     this.renderNewPost = this.renderNewPost.bind(this);
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
-    this.newPosts = [];
+    this.getMorePosts = this.getMorePosts.bind(this);
+    this.getMorePostsButton = this.getMorePostsButton.bind(this);
 
     if (this.group_id == -1) {
       this.state.group = {
-          name: "All posts",
-          desc: "Your News Feed",
-        }
+        name: "All posts",
+        desc: "Your News Feed",
+      };
     }
   }
 
@@ -91,30 +94,45 @@ class GroupFeed extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://" + window.location.hostname + ":8000/posts/get?token=" + this.state.token)
+    this.getMorePosts();
+    if (this.group_id != -1) {
+      fetch(
+        "http://" +
+          window.location.hostname +
+          ":8000/groups/get_id?group_id=" +
+          this.group_id
+      )
+        .then((res) => res.json())
+        .then((json) => this.setState({ group: json }));
+    }
+  }
+
+  getMorePosts() {
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/posts/get?token=" +
+        this.state.token +
+        "&count=" +
+        this.count +
+        "&start_id=" +
+        this.state.start_id + 
+        "&group_id=" + 
+        this.group_id
+    )
       .then((res) => {
-        if(res.status != 200) {
-          window.location.replace("/login")
+        if (res.status != 200) {
+          window.location.replace("/login");
         }
         return res.json();
       })
       .then((json) => {
-          let posts_update = json.posts.map(x => {
-            const obj = {
-              ...x,
-              key: x.id
-            };
-            delete obj.id;
-            return obj;
-          });
-          this.setState({ posts: posts_update })
+        let posts_update = [...this.state.posts, ...json.posts];
+        this.setState({
+          posts: posts_update,
+          start_id: posts_update[posts_update.length - 1].id
+        });
       });
-
-    if (this.group_id != -1) {
-      fetch("http://" + window.location.hostname + ":8000/groups/get_id?group_id=" + this.group_id)
-        .then((res) => res.json())
-        .then((json) => this.setState({ group: json }));
-    }
   }
 
   postList(in_posts) {
@@ -161,14 +179,7 @@ class GroupFeed extends React.Component {
     })
       .then((res) => res.json())
       .then((json) => {
-        let posts_update = [json, ...this.state.posts].map(x => {
-          const obj = {
-            ...x,
-            key: x.id
-          };
-          delete obj.id;
-          return obj;
-        });
+        let posts_update = [json, ...this.state.posts];
         this.setState({ posts: posts_update });
       })
       .catch((err) => {
@@ -176,16 +187,15 @@ class GroupFeed extends React.Component {
       });
   }
 
+  getMorePostsButton() {
+    this.getMorePosts();
+  }
+
   render() {
     if (!this.state.token) {
-      console.log("Token invalid! redirect to login page");
-      console.log(this.state.token);
       document.location.replace("/login");
     }
     let renderedPosts = this.postList(this.state.posts);
-    console.log("Posts: ")
-    console.log(this.state.posts);
-    console.log(renderedPosts);
     return (
       <div>
         <Helmet>
@@ -199,6 +209,7 @@ class GroupFeed extends React.Component {
           </AddPostContainer>
           <PageContent>{renderedPosts}</PageContent>
         </FeedContianer>
+        <button onClick={this.getMorePostsButton}>Get More Posts!</button>
       </div>
     );
   }

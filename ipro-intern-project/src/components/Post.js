@@ -144,6 +144,20 @@ const AddJobButton = styled.button`
     }
 `;
 
+const AlreadyAddedJobButton = styled.button`
+    margin: 0;
+    color: white;
+    background-color: #06094f;
+    border-color: #06094f;
+    border-radius: 12px;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    margin-top: 15px;
+    font-weight: bold;
+    font-style: italic;
+`;
+
 const MoreComments = styled.p`
   font-style: italic;
   margin-left: 15px;
@@ -206,8 +220,10 @@ class Post extends React.Component {
       user: null,
       company: null,
       comments: props.comments,
-      addJobButtonText: "Add job to Dashboard"
+      addJobState: props.post.applied
     };
+
+    this.addJobButtonText = ["Add job to Dashboard", "Added!"]
 
     this.token = props.token;
 
@@ -309,6 +325,7 @@ class Post extends React.Component {
         </div>
       );
     }
+    console.log(this.state.post);
     for (let i = 0; i < Math.min(num_comments, this.state.post.comments.length); i++) {
       ret.push(
         <Comment
@@ -394,7 +411,6 @@ class Post extends React.Component {
 
   renderNewComment() {
     let value = "";
-    let setValue = "";
     if (this.state.post_comment) {
       return (
         <Form>
@@ -428,11 +444,10 @@ class Post extends React.Component {
     })
     .then((res) => {
       if(res.status == 200) {
-        this.setState({addJobButtonText: "Added!"});
+        this.setState({addJobState: 1});
       } else if (res.status == 411) {
-        //throw new Error("Job already added!");
-        this.setState({addJobButtonText: "Already added!"}); // this can be handled better
-                                                             // for example, display "added" on post load
+        this.setState({addJobState: 1});
+        throw new Error("Job already added!");
       } else {
         throw new Error("Something else broke!");
       }
@@ -443,7 +458,6 @@ class Post extends React.Component {
 
   renderPost() {
     let body = "";
-
     if (this.state.post_expand) {
       body = this.state.post.body;
     } else {
@@ -481,10 +495,15 @@ class Post extends React.Component {
         </div>
       );
     }
-
+    let buttonText = this.addJobButtonText[this.state.addJobState];
+    let button = null;
+    if(this.state.addJobState == 1) {
+      button = <AlreadyAddedJobButton disabled={1}>{buttonText} </AlreadyAddedJobButton>
+    } else {
+      button = <AddJobButton onClick={this.addJobFromPost}> {buttonText} </AddJobButton>
+    }
     return (
       <Container>
-        
         <JobTitle>{this.state.post.job.name}</JobTitle>
         <JobLocation>{this.state.post.job.company.name} - {this.state.post.job.location}</JobLocation>
         <GroupPost>
@@ -494,7 +513,7 @@ class Post extends React.Component {
         <HRLine />
         {this.renderPost()}
         {secondary_content}
-        <AddJobButton onClick={this.addJobFromPost}>{this.state.addJobButtonText}</AddJobButton>
+        {button}
       </Container>
     );
   }

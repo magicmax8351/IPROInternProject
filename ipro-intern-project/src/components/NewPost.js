@@ -155,7 +155,7 @@ class NewPost extends React.Component {
       .then((json) => {
         this.setState({
           jobs: [...this.state.jobs, json],
-          job_id: this.state.jobs.length
+          job_id: json.id
         });
       });
     }

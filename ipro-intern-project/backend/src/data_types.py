@@ -143,6 +143,7 @@ class CommentORM(Base):
     timestamp =  Column(DateTime)
     post_id = Column(Integer, ForeignKey("post.id"))
     uid = Column(Integer, ForeignKey("user.id"))
+    user = relationship("UserORM")
 
 
 class CommentModel(BaseModel):
@@ -263,7 +264,8 @@ class PostModel(BaseModel):
     group: Optional[GroupModel]
     job: Optional[JobModel]
     comments: Optional[List[CommentModel]]
-    
+    applied: Optional[int]
+    key: Optional[int]
 
 
 class ApplicationEventModel(BaseModel):
