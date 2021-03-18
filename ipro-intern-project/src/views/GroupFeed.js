@@ -135,16 +135,8 @@ class GroupFeed extends React.Component {
       });
   }
 
-  postList(in_posts) {
+  postList(group_posts) {
     let out_posts = [];
-    let group_posts = null;
-
-    if (this.group_id != -1) {
-      group_posts = in_posts.filter((post) => post.group.id == this.group_id);
-    } else {
-      group_posts = in_posts;
-    }
-
     for (let i = 0; i < group_posts.length; i++) {
       out_posts.push(
         <Post
@@ -207,9 +199,11 @@ class GroupFeed extends React.Component {
             <AddPostHeader>Add a new post...</AddPostHeader>
             {this.renderNewPost()}
           </AddPostContainer>
-          <PageContent>{renderedPosts}</PageContent>
+          <PageContent>
+            {renderedPosts} 
+            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
+          </PageContent>
         </FeedContianer>
-        <button onClick={this.getMorePostsButton}>Get More Posts!</button>
       </div>
     );
   }
