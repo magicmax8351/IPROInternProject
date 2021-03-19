@@ -21,9 +21,7 @@ const AddPostContainer = styled.div`
   background: lightgrey;
   border-radius: 20px;
   padding: 10px;
-  margin-left: auto;
-  width: 650px;
-  margin-right: auto;
+  margin-bottom: 10px;
 `;
 
 const AddPostHeader = styled.h2`
@@ -43,9 +41,31 @@ const AddPostButton = styled.button`
   background-color: none;
 `;
 
-const FeedContianer = styled.div`
+const FeedContainer = styled.div`
   margin-top: 20px;
-  width: 700px;
+  width: 650px;
+  margin-left: 30px;
+`;
+
+const SearchContainer = styled.div`
+  background: lightgrey;
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
+`;
+
+const SearchInput = styled.input`
+  display: block;
+  position: absolute;
+  margin-top: -40px;
+  margin-left: 120px;
+`;
+
+const SearchHeader = styled.h2`
+  font-style: italic;
+  font-size: 28px;
+  font-family: "Open Sans", sans-serif;
+  margin-left: 10px;
 `;
 
 class GroupFeed extends React.Component {
@@ -71,6 +91,7 @@ class GroupFeed extends React.Component {
         desc: null,
       },
       start_id: -1,
+      filter: ""
     };
     this.count = 10;
 
@@ -80,6 +101,10 @@ class GroupFeed extends React.Component {
     this.postList = this.postList.bind(this);
     this.getMorePosts = this.getMorePosts.bind(this);
     this.getMorePostsButton = this.getMorePostsButton.bind(this);
+
+    this.enter_filter = this.enter_filter.bind(this);
+    this.filterStringMatch = this.filterStringMatch.bind(this);
+    this.filterPost = this.filterPost.bind(this);
 
     if (this.group_id == -1) {
       this.state.group = {
@@ -91,6 +116,10 @@ class GroupFeed extends React.Component {
 
   newPostButton() {
     this.setState({ newPost: !this.state.newPost });
+  }
+
+  enter_filter(event) {
+    this.setState({ filter: event.target.value });
   }
 
   componentDidMount() {
@@ -116,8 +145,8 @@ class GroupFeed extends React.Component {
         "&count=" +
         this.count +
         "&start_id=" +
-        this.state.start_id + 
-        "&group_id=" + 
+        this.state.start_id +
+        "&group_id=" +
         this.group_id
     )
       .then((res) => {
@@ -130,18 +159,46 @@ class GroupFeed extends React.Component {
         let posts_update = [...this.state.posts, ...json.posts];
         this.setState({
           posts: posts_update,
-          start_id: posts_update[posts_update.length - 1].id
+          start_id: posts_update[posts_update.length - 1].id,
         });
       });
   }
 
+  filterPost(post) {
+    let filter_targets = [post.subject, post.body, post.job.name, post.job.location,
+                          post.job.company.name, post.user.fname, post.user.lname]
+    for(let i = 0; i < post.job.tags.length; i++) {
+      filter_targets.push(post.job.tags[i].tag.tag);
+    }
+
+    let results = filter_targets.map(this.filterStringMatch)
+    return results.some((x) => x == true); 
+
+  }
+
+  filterStringMatch(test_tag) {
+    let query_tags = this.state.filter.split(",");
+    if(query_tags.length == 0) {
+      return true;
+    }
+    for(let i = 0; i < query_tags.length; i++) {
+      if(test_tag.toLowerCase().includes(query_tags[i].toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   postList(group_posts) {
     let out_posts = [];
-    for (let i = 0; i < group_posts.length; i++) {
+
+    let posts = group_posts.filter(this.filterPost);
+
+    for (let i = 0; i < posts.length; i++) {
       out_posts.push(
         <Post
-          post={group_posts[i]}
-          key={group_posts[i].id}
+          post={posts[i]}
+          key={posts[i].id}
           token={this.state.token}
         />
       );
@@ -194,16 +251,18 @@ class GroupFeed extends React.Component {
           <title>Home</title>
         </Helmet>
         <PageHeader title={this.state.group.name} />
-        <FeedContianer>
+        <FeedContainer>
           <AddPostContainer>
             <AddPostHeader>Add a new post...</AddPostHeader>
             {this.renderNewPost()}
           </AddPostContainer>
-          <PageContent>
-            {renderedPosts} 
-            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
-          </PageContent>
-        </FeedContianer>
+          <SearchContainer>
+            <SearchHeader>Search</SearchHeader>
+            <SearchInput onChange={this.enter_filter}/>
+          </SearchContainer>
+          {renderedPosts}
+          <button onClick={this.getMorePostsButton}>Get More Posts!</button>
+        </FeedContainer>
       </div>
     );
   }

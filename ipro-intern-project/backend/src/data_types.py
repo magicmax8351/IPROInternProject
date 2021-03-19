@@ -187,6 +187,23 @@ class TagModel(BaseModel):
     class Config:
         orm_mode = True
 
+class JobTagORM(Base):
+    __tablename__ = "jobtag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    tag_id = Column(Integer, ForeignKey("tag.id")) 
+
+    jobs = relationship("JobORM")
+    tag = relationship("TagORM")
+
+class JobTagModel(BaseModel):
+    job_id: int
+    tag_id: int
+    tag: Optional[TagModel]
+
+    class Config:
+        orm_mode = True
 
 class JobORM(Base):
     __tablename__ = "job"
@@ -197,6 +214,7 @@ class JobORM(Base):
     location = Column(String(32), nullable=False)
     company_id = Column(Integer, ForeignKey("company.id"))
     company = relationship("CompanyORM")
+    tags = relationship("JobTagORM")
 
 class JobModel(BaseModel):
     id: Optional[int]
@@ -207,26 +225,7 @@ class JobModel(BaseModel):
     company: Optional[CompanyModel]
     token: Optional[str]
     key: Optional[int]
-    tags: Optional[List[TagModel]]
-
-    class Config:
-        orm_mode = True
-
-class JobTagORM(Base):
-    __tablename__ = "jobtag"
-    metadata = metadata
-    id = Column(Integer, primary_key=True, nullable=False)
-    job_id = Column(Integer, ForeignKey("job.id"))
-    tag_id = Column(Integer, ForeignKey("tag.id")) 
-
-    jobs = relationship("JobORM")
-    tags = relationship("TagORM")
-
-class JobtagModel(BaseModel):
-    job_id: int
-    tag_id: int
-    job: Optional[JobModel]
-    tag: Optional[TagModel]
+    tags: Optional[List[JobTagModel]]
 
     class Config:
         orm_mode = True
@@ -275,7 +274,8 @@ class ApplicationEventModel(BaseModel):
     stage_id: Optional[int]
     token: Optional[str]
     applicationBaseId: Optional[int]
-    
+    stage: Optional[StageModel]
+
     class Config:
         orm_mode = True
 
@@ -288,8 +288,8 @@ class ApplicationBaseORM(Base):
     uid = Column(Integer, ForeignKey("user.id"))
     __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
                      )
-
-    events = relationship("ApplicationEventORM")
+    job = relationship("JobORM")
+    applicationEvents = relationship("ApplicationEventORM")
 
 class ApplicationEventORM(Base):
     __tablename__ = "applicationEvent"
@@ -299,6 +299,7 @@ class ApplicationEventORM(Base):
     status = Column(Integer, nullable=False)
     applicationBaseId = Column(Integer, ForeignKey("applicationBase.id"))
     stage_id = Column(Integer, ForeignKey("stage.id"))
+    stage = relationship("StageORM")
 
 class ApplicationBaseModel(BaseModel):
     id: Optional[int]
@@ -309,6 +310,7 @@ class ApplicationBaseModel(BaseModel):
     token: Optional[str]
     key: Optional[int]
     job: Optional[JobModel]
+    
 
     class Config:
         orm_mode = True
