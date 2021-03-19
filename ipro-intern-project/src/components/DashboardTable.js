@@ -36,7 +36,7 @@ class App extends Component {
       applications: [],
       stages: null,
       addJob: 0,
-      filter_tag: "",
+      filter: "",
       filter_metadata: ""
     }
 
@@ -48,7 +48,7 @@ class App extends Component {
   }
 
   enter_filter_tag(event) {
-    this.setState({ filter_tag: event.target.value });
+    this.setState({ filter: event.target.value });
   }
 
   addJob(job_id) {
@@ -116,7 +116,7 @@ class App extends Component {
 
     tableHeaderData.push(
       <th>
-        <input onChange={this.enter_filter_tag} placeholder="Tags, Name, Location, Company..."/>
+        <input onChange={this.enter_filter_tag} placeholder="Search for a job"/>
       </th>
     )
 
@@ -153,9 +153,9 @@ class App extends Component {
     tableRowData.push(<td>{applicationBase.resume_id}</td>);
 
     let tags = [];
-    let jobTags_filtered = applicationBase.job.tags.filter((x) => this.tagStringMatch(x.tag));
+    let jobTags_filtered = applicationBase.job.tags.filter((x) => this.tagStringMatch(x.tag.tag));
     for(let i = 0; i < jobTags_filtered.length; i++) {
-      tags.push(<DashboardTag>{jobTags_filtered[i].tag}</DashboardTag>)
+      tags.push(<DashboardTag>{jobTags_filtered[i].tag.tag}</DashboardTag>)
     }
 
     tableRowData.push(<td><DashboardContainer>{tags}</DashboardContainer></td>);
@@ -181,13 +181,12 @@ class App extends Component {
     *  in buildDashboardTableRow - tags are checked against the same predicate, 
     *  and if they don't match, are removed. May be a better user experience. 
     *  
-    *  TODO: Refactor to include logcial "OR", rather than just "AND". 
     */
 
     // filter by tags
     let tag_found = false, test_tag;
     for(let j = 0; j < applicationBase.job.tags.length; j++) {
-      test_tag = applicationBase.job.tags[j].tag;
+      test_tag = applicationBase.job.tags[j].tag.tag;
       if(this.tagStringMatch(test_tag)) {
         tag_found = true;
       }
@@ -205,14 +204,12 @@ class App extends Component {
   }
 
   tagStringMatch(test_tag) {
-    let query_tags = this.state.filter_tag.split(",");
+    let query_tags = this.state.filter.split(",");
     if(query_tags.length == 0) {
       return true;
     }
-    let query_tag;
     for(let i = 0; i < query_tags.length; i++) {
-      query_tag = query_tags[i]
-      if(test_tag.toLowerCase().includes(query_tag.toLowerCase())) {
+      if(test_tag.toLowerCase().includes(query_tags[i].toLowerCase())) {
         return true;
       }
     }

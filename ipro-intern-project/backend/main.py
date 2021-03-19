@@ -317,32 +317,13 @@ def get_applications(token: str):
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
-    
-    jobs = {j.id: j for j in get_jobs(token)}
 
     s = orm_parent_session()
     apps_orm = {}
-    apps_model = []
 
-    stages = [StageModel.from_orm(x) for x in s.query(StageORM)]
+    stages = [StageModel.from_orm(stage) for stage in s.query(StageORM)]
+    apps_model = [ApplicationBaseModel.from_orm(app) for app in s.query(ApplicationBaseORM)]
 
-    for a in s.query(ApplicationBaseORM, ApplicationEventORM).join(ApplicationEventORM):
-        if(a[0] in apps_orm):
-            apps_orm[a[0]].append(a[1])
-        else:
-            apps_orm[a[0]] = [a[1]]
-
-    for (app_base, app_event) in apps_orm.items():
-        app_base_model = ApplicationBaseModel.from_orm(app_base)
-        app_base_model.job = jobs[app_base_model.job_id]
-        applicationEvents = []
-        for event in app_event:
-            newEvent = ApplicationEventModel.from_orm(event)
-            applicationEvents.append(newEvent)
-        app_base_model.applicationEvents = applicationEvents
-        app_base_model.key = app_base_model.id
-        apps_model.append(app_base_model)
-        
     s.close()
 
     return ApplicationDataModel(
@@ -381,8 +362,6 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
 
     r = []
 
-    print(new_application.job_id)
-
     try: 
         orm_session.add(new_application_base_orm)
 
@@ -393,13 +372,10 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
                 applicationBaseId = new_application_base_orm.id,
                 stage_id = s.id
             )
-
             if s.id == 1 and applied:
                 e.status = 1
-                print("applied!")
-        
+                
             orm_session.add(e)
-            r.append(e)
 
         orm_session.commit()
 
@@ -408,8 +384,6 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
         raise HTTPException(411, "Job already added!")
 
     ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
-    ret_app.applicationEvents = [ApplicationEventModel.from_orm(e) for e in r]
-    ret_app.job = get_job_by_id(ret_app.job_id)
     orm_session.close()
 
     ret_app.key = ret_app.id
@@ -670,7 +644,7 @@ def delete_resume(resume_id: int):
 
 # Jobtag
 @app.post("/jobtags/add")
-def add_jobtag(new_jobtag: JobtagModel):
+def add_jobtag(new_jobtag: JobTagModel):
     """Adds a new row to jobtag table."""
     raise HTTPException(400, "Not implemented")
 
@@ -682,7 +656,7 @@ def get_jobtag(jobtag_id: int):
 
 
 @app.post("/jobtags/update")
-def update_jobtag(updated_jobtag: JobtagModel):
+def update_jobtag(updated_jobtag: JobTagModel):
     """Updates the jobtag with the given ID with new information.
        Checks to make sure that the jobtag exists first."""
     raise HTTPException(400, "Not implemented")

@@ -22,8 +22,6 @@ const BodyText = styled.p`
 const Container = styled.div`
   font-family: "Open Sans", sans-serif;
   width: 650px;
-  margin-left: auto;
-  margin-right: auto;
   background-color: lightgrey;
   padding: 15px;
   border-radius: 20px;
@@ -182,6 +180,15 @@ const PostExpandButton = styled.button`
   margin-right: auto;
 `;
 
+const PostTag = styled.p`
+  background: #EEEEEEEE;
+  text-align: center;
+  margin: 2px;
+  border-radius: 30px;
+  display: inline-block;
+  padding: 5px;
+`
+
 class Comment extends React.Component {
   constructor(props) {
     super(props);
@@ -273,6 +280,10 @@ class Post extends React.Component {
   }
 
   renderDescription() {
+    let tags = [];
+    for(let i = 0; i < this.state.post.job.tags.length; i++) {
+      tags.push(<PostTag>{this.state.post.job.tags[i].tag.tag}</PostTag>);
+    }
     if (this.state.description_expand) {
       return (
         <section>
@@ -281,6 +292,8 @@ class Post extends React.Component {
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
           <BodyText>{this.state.post.job.description}</BodyText>
+          <SectionTitleActive>Tags</SectionTitleActive>
+          <div>{tags}</div>
         </section>
       );
     } else {
