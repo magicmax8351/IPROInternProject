@@ -456,7 +456,8 @@ def add_job(new_job: JobModel):
         name=new_job.name,
         description=new_job.description,
         location=new_job.location,
-        company_id=new_job.company_id
+        company_id=new_job.company_id,
+        link=new_job.link
     )
     s.add(j)
     s.commit()

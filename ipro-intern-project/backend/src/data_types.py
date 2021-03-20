@@ -215,6 +215,7 @@ class JobORM(Base):
     company_id = Column(Integer, ForeignKey("company.id"))
     company = relationship("CompanyORM")
     tags = relationship("JobTagORM")
+    link = Column(String(512), nullable=False)
 
 class JobModel(BaseModel):
     id: Optional[int]
@@ -226,6 +227,7 @@ class JobModel(BaseModel):
     token: Optional[str]
     key: Optional[int]
     tags: Optional[List[JobTagModel]]
+    link: Optional[str]
 
     class Config:
         orm_mode = True
