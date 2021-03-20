@@ -145,7 +145,7 @@ def gen_fake_data():
     # Add some jobs
 
 
-
+    fake_job_urls = ['https://myjob.me', 'https://ilovemartainshray.jobs', 'https://microsoft.gov']
     jobs = []
     for i in range(10):
         jobs.append(
@@ -156,7 +156,8 @@ def gen_fake_data():
                 description=lipsum.paragraph(
                     nb_sentences=15,
                     variable_nb_sentences=False,
-                    ext_word_list=word_list.split())))
+                    ext_word_list=word_list.split()),
+                link=random.choice(fake_job_urls)))
 
     s.add_all(jobs)
     s.commit()
