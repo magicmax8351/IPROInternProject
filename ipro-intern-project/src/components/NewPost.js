@@ -49,6 +49,7 @@ class NewPost extends React.Component {
 
     this.enter_new_job_name = this.enter_new_job_name.bind(this);
     this.enter_new_job_description = this.enter_new_job_description.bind(this);
+    this.enter_new_job_link = this.enter_new_job_link.bind(this);
     this.enter_new_job_location = this.enter_new_job_location.bind(this);
     this.submitAddJob = this.submitAddJob.bind(this);
 
@@ -102,6 +103,10 @@ class NewPost extends React.Component {
     this.setState({ new_job_description: event.target.value });
   }
 
+  enter_new_job_link(event) {
+    this.setState({ new_job_link: event.target.value });
+  }
+
   enter_new_job_location(event) {
     this.setState({ new_job_location: event.target.value });
   }
@@ -146,6 +151,7 @@ class NewPost extends React.Component {
         body: JSON.stringify({
           name: this.state.new_job_name,
           description: this.state.new_job_description,
+          link: this.state.new_job_link,
           location: this.state.new_job_location,
           company_id: this.state.company_id,
           token: this.token
@@ -299,6 +305,12 @@ class NewPost extends React.Component {
             <Form.Group as={Col}>
               <Form.Label>Description</Form.Label>
               <Form.Control onChange={this.enter_new_job_description} placeholder="Engineer new techniques to move money in a big circle"/>
+            </Form.Group>
+          </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Link</Form.Label>
+              <Form.Control onChange={this.enter_new_job_link} placeholder="https://example.com"/>
             </Form.Group>
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddJob}>
