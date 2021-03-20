@@ -292,6 +292,7 @@ class Post extends React.Component {
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
           <BodyText>{this.state.post.job.description}</BodyText>
+          <a href={this.state.post.job.link}>{this.state.post.job.link}</a>
           <SectionTitleActive>Tags</SectionTitleActive>
           <div>{tags}</div>
         </section>
