@@ -41,7 +41,7 @@ class App extends Component {
     }
 
     this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
-    this.addJob = this.addJob.bind(this);
+    this.addApplication = this.addApplication.bind(this);
     this.filterDashboardTableRow = this.filterDashboardTableRow.bind(this);
     this.tagStringMatch = this.tagStringMatch.bind(this);
     this.enter_filter_tag = this.enter_filter_tag.bind(this);
@@ -51,7 +51,7 @@ class App extends Component {
     this.setState({ filter: event.target.value });
   }
 
-  addJob(job_id) {
+  addApplication(job_id) {
     fetch("http://" + window.location.hostname + ":8000/applications/add", {
       "method": "POST",
       "headers": {
@@ -223,10 +223,10 @@ class App extends Component {
     }
     let table = this.buildDashboardTable(this.state.applications, this.state.stages);
     let newEntry;
-    if(this.state.addJob) {
-      newEntry = <NewDashboardTableEntry token={this.state.token} func={this.addJob}/>
+    if(this.state.addApplication) {
+      newEntry = <NewDashboardTableEntry token={this.state.token} func={this.addApplication}/>
     } else {
-      newEntry = <button onClick={() => this.setState({addJob: 1})}>Add Job to Dashboard</button>;
+      newEntry = <button onClick={() => this.setState({addApplication: 1})}>Add Job to Dashboard</button>;
     }
     return (
       <div>
