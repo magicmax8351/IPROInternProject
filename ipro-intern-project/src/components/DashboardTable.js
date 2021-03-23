@@ -65,6 +65,7 @@ class App extends Component {
     })
     .then((res) => {
       if(res.status == 200) {
+        alert("Job succesfully added!");
         return res.json();
       } else if (res.status == 411) {
         throw new Error("Job already added!");
