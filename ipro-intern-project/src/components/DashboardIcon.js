@@ -19,7 +19,8 @@ class Icon extends Component {
       id: props.id,
       token: props.token,
       applicationBaseId: props.applicationBaseId,
-      status: props.status
+      status: props.status,
+      func: props.func
     }
   this.updateStatus = this.updateStatus.bind(this);
   }
@@ -27,6 +28,7 @@ class Icon extends Component {
   updateStatus() {
     let newStatus = (this.state.status + 1) % status_list.length;
     this.setState({status: newStatus});
+    this.state.func(newStatus);
     fetch("http://" + window.location.hostname + ":8000/applications/update", {
       "method": "POST",
       "headers": {

@@ -181,6 +181,15 @@ class App extends Component {
     return <tbody>{dashboardData}</tbody>;
   }
 
+  updateApplicationStatus(applicationBase, applicationEventId, newStatus) {
+    for(let i = 0; i < applicationBase.applicationEvents.length; i++) {
+      if(applicationBase.applicationEvents[i].id == applicationEventId) {
+        applicationBase.applicationEvents[i].status = newStatus;
+        return;
+      }
+    }
+  }
+
   buildDashboardTableRow(applicationBase) {
     let tableRowData = [];
     // Include metadata as specified by header. See `buildDashboardTableHeader`.
@@ -228,6 +237,7 @@ class App extends Component {
             applicationBaseId={e.applicationBaseId}
             token={this.state.token}
             key={e.id}
+            func={(status) => this.updateApplicationStatus(applicationBase, e.id, status)}
           />
         </td>
       );
