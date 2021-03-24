@@ -22,8 +22,6 @@ const BodyText = styled.p`
 const Container = styled.div`
   font-family: "Open Sans", sans-serif;
   width: 650px;
-  margin-left: auto;
-  margin-right: auto;
   background-color: lightgrey;
   padding: 15px;
   border-radius: 20px;
@@ -126,6 +124,38 @@ const ButtonStyled = styled.button`
   margin-top: -40px;
 `;
 
+const AddJobButton = styled.button`
+    margin: 0;
+    color: white;
+    background-color: #06094f;
+    border-color: #06094f;
+    border-radius: 12px;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    margin-top: 15px;
+    font-weight: bold;
+    :hover{
+      background-color :#185ea3;
+      border-color: #185ea3;
+      box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+`;
+
+const AlreadyAddedJobButton = styled.button`
+    margin: 0;
+    color: white;
+    background-color: #06094f;
+    border-color: #06094f;
+    border-radius: 12px;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    margin-top: 15px;
+    font-weight: bold;
+    font-style: italic;
+`;
+
 const MoreComments = styled.p`
   font-style: italic;
   margin-left: 15px;
@@ -147,8 +177,17 @@ const PostExpandButton = styled.button`
   font-style: italic;
   width: 100%;
   margin-left: auto;
-  margin-rigth: auto;
+  margin-right: auto;
 `;
+
+const PostTag = styled.p`
+  background: #EEEEEEEE;
+  text-align: center;
+  margin: 2px;
+  border-radius: 30px;
+  display: inline-block;
+  padding: 5px;
+`
 
 class Comment extends React.Component {
   constructor(props) {
@@ -188,7 +227,10 @@ class Post extends React.Component {
       user: null,
       company: null,
       comments: props.comments,
+      addJobState: props.post.applied
     };
+
+    this.addJobButtonText = ["Add job to Dashboard", "Added!"]
 
     this.token = props.token;
 
@@ -204,6 +246,7 @@ class Post extends React.Component {
     this.comment_button_event = this.comment_button_event.bind(this);
     this.post_button_event = this.post_button_event.bind(this);
     this.post_comment_event = this.post_comment_event.bind(this);
+    this.addJobFromPost = this.addJobFromPost.bind(this);
 
     this.submitComment = this.submitComment.bind(this);
     this.writeComment = this.writeComment.bind(this);
@@ -237,6 +280,10 @@ class Post extends React.Component {
   }
 
   renderDescription() {
+    let tags = [];
+    for(let i = 0; i < this.state.post.job.tags.length; i++) {
+      tags.push(<PostTag>{this.state.post.job.tags[i].tag.tag}</PostTag>);
+    }
     if (this.state.description_expand) {
       return (
         <section>
@@ -245,6 +292,9 @@ class Post extends React.Component {
             <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
           </ButtonStyled>
           <BodyText>{this.state.post.job.description}</BodyText>
+          <a href={this.state.post.job.link}>{this.state.post.job.link}</a>
+          <SectionTitleActive>Tags</SectionTitleActive>
+          <div>{tags}</div>
         </section>
       );
     } else {
@@ -289,6 +339,7 @@ class Post extends React.Component {
         </div>
       );
     }
+    console.log(this.state.post);
     for (let i = 0; i < Math.min(num_comments, this.state.post.comments.length); i++) {
       ret.push(
         <Comment
@@ -345,7 +396,7 @@ class Post extends React.Component {
     if (
       this.state.new_comment.length > 2
     ) {
-      fetch("http://wingman.justinjschmitz.com:8000/comments/add", {
+      fetch("http://" + window.location.hostname + ":8000/comments/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -374,7 +425,6 @@ class Post extends React.Component {
 
   renderNewComment() {
     let value = "";
-    let setValue = "";
     if (this.state.post_comment) {
       return (
         <Form>
@@ -394,11 +444,34 @@ class Post extends React.Component {
     }
   }
 
-
+  addJobFromPost() {
+    fetch("http://" + window.location.hostname + ":8000/applications/add", {
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": JSON.stringify({
+        job_id: this.state.post.job.id,
+        token: this.token,
+        resume_id: 1
+      })
+    })
+    .then((res) => {
+      if(res.status == 200) {
+        this.setState({addJobState: 1});
+      } else if (res.status == 411) {
+        this.setState({addJobState: 1});
+        throw new Error("Job already added!");
+      } else {
+        throw new Error("Something else broke!");
+      }
+    }).catch(error => {
+      alert(error);
+    })
+  }
 
   renderPost() {
     let body = "";
-
     if (this.state.post_expand) {
       body = this.state.post.body;
     } else {
@@ -436,7 +509,13 @@ class Post extends React.Component {
         </div>
       );
     }
-
+    let buttonText = this.addJobButtonText[this.state.addJobState];
+    let button = null;
+    if(this.state.addJobState == 1) {
+      button = <AlreadyAddedJobButton disabled={1}>{buttonText} </AlreadyAddedJobButton>
+    } else {
+      button = <AddJobButton onClick={this.addJobFromPost}> {buttonText} </AddJobButton>
+    }
     return (
       <Container>
         <JobTitle>{this.state.post.job.name}</JobTitle>
@@ -448,6 +527,7 @@ class Post extends React.Component {
         <HRLine />
         {this.renderPost()}
         {secondary_content}
+        {button}
       </Container>
     );
   }

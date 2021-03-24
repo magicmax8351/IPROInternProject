@@ -60,7 +60,7 @@ class Profile extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://wingman.justinjschmitz.com:8000/groups/get?token=" + this.state.token)
+    fetch("http://" + window.location.hostname + ":8000/groups/get?token=" + this.state.token)
       .then((res) => res.json())
       .then((json) => {
         this.setState({ groups: json });
@@ -79,40 +79,10 @@ class Profile extends React.Component {
         <PageHeader title="Profile Page" />
         <PageContent>
           <h1>My Groups</h1>
-          {/*}<table border="1">
-            <tbody>
-              {this.state.groups.map((g) => {
-                return (
-                  <tr>
-                    <td>
-                      <img src={g.icon} />
-                    </td>
-                    <td key={"group_" + g.id}>
-                      <a href={"http://wingman.justinjschmitz.com:3000/group/id/" + g.id}>
-                        {g.name}
-                      </a>
-                    </td>
-                    <td>
-                      <button type="button">Leave Group</button>
-                    </td>
-                    <td>
-                      <button type="button">Add Member</button>
-                    </td>
-                    <td>
-                      <button type="button">create Post</button>
-                    </td>
-                    <td>
-                      <button type="button">View Statistics</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            </table>{*/}
             {this.state.groups.map((g) => {
                 return (
                   <Container>
-                    <GroupName><TitleHyperlink href={"http://wingman.justinjschmitz.com:3000/group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
+                    <GroupName><TitleHyperlink href={"/group/id/" + g.id}>{g.name}</TitleHyperlink></GroupName>
                     <GroupDescription>{g.desc}</GroupDescription>
                     <HRLine />
                     <GroupButton type="button">View Group</GroupButton>

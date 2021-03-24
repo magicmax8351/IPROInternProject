@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // Logic for adding posts is broken.
 // Use https://formik.org/docs/overview to handle adding things to the database.
 
-class NewPost extends React.Component {
+class NewDashboardTableEntry extends React.Component {
   constructor(props) {
     super(props);
     this.func = props.func;
@@ -20,7 +20,6 @@ class NewPost extends React.Component {
     this.state = {
       company_id: 1,
       job_id: 0,
-      group_id: null,
       jobs: null,
       companies: null,
       groups: null,
@@ -28,32 +27,17 @@ class NewPost extends React.Component {
       subject: null,
       new_company_name: null
     };
-
-    this.dropdown_change = this.dropdown_change.bind(this);
-    this.renderAddCompany = this.renderAddCompany.bind(this);
-    this.renderAddJob = this.renderAddJob.bind(this);
-    this.renderWriteSubject = this.renderWriteSubject.bind(this);
-    this.renderWriteBody = this.renderWriteBody.bind(this);
-    this.renderListCompany = this.renderListCompany.bind(this);
-    this.renderListJob = this.renderListJob.bind(this);
-    this.renderChooseGroups = this.renderChooseGroups.bind(this);
-
     this.enter_company = this.enter_company.bind(this);
-    this.enter_job = this.enter_job.bind(this);
-    this.enter_body = this.enter_body.bind(this);
-    this.enter_subject = this.enter_subject.bind(this);
-    this.enter_group = this.enter_group.bind(this);
-
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
     this.submitAddCompany = this.submitAddCompany.bind(this);
 
+    this.enter_job = this.enter_job.bind(this);
     this.enter_new_job_name = this.enter_new_job_name.bind(this);
     this.enter_new_job_description = this.enter_new_job_description.bind(this);
     this.enter_new_job_link = this.enter_new_job_link.bind(this);
     this.enter_new_job_location = this.enter_new_job_location.bind(this);
     this.submitAddJob = this.submitAddJob.bind(this);
-
-    this.submitPost = this.submitPost.bind(this);
+    
   }
 
   componentDidMount() {
@@ -64,10 +48,6 @@ class NewPost extends React.Component {
     fetch("http://" + window.location.hostname + ":8000/companies/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
-
-    fetch("http://" + window.location.hostname + ":8000/groups/get?token=" + this.token)
-      .then((res) => res.json())
-      .then((json) => this.setState({ groups: json }));
   }
 
   enter_company(event) {
@@ -78,21 +58,8 @@ class NewPost extends React.Component {
     this.setState({ job_id: event.target.value });
   }
 
-  enter_body(event) {
-    this.setState({ body: event });
-  }
-
-  enter_subject(event) {
-    this.setState({ subject: event.target.value });
-  }
-
   enter_new_company_name(event) {
     this.setState({ new_company_name: event.target.value });
-  }
-
-  enter_group(event) {
-    // parseint() is a hack
-    this.setState({ group_id: parseInt(event.target.value) });
   }
 
   enter_new_job_name(event) {
@@ -111,12 +78,6 @@ class NewPost extends React.Component {
     this.setState({ new_job_location: event.target.value });
   }
 
-  dropdown_change(id, event) {
-    this.setState({
-      [event.target.id]: event.target.value,
-    });
-  }
-  
   submitAddCompany(event) {
     event.preventDefault()
     if(this.state.new_company_name.length > 2) {
@@ -134,7 +95,8 @@ class NewPost extends React.Component {
       .then((json) => {
         this.setState({
           companies: [...this.state.companies, json],
-          company_id: this.state.companies.length
+          company_id: json.id,
+          job_id: 0
         });
       });
     }
@@ -164,26 +126,6 @@ class NewPost extends React.Component {
           job_id: json.id
         });
       });
-    }
-  }
-
-  submitPost(event) {
-    event.preventDefault();
-    if (
-      this.state.job_id > 0 &&
-      this.state.company_id > 0 &&
-      this.state.group_id > 0 &&
-      this.state.body.length > 1 &&
-      this.state.subject.length > 1
-    ) {
-      let post = {
-        subject: this.state.subject,
-        body: this.state.body,
-        job_id: this.state.job_id,
-        token: this.token,
-        group_id: this.state.group_id
-      };
-      this.func(post);
     }
   }
 
@@ -321,63 +263,6 @@ class NewPost extends React.Component {
     }
   }
 
-  renderWriteSubject() {
-    if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-      return (
-        <Form.Group>
-          <Form.Label>Subject</Form.Label>
-          <Form.Control
-            placeholder="Money is good, people are not. Avoid."
-            maxLength="140"
-            onChange={this.enter_subject}
-          />
-        </Form.Group>
-      );
-    } else {
-      return null;
-    }
-  }
-
-  renderWriteBody() {
-    let value = "";
-    let id = "body";
-    //   Markdown editor: https://uiwjs.github.io/react-md-editor/
-
-    if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-      return (
-        <Form.Group>
-          <Form.Label>Body</Form.Label>
-          <MDEditor id="body" value={value} onChange={this.enter_body} />
-          <MDEditor.Markdown source={value} />
-        </Form.Group>
-      );
-    } else {
-      return null;
-    }
-  }
-
-  renderChooseGroups() {
-    if (!this.state.jobs) {
-      return null;
-    }
-    if (!this.state.groups) {
-      return null;
-    }
-
-    let groups = [[-1, "Please select..."]];
-
-    for (let i = 0; i < this.state.groups.length; i++) {
-      if (1) {
-        groups.push([this.state.groups[i].id, this.state.groups[i].name]);
-      }
-    }
-    return (
-      <Form.Group>
-        <Form.Label>Group to Share</Form.Label>
-        {this.renderDropdown("Jobs", groups, "job_id", this.enter_group)}
-      </Form.Group>
-    );
-  }
 
   render() {
     //   const [value, setValue] = React.useState("**Hello world!!!**");
@@ -388,10 +273,7 @@ class NewPost extends React.Component {
           {this.renderAddCompany()}
           {this.renderListJob()}
           {this.renderAddJob()}
-          {this.renderWriteSubject()}
-          {this.renderWriteBody()}
-          {this.renderChooseGroups()}
-          <Button variant="primary" type="submit" onClick={this.submitPost}>
+          <Button variant="primary" type="submit" onClick={(event) => { event.preventDefault(); return this.func(this.state.job_id); }}>
             Submit
           </Button>
         </Form>
@@ -400,4 +282,4 @@ class NewPost extends React.Component {
   }
 }
 
-export default NewPost;
+export default NewDashboardTableEntry;

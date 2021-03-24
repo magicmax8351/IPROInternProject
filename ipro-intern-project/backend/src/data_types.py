@@ -5,6 +5,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel, constr
 import datetime
+from sqlalchemy.schema import UniqueConstraint
+
 
 # See https://docs.sqlalchemy.org/en/13/orm/basic_relationships.html
 # for more information.
@@ -28,8 +30,8 @@ class UserORM(Base):
     
     resumes = relationship("ResumeORM")
     settings = relationship("SettingsORM")
-    groups = relationship("GroupORM")
-    applications = relationship("ApplicationORM")
+    membership = relationship("MembershipORM")
+    applications = relationship("ApplicationBaseORM")
     presets = relationship("PresetORM")
     tokens = relationship("TokenORM")
 
@@ -68,14 +70,13 @@ class StageORM(Base):
     __tablename__ = "stage"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    name: Column(String(32), nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
+    name = Column(String(32), nullable=False)
 
 class StageModel(BaseModel):
     class Config:
         orm_mode = True
+    id: int
     name: str
-    # [user id relationship model] 
 
 class TokenORM(Base):
     __tablename__ = "token"
@@ -109,7 +110,6 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
 
 class GroupModel(BaseModel):
     class Config:
@@ -143,6 +143,7 @@ class CommentORM(Base):
     timestamp =  Column(DateTime)
     post_id = Column(Integer, ForeignKey("post.id"))
     uid = Column(Integer, ForeignKey("user.id"))
+    user = relationship("UserORM")
 
 
 class CommentModel(BaseModel):
@@ -162,12 +163,44 @@ class CompanyORM(Base):
     __tablename__ = "company"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String(32), nullable=False)
+    name = Column(String(32), nullable=False) 
 
 class CompanyModel(BaseModel):
     id: Optional[int]
     name: str
     token: Optional[str]
+    key: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+class TagORM(Base):
+    __tablename__ = "tag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    tag = Column(String(32), nullable=False, unique=True)
+
+class TagModel(BaseModel):
+    id: Optional[int]
+    tag: str
+
+    class Config:
+        orm_mode = True
+
+class JobTagORM(Base):
+    __tablename__ = "jobtag"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    tag_id = Column(Integer, ForeignKey("tag.id")) 
+
+    jobs = relationship("JobORM")
+    tag = relationship("TagORM")
+
+class JobTagModel(BaseModel):
+    job_id: int
+    tag_id: int
+    tag: Optional[TagModel]
 
     class Config:
         orm_mode = True
@@ -180,6 +213,9 @@ class JobORM(Base):
     description = Column(String(5000), nullable=True)
     location = Column(String(32), nullable=False)
     company_id = Column(Integer, ForeignKey("company.id"))
+    company = relationship("CompanyORM")
+    tags = relationship("JobTagORM")
+    link = Column(String(512), nullable=True)
 
 class JobModel(BaseModel):
     id: Optional[int]
@@ -189,6 +225,9 @@ class JobModel(BaseModel):
     company_id: Optional[int]
     company: Optional[CompanyModel]
     token: Optional[str]
+    key: Optional[int]
+    tags: Optional[List[JobTagModel]]
+    link: Optional[str]
 
     class Config:
         orm_mode = True
@@ -203,6 +242,10 @@ class PostORM(Base):
     job_id = Column(Integer, ForeignKey("job.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
+    group = relationship("GroupORM")
+    job = relationship("JobORM")
+    comments = relationship("CommentORM")
+    user = relationship("UserORM")
 
 class PostModel(BaseModel):
     class Config:
@@ -222,42 +265,58 @@ class PostModel(BaseModel):
     group: Optional[GroupModel]
     job: Optional[JobModel]
     comments: Optional[List[CommentModel]]
-    
-class JobtagORM(Base):
-    __tablename__ = "jobtag"
-    metadata = metadata
-    id = Column(Integer, primary_key=True, nullable=False)
-    tag = Column(String(32), nullable=False)
-    job_id = Column(Integer, ForeignKey("job.id"))
+    applied: Optional[int]
+    key: Optional[int]
 
-class JobtagModel(BaseModel):
+
+class ApplicationEventModel(BaseModel):
     id: Optional[int]
-    tag: str
-    job_id: Optional[int]
+    date: Optional[datetime.date]
+    status: int
+    stage_id: Optional[int]
+    token: Optional[str]
+    applicationBaseId: Optional[int]
+    stage: Optional[StageModel]
 
     class Config:
         orm_mode = True
 
-class ApplicationORM(Base):
-    __tablename__ = "application"
+class ApplicationBaseORM(Base):
+    __tablename__ = "applicationBase"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("job.id"))
+    resume_id = Column(Integer, ForeignKey("resume.id"), nullable=True)
+    uid = Column(Integer, ForeignKey("user.id"))
+    __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
+                     )
+    job = relationship("JobORM")
+    applicationEvents = relationship("ApplicationEventORM")
+
+class ApplicationEventORM(Base):
+    __tablename__ = "applicationEvent"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     date = Column(DateTime, nullable=False)
-    job_id = Column(Integer, ForeignKey("job.id"))
+    status = Column(Integer, nullable=False)
+    applicationBaseId = Column(Integer, ForeignKey("applicationBase.id"))
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    uid = Column(Integer, ForeignKey("user.id"))
-    resume_id = Column(Integer, ForeignKey("resume.id"))
+    stage = relationship("StageORM")
 
-class ApplicationModel(BaseModel):
+class ApplicationBaseModel(BaseModel):
     id: Optional[int]
-    date: datetime.date
     job_id: Optional[int]
-    stage_id: Optional[int]
     uid: Optional[int]
     resume_id: Optional[int]
+    applicationEvents: Optional[List[ApplicationEventModel]]
+    token: Optional[str]
+    key: Optional[int]
+    job: Optional[JobModel]
+    
 
     class Config:
         orm_mode = True
+
 
 class PresetORM(Base):
     __tablename__ = "preset"
@@ -308,3 +367,7 @@ class LoginData(BaseModel):
 class AuthIntModel(BaseModel):
     val: int
     token: str
+
+class ApplicationDataModel(BaseModel):
+    applicationData: List[ApplicationBaseModel]
+    stages: List[StageModel]

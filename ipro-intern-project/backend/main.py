@@ -12,7 +12,7 @@ from sqlalchemy import desc, asc, or_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy.exc import IntegrityError
 
 app = FastAPI()
 
@@ -41,7 +41,7 @@ orm_session = orm_parent_session()
 
 
 def gen_token():
-    tok = str(uuid.uuid4().hex)[8:] + str(round(time.time()))[:-2]
+    tok = str(uuid.uuid4().hex)[8:] + str(uuid.uuid4().hex)[8:]
     return tok
 
 # CRUD functions for each table
@@ -161,7 +161,7 @@ def get_user(uid: int):
         orm_session.close()
         return user
     orm_session.close()
-    return "no"
+    raise ValueError("uid not found!")
 
 @app.post("/users/update")
 def update_user(updated_user: UserModel):
@@ -206,46 +206,52 @@ def add_post(new_post: PostModel):
     orm_session.add(new_post_orm)
     orm_session.commit()
     ret = PostModel.from_orm(new_post_orm)
+    ret.key = ret.id
+    applied = orm_session.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
+    if applied:
+        ret.applied = 1
+    else:
+        ret.applied = 0
+
     orm_session.close()
-
-    ret.group = get_group_by_id(ret.group_id)
-    ret.comments = get_comments_post_id(ret.id)
-    ret.job = get_job_by_id(ret.job_id)
-    ret.user = get_user(ret.uid)
-
     return ret
 
 
 @app.get("/posts/get")
-def get_post(token: str):
+def get_post(token: str, count: int, start_id: int, group_id: int):
     """Returns all posts."""
     uid = get_uid_token(token)["uid"]
-
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
 
-    # Get user membership
-
     s = orm_parent_session()
-    groups = ["%" + str(m.group_id) + "%" for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    p = []
-    membership = [m for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    for group in membership:
-        for post in s.query(PostORM).filter(PostORM.group_id == group.group_id).all():
-            p.append(PostModel(
-                subject=post.subject,
-                body=post.body,
-                timestamp=post.timestamp,
-                user=get_user(post.uid),
-                group=get_group_by_id(group.group_id),
-                job=get_job_by_id(post.job_id),
-                id=post.id,
-                comments=get_comments_post_id(post.id)
-            ))
-    
-    p.sort(key=lambda x: -x.id)
+    membership = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    applications = {a.job_id: a for a in s.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)}
+    posts = []
+
+    if(group_id == -1):
+        if (start_id == -1):
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).order_by(PostORM.id.desc()).limit(count).all()
+        else:
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+    else:
+        if (start_id == -1):
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+        else:
+            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+
+    for post in query:
+        post_model = PostModel.from_orm(post)
+        if post.job.id in applications:
+            post_model.applied = 1
+        else:
+            post_model.applied = 0
+            
+        post_model.key = post_model.id
+        posts.append(post_model)
     s.close()
-    return {'posts': p, 'count': len(p)}
+
+    return {'posts': posts, 'count': len(posts)}
 
 
 @app.post("/posts/update")
@@ -306,60 +312,129 @@ def get_comments_post_id(post_id: int):
 
     return comments
 
+@app.get("/applications/get")
+def get_applications(token: str):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
 
-@app.post("/comments/update")
-def update_comment(updated_comment: CommentModel):
-    """Updates the comment with the given ID with new information.
-       Checks to make sure that the comment exists first."""
-    raise HTTPException(400, "Not implemented")
+    s = orm_parent_session()
+    apps_orm = {}
 
+    stages = [StageModel.from_orm(stage) for stage in s.query(StageORM)]
+    apps_model = [ApplicationBaseModel.from_orm(app) for app in s.query(ApplicationBaseORM)]
 
-@app.post("/comments/delete")
-def delete_comment(comment_id: int):
-    """Removes the comment with the given ID."""
-    raise HTTPException(400, "Not implemented")
+    s.close()
 
+    return ApplicationDataModel(
+        applicationData=apps_model,
+        stages=stages
+    )
 
 # Application
 @app.post("/applications/add")
-def add_application(new_application: ApplicationModel):
-    """Adds a new row to application table."""
+def add_application(new_application: ApplicationBaseModel, applied:bool = False):
+    """Adds a new row to application table.
+    
+    Test CURL: 
+    
+    curl --request POST \
+    --url 'http://localhost:8000/applications/add?token=ccab4e01998b735345a702ce16147378' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "job_id": 6939,
+        "token": "ccab4e01998b735345a702ce16147378",
+        "resume_id": 1
+    }'
+    """
 
-    # uid and resume_id will come later
-    new_application_orm = ApplicationORM(date=new_application.date,
-                                         job_id=new_application.job_id,
-                                         stage_id=new_application.stage_id)
+    uid = get_uid_token(new_application.token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
 
     orm_session = orm_parent_session()
-    orm_session.add(new_application_orm)
-    orm_session.commit()
+
+    new_application_base_orm = ApplicationBaseORM(
+        job_id = new_application.job_id,
+        resume_id = new_application.resume_id,
+        uid = uid
+    )
+
+    r = []
+
+    try: 
+        orm_session.add(new_application_base_orm)
+
+        for s in orm_session.query(StageORM).all():
+            e = ApplicationEventORM(
+                date = datetime.datetime.now(),
+                status = 0,
+                applicationBaseId = new_application_base_orm.id,
+                stage_id = s.id
+            )
+            if s.id == 1 and applied:
+                e.status = 1
+                
+            orm_session.add(e)
+
+        orm_session.commit()
+
+    except IntegrityError:
+        orm_session.close()
+        raise HTTPException(411, "Job already added!")
+
+    ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
     orm_session.close()
 
-
-@app.get("/applications/get")
-def get_application():
-    """Returns a application object with the given ID."""
-    # Normally, this function would take a uid and only
-    # return the application records for that user
-
-    orm_session = orm_parent_session()
-    apps = []
-    for a in orm_session.query(ApplicationORM).all():
-        apps.append(
-            ApplicationModel(id=a.id,
-                             date=a.date,
-                             job_id=a.job_id,
-                             stage_id=a.stage_id))
-    orm_session.close()
-
-    return {'applications': apps}
-
+    ret_app.key = ret_app.id
+    return ret_app
 
 @app.post("/applications/update")
-def update_application(updated_application: ApplicationModel):
+def update_application(newApplicationEvent: ApplicationEventModel):
     """Updates the application with the given ID with new information.
-       Checks to make sure that the application exists first."""
-    raise HTTPException(400, "Not implemented")
+       Checks to make sure that the application exists first.
+       
+       Test request code: 
+       curl --request POST \
+        --url http://localhost:8000/applications/update \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "id": 4,
+            "status": 0,
+            "stage_id": 0,
+            "token": "c0144c49bc667fb90885b6d016147410",
+            "applicationBaseId": 1
+        }'
+    """
+
+    uid = get_uid_token(newApplicationEvent.token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+
+    orm_session = orm_parent_session()
+
+    base = orm_session.query(ApplicationBaseORM).filter(
+        ApplicationBaseORM.uid == uid,
+        ApplicationBaseORM.id == newApplicationEvent.applicationBaseId
+    ).one()
+    
+    if base == None:
+        orm_session.close()
+        raise HTTPException(411, "Couldn't match Base ID to user!")
+
+    event_obj = orm_session.query(ApplicationEventORM).filter(
+                    ApplicationEventORM.id == newApplicationEvent.id).one()
+                    
+    if(event_obj == None):
+        orm_session.close()
+        raise HTTPException(412, "Event ID not found!")
+
+    event_obj.status = newApplicationEvent.status
+    ret = ApplicationEventModel.from_orm(event_obj)
+    orm_session.commit()
+    orm_session.close()
+    return ret
+
 
 
 @app.post("/applications/delete")
@@ -381,38 +456,66 @@ def add_job(new_job: JobModel):
         name=new_job.name,
         description=new_job.description,
         location=new_job.location,
-        company_id=new_job.company_id
+        company_id=new_job.company_id,
+        link=new_job.link
     )
     s.add(j)
     s.commit()
+    r = JobModel.from_orm(j)
+    r.key = r.id
     s.close()
-    return
+    return r
 
 
 # Not an endpoint!
 def get_job_by_id(job_id: int):
     """Get job by job ID. """
-    orm_session = orm_parent_session()
-    for u in orm_session.query(JobORM).filter(JobORM.id == job_id):
-        job = JobModel.from_orm(u)
-        job.company = get_company_id(job.company_id)
-        orm_session.close()
-        return job
-    orm_session.close()
-    return
+    s = orm_parent_session()
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+
+    job = None
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True).filter(JobORM.id==job_id):
+        if(not job):
+            job = JobModel.from_orm(p[0])
+            job.key = job.id
+            job.tags = []
+        
+        if(p[1]):
+            job.tags.append(tag_map[p[1].tag_id])
+    
+    s.close()
+    return job
 
 
 @app.get("/jobs/get")
-def get_job(token: str):
+def get_jobs(token: str):
     """Returns all jobs"""
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    j = [JobModel.from_orm(p) for p in s.query(JobORM).all()]
+
+    tag_map = {}
+    for tag in s.query(TagORM):
+        tag_map[tag.id] = TagModel.from_orm(tag)
+    
+    j = {}
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True):
+        job = JobModel.from_orm(p[0])
+        if(job.id) not in j:
+            j[job.id] = job
+            job.key = job.id
+            job.tags = []
+            job.company = get_company_id(job.company_id)
+        
+        if(p[1]):
+            j[job.id].tags.append(tag_map[p[1].tag_id])
+    
     s.close()
-    return j
+    return list(j.values())
 
 
 @app.post("/jobs/update")
@@ -432,7 +535,7 @@ def delete_job(job_id: int):
 @app.post("/companies/add")
 def add_company(new_company: CompanyModel):
     """Adds a new row to company table."""
-    uid = get_uid_token(CompanyModel.token)["uid"]
+    uid = get_uid_token(new_company.token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
@@ -442,7 +545,10 @@ def add_company(new_company: CompanyModel):
     )
     s.add(c)
     s.commit()
+    r = CompanyModel.from_orm(c)
+    r.key = r.id
     s.close()
+    return r
 
 
 @app.get("/companies/get")
@@ -452,7 +558,11 @@ def get_company(token: str):
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
     s = orm_parent_session()
-    c = [CompanyModel.from_orm(p) for p in s.query(CompanyORM).all()]
+    c = []
+    for p in s.query(CompanyORM):
+        t = CompanyModel.from_orm(p)
+        t.key = t.id
+        c.append(t)
     s.close()
     return c
 
@@ -535,7 +645,7 @@ def delete_resume(resume_id: int):
 
 # Jobtag
 @app.post("/jobtags/add")
-def add_jobtag(new_jobtag: JobtagModel):
+def add_jobtag(new_jobtag: JobTagModel):
     """Adds a new row to jobtag table."""
     raise HTTPException(400, "Not implemented")
 
@@ -547,7 +657,7 @@ def get_jobtag(jobtag_id: int):
 
 
 @app.post("/jobtags/update")
-def update_jobtag(updated_jobtag: JobtagModel):
+def update_jobtag(updated_jobtag: JobTagModel):
     """Updates the jobtag with the given ID with new information.
        Checks to make sure that the jobtag exists first."""
     raise HTTPException(400, "Not implemented")

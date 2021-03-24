@@ -8,7 +8,7 @@ class CreatePost extends Component {
     }
   
     submitPost() {
-      let path = "http://wingman.justinjschmitz.com:8000/posts/add/";
+      let path = "http://" + window.location.hostname + ":8000/posts/add/";
       console.log("CreatePost button clicked. Fetching " + path);
   
       let post = {
@@ -67,7 +67,7 @@ class CreatePost extends Component {
   
     refreshTable() {
       // fetch the data, put it in state
-      let path = "http://wingman.justinjschmitz.com:8000/posts/get/";
+      let path = "http://" + window.location.hostname + ":8000/posts/get/";
       fetch(path, {
         method: "GET",
         headers: {}

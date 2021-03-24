@@ -21,9 +21,7 @@ const AddPostContainer = styled.div`
   background: lightgrey;
   border-radius: 20px;
   padding: 10px;
-  margin-left: auto;
-  width: 650px;
-  margin-right: auto;
+  margin-bottom: 10px;
 `;
 
 const AddPostHeader = styled.h2`
@@ -43,20 +41,42 @@ const AddPostButton = styled.button`
   background-color: none;
 `;
 
-const FeedContianer = styled.div`
+const FeedContainer = styled.div`
   margin-top: 20px;
-  width: 700px;
+  width: 650px;
+  margin-left: 30px;
+`;
+
+const SearchContainer = styled.div`
+  background: lightgrey;
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
+`;
+
+const SearchInput = styled.input`
+  display: block;
+  position: absolute;
+  margin-top: -40px;
+  margin-left: 120px;
+`;
+
+const SearchHeader = styled.h2`
+  font-style: italic;
+  font-size: 28px;
+  font-family: "Open Sans", sans-serif;
+  margin-left: 10px;
 `;
 
 class GroupFeed extends React.Component {
   constructor(props) {
     super(props);
-    if (props.location == "feed") {
-      this.group_id = -1;
-    } else {
+    if (document.location.pathname.includes("id")) {
       const regex = /\/id\/[0-9]+/;
-      let match = props.location.pathname.match(regex)[0];
+      let match = document.location.pathname.match(regex)[0];
       this.group_id = parseInt(match.substring(4));
+    } else {
+      this.group_id = -1;
     }
 
     this.state = {
@@ -70,18 +90,27 @@ class GroupFeed extends React.Component {
         name: null,
         desc: null,
       },
+      start_id: -1,
+      filter: ""
     };
+    this.count = 10;
+
     this.newPostButton = this.newPostButton.bind(this);
     this.renderNewPost = this.renderNewPost.bind(this);
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
-    this.newPosts = [];
+    this.getMorePosts = this.getMorePosts.bind(this);
+    this.getMorePostsButton = this.getMorePostsButton.bind(this);
+
+    this.enter_filter = this.enter_filter.bind(this);
+    this.filterStringMatch = this.filterStringMatch.bind(this);
+    this.filterPost = this.filterPost.bind(this);
 
     if (this.group_id == -1) {
       this.state.group = {
-          name: "All posts",
-          desc: "Your News Feed",
-        }
+        name: "All posts",
+        desc: "Your News Feed",
+      };
     }
   }
 
@@ -89,47 +118,87 @@ class GroupFeed extends React.Component {
     this.setState({ newPost: !this.state.newPost });
   }
 
+  enter_filter(event) {
+    this.setState({ filter: event.target.value });
+  }
+
   componentDidMount() {
-    fetch("http://wingman.justinjschmitz.com:8000/token/test?token=" + this.state.token)
-      .then((res) => res.json())
-      .then((json) => this.setState({ token: json.result }));
-
-    fetch("http://wingman.justinjschmitz.com:8000/posts/get?token=" + this.state.token)
-      .then((res) => res.json())
-      .then((json) => {
-        let posts_update = json.posts.map(x => {
-          const obj = {
-            ...x,
-            key: x.id
-          };
-          delete obj.id;
-          return obj;
-        });
-        this.setState({ posts: json.posts })
-      });
-
+    this.getMorePosts();
     if (this.group_id != -1) {
-      fetch("http://wingman.justinjschmitz.com:8000/groups/get_id?group_id=" + this.group_id)
+      fetch(
+        "http://" +
+          window.location.hostname +
+          ":8000/groups/get_id?group_id=" +
+          this.group_id
+      )
         .then((res) => res.json())
         .then((json) => this.setState({ group: json }));
     }
   }
 
-  postList(in_posts) {
-    let out_posts = [];
-    let group_posts = null;
+  getMorePosts() {
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/posts/get?token=" +
+        this.state.token +
+        "&count=" +
+        this.count +
+        "&start_id=" +
+        this.state.start_id +
+        "&group_id=" +
+        this.group_id
+    )
+      .then((res) => {
+        if (res.status != 200) {
+          window.location.replace("/login");
+        }
+        return res.json();
+      })
+      .then((json) => {
+        let posts_update = [...this.state.posts, ...json.posts];
+        this.setState({
+          posts: posts_update,
+          start_id: posts_update[posts_update.length - 1].id,
+        });
+      });
+  }
 
-    if (this.group_id != -1) {
-      group_posts = in_posts.filter((post) => post.group.id == this.group_id);
-    } else {
-      group_posts = in_posts;
+  filterPost(post) {
+    let filter_targets = [post.subject, post.body, post.job.name, post.job.location,
+                          post.job.company.name, post.user.fname, post.user.lname]
+    for(let i = 0; i < post.job.tags.length; i++) {
+      filter_targets.push(post.job.tags[i].tag.tag);
     }
 
-    for (let i = 0; i < group_posts.length; i++) {
+    let results = filter_targets.map(this.filterStringMatch)
+    return results.some((x) => x == true); 
+
+  }
+
+  filterStringMatch(test_tag) {
+    let query_tags = this.state.filter.split(",");
+    if(query_tags.length == 0) {
+      return true;
+    }
+    for(let i = 0; i < query_tags.length; i++) {
+      if(test_tag.toLowerCase().includes(query_tags[i].toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  postList(group_posts) {
+    let out_posts = [];
+
+    let posts = group_posts.filter(this.filterPost);
+
+    for (let i = 0; i < posts.length; i++) {
       out_posts.push(
         <Post
-          post={group_posts[i]}
-          key={group_posts[i].id}
+          post={posts[i]}
+          key={posts[i].id}
           token={this.state.token}
         />
       );
@@ -150,7 +219,7 @@ class GroupFeed extends React.Component {
   }
 
   submitPost(post) {
-    fetch("http://wingman.justinjschmitz.com:8000/posts/add", {
+    fetch("http://" + window.location.hostname + ":8000/posts/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -159,14 +228,7 @@ class GroupFeed extends React.Component {
     })
       .then((res) => res.json())
       .then((json) => {
-        let posts_update = [json, ...this.state.posts].map(x => {
-          const obj = {
-            ...x,
-            key: x.id
-          };
-          delete obj.id;
-          return obj;
-        });
+        let posts_update = [json, ...this.state.posts];
         this.setState({ posts: posts_update });
       })
       .catch((err) => {
@@ -174,27 +236,33 @@ class GroupFeed extends React.Component {
       });
   }
 
+  getMorePostsButton() {
+    this.getMorePosts();
+  }
+
   render() {
     if (!this.state.token) {
-      console.log("Token invalid! redirect to login page");
-      console.log(this.state.token);
       document.location.replace("/login");
     }
-    this.renderedPosts = this.postList(this.state.posts);
-    console.log(this.state.posts);
+    let renderedPosts = this.postList(this.state.posts);
     return (
       <div>
         <Helmet>
           <title>Home</title>
         </Helmet>
         <PageHeader title={this.state.group.name} />
-        <FeedContianer>
+        <FeedContainer>
           <AddPostContainer>
             <AddPostHeader>Add a new post...</AddPostHeader>
             {this.renderNewPost()}
           </AddPostContainer>
-          <PageContent>{this.renderedPosts}</PageContent>
-        </FeedContianer>
+          <SearchContainer>
+            <SearchHeader>Search</SearchHeader>
+            <SearchInput onChange={this.enter_filter}/>
+          </SearchContainer>
+          {renderedPosts}
+          <button onClick={this.getMorePostsButton}>Get More Posts!</button>
+        </FeedContainer>
       </div>
     );
   }
