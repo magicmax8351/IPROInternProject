@@ -69,8 +69,22 @@ class App extends Component {
       body: JSON.stringify({
         job_id: job_id,
         token: this.state.token,
-        resume_id: 1,
-      }),
+        resume_id: 1
+      })
+    })
+    .then((res) => {
+      if(res.status == 200) {
+        alert("Job succesfully added!");
+        return res.json();
+      } else if (res.status == 411) {
+        throw new Error("Job already added!");
+      } else {
+        throw new Error("Something else broke!");
+      }
+    }).then((json) => {
+      this.setState({ applications: [...this.state.applications, json]});
+    }).catch(error => {
+      alert(error);
     })
       .then((res) => {
         if (res.status == 200) {
