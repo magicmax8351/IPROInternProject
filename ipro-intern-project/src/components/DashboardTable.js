@@ -357,21 +357,19 @@ class App extends Component {
   }
 
   getPostSubmittedModal() {
-    if(this.state.showPostSubmittedModal) {
-      return (
-        <Modal show={this.state.showPostSubmittedModal} onHide={this.closePostSubmittedModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>Post submitted!</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Successfully submitted post to {this.state.group_name}</Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={this.closePostSubmittedModal}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      );
-    }
+    return (
+      <Modal show={this.state.showPostSubmittedModal} onHide={this.closePostSubmittedModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Post submitted!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Successfully submitted post to {this.state.group_name}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.closePostSubmittedModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
   }
 
   closeNewPostModal() {
