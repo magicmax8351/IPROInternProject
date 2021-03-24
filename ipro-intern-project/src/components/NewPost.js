@@ -18,15 +18,16 @@ class NewPost extends React.Component {
     this.func = props.func;
     this.token = props.token;
     this.state = {
-      company_id: 1,
-      job_id: 0,
+      company_id: props.company_id,
+      job_id: props.job_id,
       group_id: null,
       jobs: null,
       companies: null,
       groups: null,
-      body: null,
-      subject: null,
-      new_company_name: null
+      body: props.body,
+      subject: props.subject,
+      dashboard_add: props.dashboard_add,
+      new_company_name: null,
     };
 
     this.dropdown_change = this.dropdown_change.bind(this);
@@ -57,15 +58,30 @@ class NewPost extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://" + window.location.hostname + ":8000/jobs/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/jobs/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ jobs: json }));
 
-    fetch("http://" + window.location.hostname + ":8000/companies/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/companies/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
 
-    fetch("http://" + window.location.hostname + ":8000/groups/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/groups/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ groups: json }));
   }
@@ -116,10 +132,10 @@ class NewPost extends React.Component {
       [event.target.id]: event.target.value,
     });
   }
-  
+
   submitAddCompany(event) {
-    event.preventDefault()
-    if(this.state.new_company_name.length > 2) {
+    event.preventDefault();
+    if (this.state.new_company_name.length > 2) {
       fetch("http://" + window.location.hostname + ":8000/companies/add", {
         method: "POST",
         headers: {
@@ -127,22 +143,22 @@ class NewPost extends React.Component {
         },
         body: JSON.stringify({
           name: this.state.new_company_name,
-          token: this.token
+          token: this.token,
         }),
       })
-      .then((res) => res.json())
-      .then((json) => {
-        this.setState({
-          companies: [...this.state.companies, json],
-          company_id: this.state.companies.length
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            companies: [...this.state.companies, json],
+            company_id: this.state.companies.length,
+          });
         });
-      });
     }
   }
 
   submitAddJob(event) {
-    event.preventDefault()
-    if(this.state.new_job_name.length > 2 && this.state.company_id > 0 ) {
+    event.preventDefault();
+    if (this.state.new_job_name.length > 2 && this.state.company_id > 0) {
       fetch("http://" + window.location.hostname + ":8000/jobs/add", {
         method: "POST",
         headers: {
@@ -154,16 +170,16 @@ class NewPost extends React.Component {
           link: this.state.new_job_link,
           location: this.state.new_job_location,
           company_id: this.state.company_id,
-          token: this.token
+          token: this.token,
         }),
       })
-      .then((res) => res.json())
-      .then((json) => {
-        this.setState({
-          jobs: [...this.state.jobs, json],
-          job_id: json.id
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            jobs: [...this.state.jobs, json],
+            job_id: json.id,
+          });
         });
-      });
     }
   }
 
@@ -181,7 +197,7 @@ class NewPost extends React.Component {
         body: this.state.body,
         job_id: this.state.job_id,
         token: this.token,
-        group_id: this.state.group_id
+        group_id: this.state.group_id,
       };
       this.func(post);
     }
@@ -211,15 +227,28 @@ class NewPost extends React.Component {
     if (!this.state.companies) {
       return null;
     }
-    let companies = [[-1, "Please select..."]];
-    for (let i = 0; i < this.state.companies.length; i++) {
-      companies.push([
-        this.state.companies[i].id,
-        this.state.companies[i].name,
-      ]);
-    }
 
-    companies.push([-2, "Add new"])
+    let companies = [];
+    if (this.state.dashboard_add) {
+      for (let i = 0; i < this.state.companies.length; i++) {
+        if (this.state.companies[i].id == this.state.company_id) {
+          companies.push([
+            this.state.companies[i].id,
+            this.state.companies[i].name,
+          ]);
+        }
+      }
+    } else {
+      companies.push([-1, "Please select..."]);
+      for (let i = 0; i < this.state.companies.length; i++) {
+        companies.push([
+          this.state.companies[i].id,
+          this.state.companies[i].name,
+        ]);
+      }
+
+      companies.push([-2, "Add new"]);
+    }
 
     return (
       <Form.Group>
@@ -238,20 +267,35 @@ class NewPost extends React.Component {
     if (!this.state.jobs) {
       return null;
     }
-    let jobs = [[-1, "Please select..."]];
-    if (this.state.company_id === -1) {
-      return null;
+
+    let jobs = [];
+
+    if (this.state.dashboard_add) {
+      for (let i = 0; i < this.state.jobs.length; i++) {
+        if (this.state.jobs[i].id == this.state.job_id) {
+          jobs.push([
+            this.state.jobs[i].id,
+            this.state.jobs[i].name + " - " + this.state.jobs[i].location,
+          ]);
+        }
+      }
+    } else {
+      jobs.push([-1, "Please select..."]);
+      if (this.state.company_id === -1) {
+        return null;
+      }
+
+      for (let i = 0; i < this.state.jobs.length; i++) {
+        if (this.state.jobs[i].company_id == this.state.company_id) {
+          jobs.push([
+            this.state.jobs[i].id,
+            this.state.jobs[i].name + " - " + this.state.jobs[i].location,
+          ]);
+        }
+      }
+      jobs.push([-2, "Add New"]);
     }
 
-    for (let i = 0; i < this.state.jobs.length; i++) {
-      if (this.state.jobs[i].company_id == this.state.company_id) {
-        jobs.push([
-          this.state.jobs[i].id,
-          this.state.jobs[i].name + " - " + this.state.jobs[i].location,
-        ]);
-      }
-    }
-    jobs.push([-2, "Add New"]);
     return (
       <Form.Group>
         <Form.Label>Job title:</Form.Label>
@@ -269,10 +313,17 @@ class NewPost extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Company Name</Form.Label>
-              <Form.Control onChange={this.enter_new_company_name} placeholder="New company name" />
+              <Form.Control
+                onChange={this.enter_new_company_name}
+                placeholder="New company name"
+              />
             </Form.Group>
           </Form.Row>
-          <Button variant="primary" type="submit" onClick={this.submitAddCompany}>
+          <Button
+            variant="primary"
+            type="submit"
+            onClick={this.submitAddCompany}
+          >
             Add company
           </Button>
         </Form>
@@ -294,23 +345,35 @@ class NewPost extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Job title</Form.Label>
-              <Form.Control onChange={this.enter_new_job_name} placeholder="Software Engineer Intern" />
+              <Form.Control
+                onChange={this.enter_new_job_name}
+                placeholder="Software Engineer Intern"
+              />
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Location</Form.Label>
-              <Form.Control onChange={this.enter_new_job_location} placeholder="Chicago" />
+              <Form.Control
+                onChange={this.enter_new_job_location}
+                placeholder="Chicago"
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Description</Form.Label>
-              <Form.Control onChange={this.enter_new_job_description} placeholder="Engineer new techniques to move money in a big circle"/>
+              <Form.Control
+                onChange={this.enter_new_job_description}
+                placeholder="Engineer new techniques to move money in a big circle"
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Link</Form.Label>
-              <Form.Control onChange={this.enter_new_job_link} placeholder="https://example.com"/>
+              <Form.Control
+                onChange={this.enter_new_job_link}
+                placeholder="https://example.com"
+              />
             </Form.Group>
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddJob}>
@@ -330,6 +393,7 @@ class NewPost extends React.Component {
             placeholder="Money is good, people are not. Avoid."
             maxLength="140"
             onChange={this.enter_subject}
+            value={this.state.subject}
           />
         </Form.Group>
       );
@@ -339,7 +403,12 @@ class NewPost extends React.Component {
   }
 
   renderWriteBody() {
-    let value = "";
+    let value;
+    if (this.state.body) {
+      value = this.state.body;
+    } else {
+      value = "";
+    }
     let id = "body";
     //   Markdown editor: https://uiwjs.github.io/react-md-editor/
 
@@ -348,7 +417,6 @@ class NewPost extends React.Component {
         <Form.Group>
           <Form.Label>Body</Form.Label>
           <MDEditor id="body" value={value} onChange={this.enter_body} />
-          <MDEditor.Markdown source={value} />
         </Form.Group>
       );
     } else {

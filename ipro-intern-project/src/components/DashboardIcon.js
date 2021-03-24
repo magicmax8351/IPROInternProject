@@ -8,6 +8,8 @@ const IconButton = styled.button`
   font-size: 120%; 
 `
 
+const status_list = ["❔", "😊", "😢"];
+
 class Icon extends Component {
   // Will need to pull all data from get functions from backend API to pull real data.
   // https://github.com/react-bootstrap-table/react-bootstrap-table2/issues/215 to get carets working when CSS happens
@@ -19,12 +21,11 @@ class Icon extends Component {
       applicationBaseId: props.applicationBaseId,
       status: props.status
     }
-  this.status_list = ["❔", "😢", "😊"];
   this.updateStatus = this.updateStatus.bind(this);
   }
 
   updateStatus() {
-    let newStatus = (this.state.status + 1) % this.status_list.length;
+    let newStatus = (this.state.status + 1) % status_list.length;
     this.setState({status: newStatus});
     fetch("http://" + window.location.hostname + ":8000/applications/update", {
       "method": "POST",
@@ -50,7 +51,7 @@ class Icon extends Component {
   }
 
   render() {
-    return <IconButton onClick={this.updateStatus}>{this.status_list[this.state.status]}</IconButton>;
+    return <IconButton onClick={this.updateStatus}>{status_list[this.state.status]}</IconButton>;
   }
 }
 
