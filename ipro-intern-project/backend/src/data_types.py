@@ -63,8 +63,9 @@ class ResumeModel(BaseModel):
         orm_mode = True
     id: Optional[int]
     name: str
-    filename: str
-    date: datetime.datetime
+    resume_id: int
+    date: Optional[datetime.datetime]
+    token: Optional[str]
 
 class StageORM(Base):
     __tablename__ = "stage"

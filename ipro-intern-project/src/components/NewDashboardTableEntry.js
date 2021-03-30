@@ -25,7 +25,10 @@ class NewDashboardTableEntry extends React.Component {
       groups: null,
       body: null,
       subject: null,
-      new_company_name: null
+      new_company_name: null,
+      new_resume_name: null,
+      new_resume_file: null,
+      resume_id: -1
     };
     this.enter_company = this.enter_company.bind(this);
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
@@ -38,6 +41,9 @@ class NewDashboardTableEntry extends React.Component {
     this.enter_new_job_location = this.enter_new_job_location.bind(this);
     this.submitAddJob = this.submitAddJob.bind(this);
     
+    this.enter_new_resume_name = this.enter_new_resume_name.bind(this);
+    this.enter_new_resume_file = this.enter_new_resume_file.bind(this);
+    this.submitAddResume = this.submitAddResume.bind(this);
   }
 
   componentDidMount() {
@@ -76,6 +82,14 @@ class NewDashboardTableEntry extends React.Component {
 
   enter_new_job_location(event) {
     this.setState({ new_job_location: event.target.value });
+  }
+
+  enter_new_resume_name(event) {
+    this.setState({ new_resume_name: event.target.value });
+  }
+
+  enter_new_resume_file(event) {
+    this.setState({ new_resume_file: event.target.files[0] });
   }
 
   submitAddCompany(event) {
@@ -125,6 +139,79 @@ class NewDashboardTableEntry extends React.Component {
           jobs: [...this.state.jobs, json],
           job_id: json.id
         });
+      });
+    }
+  }
+
+  convertFileToBytes(f) {
+    /*let fileReader = new FileReader();
+    fileReader.readAsArrayBuffer(f);
+    var ret = [];
+    fileReader.onload = function(ev) {
+      ret = ev.target.result;
+    }
+    return ret;*/
+
+    /*var bfr = null;
+    f.arrayBuffer().then(buffer => {bfr = new Uint8Array(buffer)});
+    return bfr;*/
+
+    //var fr = new FileReader();
+    //var arr =  new Uint8Array(fr.readAsArrayBuffer(f));
+    //return fr.readAsArrayBuffer(f);
+    //return String.fromCharCode.apply(null, arr);
+
+    /*
+    var reader = new FileReader();
+    var fileByteArray = new Array();
+    reader.readAsArrayBuffer(f);
+    reader.onloadend = function (evt) {
+      if (evt.target.readyState == FileReader.DONE) {
+        var arrayBuffer = evt.target.result,
+            array = new Uint8Array(arrayBuffer);
+        for (var i = 0; i < array.length; i++) {
+            fileByteArray.push(array[i]);
+            console.log(fileByteArray);
+          }
+      }
+    }
+
+    console.log(fileByteArray);
+    return fileByteArray;*/
+  }
+
+  submitAddResume(event) {
+    event.preventDefault();
+
+    if(this.state.new_resume_name.length > 2 && this.state.new_resume_file != null) {
+      let form = new FormData();
+      form.append("resume", this.state.new_resume_file);
+      fetch("http://" + window.location.hostname + ":8000/resumes/upload", {
+        method: "POST",
+        body: form
+      })
+      .then((res) => res.json())
+      .then((json) => {
+        if(json.test > 0) {
+          fetch("http://" + window.location.hostname + ":8000/resumes/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: this.state.new_resume_name,
+              resume_id: json.test,
+              token: this.token
+            }),
+          })
+          .then((res) => res.json())
+          .then((json) => {
+            /*this.setState({
+              resumes: [...this.state.resumes, json],
+              resume_id: json.id
+            });*/
+          });
+        }
       });
     }
   }
@@ -263,6 +350,37 @@ class NewDashboardTableEntry extends React.Component {
     }
   }
 
+  renderListResume() {
+    return(
+      <div></div>
+    );
+  }
+
+  renderAddResume() {
+    if(false) {
+      return null;
+    } else {
+      return(
+        <Form>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Resume Name</Form.Label>
+              <Form.Control onChange={this.enter_new_resume_name} placeholder="New resume name" />
+            </Form.Group>
+          </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Resume File</Form.Label>
+              <Form.Control onChange={this.enter_new_resume_file} type="file" />
+            </Form.Group>
+          </Form.Row>
+          <Button variant="primary" type="submit" onClick={this.submitAddResume}>
+            Add resume
+          </Button>
+        </Form>
+      );
+    }
+  }
 
   render() {
     //   const [value, setValue] = React.useState("**Hello world!!!**");
@@ -273,6 +391,8 @@ class NewDashboardTableEntry extends React.Component {
           {this.renderAddCompany()}
           {this.renderListJob()}
           {this.renderAddJob()}
+          {this.renderListResume()}
+          {this.renderAddResume()}
           <Button variant="primary" type="submit" onClick={(event) => { event.preventDefault(); return this.func(this.state.job_id); }}>
             Submit
           </Button>

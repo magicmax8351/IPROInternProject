@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -618,10 +618,17 @@ def delete_stage(stage_id: int):
 
 
 # Resume
+@app.post("/resumes/upload")
+def upload_resume(resume: UploadFile = File(...)):
+    """Uploads aand saves a resume file"""
+    print(resume)
+    return {"test": 123}
+
 @app.post("/resumes/add")
 def add_resume(new_resume: ResumeModel):
     """Adds a new row to resume table."""
-    raise HTTPException(400, "Not implemented")
+    print(new_resume.name)
+    print(new_resume.resume_id)
 
 
 @app.get("/resumes/get")
