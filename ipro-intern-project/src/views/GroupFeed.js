@@ -1,71 +1,84 @@
 import React from "react";
-import PageHeader from "../components/PageHeader";
-import PageContent from "../components/PageContent";
 import styled from "styled-components";
-import { Helmet } from "react-helmet";
 import Post from "../components/Post";
-import NewPost from "../components/NewPost";
-
-import Form from "react-bootstrap/Form";
-import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import MDEditor from "@uiw/react-md-editor";
-import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Cookies from "js-cookie";
+import "../styled";
+import { MasterPostContainer, UserImage } from "../components/Post";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import NewPost from "../components/NewPost";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
 
-const AddPostContainer = styled.div`
-  background: lightgrey;
-  border-radius: 20px;
-  padding: 10px;
-  margin-bottom: 10px;
-`;
-
-const AddPostHeader = styled.h2`
-  font-style: italic;
-  font-size: 28px;
-  font-family: "Open Sans", sans-serif;
-  margin-left: 10px;
-`;
-
-const AddPostButton = styled.button`
-  border: none;
-  position: absolute;
-  margin-left: 580px;
-  margin-top: -48px;
-  border-radius: 10px;
-  font-size: 30px;
-  background-color: none;
-`;
-
 const FeedContainer = styled.div`
-  margin-top: 20px;
-  width: 650px;
-  margin-left: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  max-width: 1200px;
 `;
 
-const SearchContainer = styled.div`
-  background: lightgrey;
-  border-radius: 20px;
+const PostsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+`;
+
+const SidebarFlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const SidebarContainer = styled.div`
+  background-color: white;
+  height: fit-content;
   padding: 10px;
-  margin-bottom: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
 `;
 
-const SearchInput = styled.input`
-  display: block;
-  position: absolute;
-  margin-top: -40px;
-  margin-left: 120px;
+const UserInput = styled.input`
+  background: #f0f0f0;
+  border: none;
+  font-size: 15px;
+  width: 100%;
 `;
 
-const SearchHeader = styled.h2`
-  font-style: italic;
-  font-size: 28px;
-  font-family: "Open Sans", sans-serif;
-  margin-left: 10px;
+const WhiteGroupRow = styled.div`
+  background: white;
+  display: flex;
+  padding: 5px;
+  justify-content: space-between;
+`;
+
+const GreyGroupRow = styled.div`
+  background: #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+`;
+
+const GroupRowButton = styled.button`
+  border: none;
+  background: none;
+`;
+
+const GroupRowName = styled.p`
+  font-size: 16px;
+  margin: 0px;
+`;
+
+const MakeNewPostButton = styled.button`
+  background: #f0f0f0;
+  border: none;
+  font-size: 18px;
+  width: 100%;
+  text-align: left;
+  border-radius: 5px;
+`;
+
+const NewPostContainer = styled(MasterPostContainer)`
+  display: flex;
 `;
 
 class GroupFeed extends React.Component {
@@ -91,12 +104,14 @@ class GroupFeed extends React.Component {
         desc: null,
       },
       start_id: -1,
-      filter: ""
+      filter: "",
+      modal: null,
+      showNewPostModal: false,
+      showPostSubmittedModal: false,
+      postSubmitted: 0,
     };
     this.count = 10;
 
-    this.newPostButton = this.newPostButton.bind(this);
-    this.renderNewPost = this.renderNewPost.bind(this);
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
     this.getMorePosts = this.getMorePosts.bind(this);
@@ -105,6 +120,13 @@ class GroupFeed extends React.Component {
     this.enter_filter = this.enter_filter.bind(this);
     this.filterStringMatch = this.filterStringMatch.bind(this);
     this.filterPost = this.filterPost.bind(this);
+    this.renderGroups = this.renderGroups.bind(this);
+
+    this.getNewPostModal = this.getNewPostModal.bind(this);
+    this.getPostSubmittedModal = this.getPostSubmittedModal.bind(this);
+
+    this.closeNewPostModal = this.closeNewPostModal.bind(this);
+    this.closePostSubmittedModal = this.closePostSubmittedModal.bind(this);
 
     if (this.group_id == -1) {
       this.state.group = {
@@ -114,12 +136,9 @@ class GroupFeed extends React.Component {
     }
   }
 
-  newPostButton() {
-    this.setState({ newPost: !this.state.newPost });
-  }
-
   enter_filter(event) {
     this.setState({ filter: event.target.value });
+    console.log("reee");
   }
 
   componentDidMount() {
@@ -134,6 +153,16 @@ class GroupFeed extends React.Component {
         .then((res) => res.json())
         .then((json) => this.setState({ group: json }));
     }
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/groups/get?token=" +
+        this.state.token
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        this.setState({ groups: json });
+      });
   }
 
   getMorePosts() {
@@ -165,24 +194,30 @@ class GroupFeed extends React.Component {
   }
 
   filterPost(post) {
-    let filter_targets = [post.subject, post.body, post.job.name, post.job.location,
-                          post.job.company.name, post.user.fname, post.user.lname]
-    for(let i = 0; i < post.job.tags.length; i++) {
+    let filter_targets = [
+      post.subject,
+      post.body,
+      post.job.name,
+      post.job.location,
+      post.job.company.name,
+      post.user.fname,
+      post.user.lname,
+    ];
+    for (let i = 0; i < post.job.tags.length; i++) {
       filter_targets.push(post.job.tags[i].tag.tag);
     }
 
-    let results = filter_targets.map(this.filterStringMatch)
-    return results.some((x) => x == true); 
-
+    let results = filter_targets.map(this.filterStringMatch);
+    return results.some((x) => x == true);
   }
 
   filterStringMatch(test_tag) {
     let query_tags = this.state.filter.split(",");
-    if(query_tags.length == 0) {
+    if (query_tags.length == 0) {
       return true;
     }
-    for(let i = 0; i < query_tags.length; i++) {
-      if(test_tag.toLowerCase().includes(query_tags[i].toLowerCase())) {
+    for (let i = 0; i < query_tags.length; i++) {
+      if (test_tag.toLowerCase().includes(query_tags[i].toLowerCase())) {
         return true;
       }
     }
@@ -191,31 +226,14 @@ class GroupFeed extends React.Component {
 
   postList(group_posts) {
     let out_posts = [];
-
     let posts = group_posts.filter(this.filterPost);
 
     for (let i = 0; i < posts.length; i++) {
       out_posts.push(
-        <Post
-          post={posts[i]}
-          key={posts[i].id}
-          token={this.state.token}
-        />
+        <Post post={posts[i]} key={posts[i].id} token={this.state.token} />
       );
     }
     return out_posts;
-  }
-
-  renderNewPost() {
-    if (this.state.newPost) {
-      return <NewPost func={this.submitPost} token={this.state.token} />;
-    } else {
-      return (
-        <AddPostButton onClick={this.newPostButton}>
-          <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
-        </AddPostButton>
-      );
-    }
   }
 
   submitPost(post) {
@@ -229,7 +247,12 @@ class GroupFeed extends React.Component {
       .then((res) => res.json())
       .then((json) => {
         let posts_update = [json, ...this.state.posts];
-        this.setState({ posts: posts_update });
+        this.setState({
+          posts: posts_update,
+          showNewPostModal: false,
+          showPostSubmittedModal: true,
+          group_name: json.group.name
+        });
       })
       .catch((err) => {
         console.error(err);
@@ -240,28 +263,118 @@ class GroupFeed extends React.Component {
     this.getMorePosts();
   }
 
+  renderGroups() {
+    let groups = [];
+    if (!this.state.groups) {
+      return null;
+    }
+    for (let i = 0; i < this.state.groups.length; i += 2) {
+      let g = this.state.groups[i];
+      groups.push(
+        <GreyGroupRow>
+          <GroupRowName>{g.name}</GroupRowName>
+          <GroupRowButton>☑</GroupRowButton>
+        </GreyGroupRow>
+      );
+      if (i + 1 != this.state.groups.length) {
+        let g2 = this.state.groups[i + 1];
+        groups.push(
+          <WhiteGroupRow>
+            <GroupRowName>{g2.name}</GroupRowName>
+            <GroupRowButton>☑</GroupRowButton>
+          </WhiteGroupRow>
+        );
+      }
+    }
+    return groups;
+  }
+
+  getNewPostModal() {
+    let newModal = (
+      <Modal show={this.state.showNewPostModal} onHide={this.closeNewPostModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Share Dashboard Update</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <NewPost
+            token={this.state.token}
+            dashboard_add={false}
+            func={this.submitPost}
+          />
+        </Modal.Body>
+      </Modal>
+    );
+    return newModal;
+  }
+
+  getPostSubmittedModal() {
+    return (
+      <Modal
+        show={this.state.showPostSubmittedModal}
+        onHide={this.closePostSubmittedModal}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Post submitted!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Successfully submitted post to {this.state.group_name}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.closePostSubmittedModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
+  closeNewPostModal() {
+    this.setState({ showNewPostModal: false });
+  }
+
+  closePostSubmittedModal() {
+    this.setState({ showPostSubmittedModal: false });
+  }
+
   render() {
     if (!this.state.token) {
       document.location.replace("/login");
     }
     let renderedPosts = this.postList(this.state.posts);
+    let renderedGroups = this.renderGroups();
+    let newPostModal = this.getNewPostModal();
+    let postSubmittedModal = this.getPostSubmittedModal();
+
     return (
       <div>
-        <Helmet>
-          <title>Home</title>
-        </Helmet>
-        <PageHeader title={this.state.group.name} />
+        {newPostModal}
+        {postSubmittedModal}
         <FeedContainer>
-          <AddPostContainer>
-            <AddPostHeader>Add a new post...</AddPostHeader>
-            {this.renderNewPost()}
-          </AddPostContainer>
-          <SearchContainer>
-            <SearchHeader>Search</SearchHeader>
-            <SearchInput onChange={this.enter_filter}/>
-          </SearchContainer>
-          {renderedPosts}
-          <button onClick={this.getMorePostsButton}>Get More Posts!</button>
+          <SidebarFlexContainer>
+            <SidebarContainer>
+              <h4>filter</h4>
+              <UserInput
+                onChange={this.enter_filter}
+                placeholder="enter a filter"
+              />
+            </SidebarContainer>
+            <SidebarContainer>
+              <h4>your groups</h4>
+              {renderedGroups}
+            </SidebarContainer>
+          </SidebarFlexContainer>
+          <PostsContainer>
+            <NewPostContainer>
+              <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
+              <MakeNewPostButton
+                onClick={() => this.setState({ showNewPostModal: true })}
+              >
+                Make a new post...
+              </MakeNewPostButton>
+            </NewPostContainer>
+            {renderedPosts}
+            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
+          </PostsContainer>
         </FeedContainer>
       </div>
     );

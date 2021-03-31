@@ -1,215 +1,86 @@
 import React from "react";
 import styled from "styled-components";
 
-import Form from "react-bootstrap/Form";
-import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import MDEditor from "@uiw/react-md-editor";
-import {
-  faPlusSquare,
-  faMinusSquare,
-  faBorderNone,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
 
-const BodyText = styled.p`
-  line-height: 1.5;
-  white-space: pre-wrap;
+const MasterPostContainer = styled.div`
+  max-width: 700px;
+  background-color: white;
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
 `;
 
 const Container = styled.div`
-  font-family: "Open Sans", sans-serif;
-  width: 650px;
-  background-color: lightgrey;
-  padding: 15px;
-  border-radius: 20px;
-  box-shadow: 8px 8px 15px 1px rgba(0, 0, 0, 0.51);
-  margin-bottom: 30px;
+  display: flex;
 `;
 
-const JobTitle = styled.h3`
-  font-size: 36px;
-  margin-top: -5px;
+const PostInfoContainer = styled.div``;
+
+const CompanyInfoContainer = styled.div`
+  max-width: 100px;
+  margin: 10px;
 `;
 
-const JobLocation = styled.h3`
-  margin-top: -20px;
-  font-size: 24px;
-  font-weight: 400;
+const PostCardHeading = styled.h2`
+  font-size: 22pt;
 `;
 
-const HRLine = styled.hr`
-  margin-right: 30px;
-  margin-left: 15px;
-  margin-bottom: 20px;
+const CompanyLogo = styled.img`
+  width: 80%;
 `;
 
-const CommentHRLine = styled.hr`
-  margin-right: 35px;
-  margin-left: 120px;
-  margin-bottom: 40px;
-`;
-
-const SectionTitleActive = styled.h5`
-  font-size: 22px;
-  font-weight: 400;
-`;
-
-const SectionTitleClosed = styled.h5`
-  font-size: 22px;
-  font-weight: 100;
-`;
-
-const GroupPost = styled.p`
+const CompanyInfo = styled.p`
+  font-size: 10pt;
+  color: darkgrey;
+  line-height: 1;
+  margin-top: 10px;
   font-style: italic;
+  max-width: 80px;
+  display: block;
+  margin-bottom: 0px;
 `;
 
-const CommentAvatar = styled.img`
-  width: 60px;
-  height: 60px;
-  margin-left: 16px;
-  // margin-bottom: 10px;
-`;
-const CommentAuthor = styled.p`
-  position: relative;
+const PostAuthor = styled.p`
+  font-size: 10pt;
+  color: darkgrey;
   font-style: italic;
-  width: 90px;
-  font-size: 12px;
-  margin-left: 10px;
-  margin-bottom: -3px;
-`;
-
-const CommentReplyTo = styled.p`
-  position: absolute;
-  margin-top: -130px;
-  margin-left: 480px;
-  float: right;
-  font-style: italic;
-`;
-
-const CommentBody = styled.p`
-  width: 70%;
-  margin-left: 120px;
-  margin-top: -100px;
-  margin-bottom: 60px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-`;
-
-const CommentSubject = styled.p`
-  position: absolute;
-  margin-top: -130px;
-  margin-left: 120px;
-  font-size: 18px;
-`;
-
-const CommentID = styled.p`
-  position: relative;
-  font-style: italic;
-  width: 80px;
-  font-size: 14px;
-  margin-left: 10px;
-  margin-top: -10px;
-  margin-bottom: 5px;
-`;
-
-const ButtonStyled = styled.button`
-  position: absolute;
-  border: none;
-  background-color: transparent;
-  font-size: 20px;
-  margin-left: 160px;
-  margin-top: -40px;
-`;
-
-const AddJobButton = styled.button`
-    margin: 0;
-    color: white;
-    background-color: #06094f;
-    border-color: #06094f;
-    border-radius: 12px;
-    font-size: inherit;
-    font-family: inherit;
-    line-height: inherit;
-    margin-top: 15px;
-    font-weight: bold;
-    :hover{
-      background-color :#185ea3;
-      border-color: #185ea3;
-      box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
-    }
-`;
-
-const AlreadyAddedJobButton = styled.button`
-    margin: 0;
-    color: white;
-    background-color: #06094f;
-    border-color: #06094f;
-    border-radius: 12px;
-    font-size: inherit;
-    font-family: inherit;
-    line-height: inherit;
-    margin-top: 15px;
-    font-weight: bold;
-    font-style: italic;
-`;
-
-const MoreComments = styled.p`
-  font-style: italic;
-  margin-left: 15px;
-`;
-
-const PostCommentButton = styled.button`
-  background: #ffffff;
-  margin-left: 120px;
-  border: none;
-  font-size: 18px;
-  font-style: italic;
-  border-radius: 10px;
-`;
-const PostExpandButton = styled.button`
-  border: none;
-  border-radius: 10px;
-  background: none;
-  font-size: 22px;
-  font-style: italic;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-`;
-
-const PostTag = styled.p`
-  background: #EEEEEEEE;
-  text-align: center;
-  margin: 2px;
-  border-radius: 30px;
+  margin-bottom: 0px;
   display: inline-block;
-  padding: 5px;
-`
+`;
 
-class Comment extends React.Component {
-  constructor(props) {
-    super(props);
-    this.text = props.text;
-    this.timestamp = props.timestamp;
-    this.fname = props.fname;
-    this.pic = props.pic;
+const UserImage = styled.img`
+  border-radius: 100px;
+  display: inline-block;
+  max-width: 30px;
+  max-height: 30px;
+  margin-right: 10px;
+  border: 1px solid black;
+`;
+
+const PostButton = styled.button`
+  background-color: #7c79a8;
+  border-radius: 5px;
+  color: white;
+  font-size: 18px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  transition: 0.1s all ease-out;
+
+  &:hover {
+    background-color: #A7A5C6;
+    color: white;
   }
 
-  render() {
-    return (
-      <div>
-        <CommentAvatar src={this.pic} />
-        <CommentAuthor>By: {this.fname}</CommentAuthor>
-        <CommentAuthor>{this.timestamp.substring(0, 10)}</CommentAuthor>
-        <CommentBody>{this.text}</CommentBody>
-        <CommentHRLine />
-      </div>
-    );
-  }
-}
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin: 10px;
+`;
 
 class Post extends React.Component {
   constructor(props) {
@@ -227,19 +98,12 @@ class Post extends React.Component {
       user: null,
       company: null,
       comments: props.comments,
-      addJobState: props.post.applied
+      addJobState: props.post.applied,
     };
 
-    this.addJobButtonText = ["Add job to Dashboard", "Added!"]
+    this.addJobButtonText = ["add to dashboard", "in your dashboard"];
 
     this.token = props.token;
-
-    this.renderDescription = this.renderDescription.bind(this);
-    this.renderInformation = this.renderInformation.bind(this);
-    this.renderComments = this.renderComments.bind(this);
-    this.renderCommentSection = this.renderCommentSection.bind(this);
-    this.renderNewComment = this.renderNewComment.bind(this);
-    this.renderPost = this.renderPost.bind(this);
 
     this.description_button_event = this.description_button_event.bind(this);
     this.information_button_event = this.information_button_event.bind(this);
@@ -247,9 +111,6 @@ class Post extends React.Component {
     this.post_button_event = this.post_button_event.bind(this);
     this.post_comment_event = this.post_comment_event.bind(this);
     this.addJobFromPost = this.addJobFromPost.bind(this);
-
-    this.submitComment = this.submitComment.bind(this);
-    this.writeComment = this.writeComment.bind(this);
   }
 
   description_button_event() {
@@ -279,258 +140,70 @@ class Post extends React.Component {
     });
   }
 
-  renderDescription() {
-    let tags = [];
-    for(let i = 0; i < this.state.post.job.tags.length; i++) {
-      tags.push(<PostTag>{this.state.post.job.tags[i].tag.tag}</PostTag>);
-    }
-    if (this.state.description_expand) {
-      return (
-        <section>
-          <SectionTitleActive>Job Description</SectionTitleActive>
-          <ButtonStyled onClick={this.description_button_event}>
-            <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
-          <BodyText>{this.state.post.job.description}</BodyText>
-          <a href={this.state.post.job.link}>{this.state.post.job.link}</a>
-          <SectionTitleActive>Tags</SectionTitleActive>
-          <div>{tags}</div>
-        </section>
-      );
-    } else {
-      return (
-        <section>
-          <SectionTitleClosed>Job Description</SectionTitleClosed>
-          <ButtonStyled onClick={this.description_button_event}>
-            <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
-        </section>
-      );
-    }
-  }
-  renderInformation() {
-    if (this.state.information_expand) {
-      return (
-        <section>
-          <SectionTitleActive>Job Information</SectionTitleActive>
-          <ButtonStyled onClick={this.information_button_event}>
-            <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
-          <p>Job information component</p>
-        </section>
-      );
-    } else {
-      return (
-        <section>
-          <SectionTitleClosed>Job Information</SectionTitleClosed>
-          <ButtonStyled onClick={this.information_button_event}>
-            <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
-        </section>
-      );
-    }
-  }
-  renderComments(num_comments) {
-    let ret = [];
-    if (this.state.post.comments.length == 0) {
-      return (
-        <div>
-          <p>Start the conversation!</p>
-        </div>
-      );
-    }
-    console.log(this.state.post);
-    for (let i = 0; i < Math.min(num_comments, this.state.post.comments.length); i++) {
-      ret.push(
-        <Comment
-          text={this.state.post.comments[i].text}
-          timestamp={this.state.post.comments[i].timestamp}
-          fname={this.state.post.comments[i].user.fname}
-          pic={this.state.post.comments[i].user.pic}
-          key={this.state.post.comments[i].id}
-        />
-      );
-    }
-    return ret;
-  }
-
-  closedCommentButton() {
-    if (this.state.post.comments.length > 4) {
-      return (
-        <ButtonStyled onClick={this.comment_button_event}>
-          <FontAwesomeIcon icon={faMinusSquare}></FontAwesomeIcon>
-        </ButtonStyled>
-      );
-    } else {
-      return null;
-    }
-  }
-  renderCommentSection() {
-    if (this.state.comment_expand || this.state.post.comments.length <= 3) {
-      return (
-        <section>
-          <SectionTitleActive>Comments</SectionTitleActive>
-          {this.closedCommentButton()}
-          {this.renderComments(100)}
-          {this.renderNewComment()}
-        </section>
-      );
-    } else {
-      return (
-        <section>
-          <SectionTitleClosed>Comments</SectionTitleClosed>
-          <ButtonStyled onClick={this.comment_button_event}>
-            <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
-          </ButtonStyled>
-          {this.renderComments(1)}
-          <MoreComments>
-            {this.state.post.comments.length - 1} more comments...
-          </MoreComments>
-        </section>
-      );
-    }
-  }
-
-  submitComment(event) {
-    event.preventDefault();
-    if (
-      this.state.new_comment.length > 2
-    ) {
-      fetch("http://" + window.location.hostname + ":8000/comments/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: this.state.new_comment,
-          post_id: this.state.post.id,
-          token: this.token
-        }),
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          let post_update = this.state.post; 
-          post_update.comments.push(json);
-          this.setState({ post: post_update });
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  }
-
-  writeComment(event) {
-    this.setState({new_comment: event})
-  }
-
-  renderNewComment() {
-    let value = "";
-    if (this.state.post_comment) {
-      return (
-        <Form>
-          <Form.Group>
-            <MDEditor value={value} onChange={this.writeComment} />
-            <MDEditor.Markdown source={value} />
-          </Form.Group>
-          <Button onClick={this.submitComment}>Submit</Button>
-        </Form>
-      );
-    } else {
-      return (
-        <PostCommentButton onClick={this.post_comment_event}>
-          Post a reply...
-        </PostCommentButton>
-      );
-    }
-  }
-
   addJobFromPost() {
     fetch("http://" + window.location.hostname + ":8000/applications/add", {
-      "method": "POST",
-      "headers": {
-        "Content-Type": "application/json"
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      "body": JSON.stringify({
+      body: JSON.stringify({
         job_id: this.state.post.job.id,
         token: this.token,
-        resume_id: 1
+        resume_id: 1,
+      }),
+    })
+      .then((res) => {
+        if (res.status == 200) {
+          this.setState({ addJobState: 1 });
+        } else if (res.status == 411) {
+          this.setState({ addJobState: 1 });
+          throw new Error("Job already added!");
+        } else {
+          throw new Error("Something else broke!");
+        }
       })
-    })
-    .then((res) => {
-      if(res.status == 200) {
-        this.setState({addJobState: 1});
-      } else if (res.status == 411) {
-        this.setState({addJobState: 1});
-        throw new Error("Job already added!");
-      } else {
-        throw new Error("Something else broke!");
-      }
-    }).catch(error => {
-      alert(error);
-    })
-  }
-
-  renderPost() {
-    let body = "";
-    if (this.state.post_expand) {
-      body = this.state.post.body;
-    } else {
-      if (this.state.post.body.length > 140) {
-        body = this.state.post.body.substring(0, 140) + "...";
-      } else {
-        body = this.state.post.body;
-      }
-    }
-    return (
-      <div>
-        <h4>{this.state.post.post_title}</h4>
-        <BodyText>{body}</BodyText>
-      </div>
-    );
+      .catch((error) => {
+        alert(error);
+      });
   }
 
   render() {
-    let secondary_content;
-    if (this.state.post_expand) {
-      secondary_content = (
-        <div>
-          <HRLine />
-          {this.renderDescription()}
-          <HRLine />
-          {this.renderCommentSection()}
-        </div>
-      );
-    } else {
-      secondary_content = (
-        <div>
-          <PostExpandButton onClick={this.post_button_event}>
-            <FontAwesomeIcon icon={faPlusSquare}></FontAwesomeIcon>
-          </PostExpandButton>
-        </div>
-      );
-    }
-    let buttonText = this.addJobButtonText[this.state.addJobState];
-    let button = null;
-    if(this.state.addJobState == 1) {
-      button = <AlreadyAddedJobButton disabled={1}>{buttonText} </AlreadyAddedJobButton>
-    } else {
-      button = <AddJobButton onClick={this.addJobFromPost}> {buttonText} </AddJobButton>
-    }
     return (
-      <Container>
-        <JobTitle>{this.state.post.job.name}</JobTitle>
-        <JobLocation>{this.state.post.job.company.name} - {this.state.post.job.location}</JobLocation>
-        <GroupPost>
-          Posted by PLACEHOLDER via {this.state.post.group.name} on{" "}   
-          {this.state.post.timestamp.substring(0, 10)}
-        </GroupPost>
-        <HRLine />
-        {this.renderPost()}
-        {secondary_content}
-        {button}
-      </Container>
+      <MasterPostContainer>
+        <div>
+          <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />
+          <PostAuthor>
+            {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
+            {this.state.post.group.name}{" "}
+          </PostAuthor>
+        </div>
+        <Container>
+          <CompanyInfoContainer>
+            <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />
+            <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
+            <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
+            <CompanyInfo>Posted 3/23</CompanyInfo>
+          </CompanyInfoContainer>
+          <div>
+            <PostCardHeading>
+              {this.state.post.job.name} | Summer 2021
+            </PostCardHeading>
+            <p>{this.state.post.body}</p>
+          </div>
+        </Container>
+        <ButtonContainer>
+          <PostButton>job info</PostButton>
+          <PostButton onClick={this.addJobFromPost}>{this.addJobButtonText[this.state.addJobState]}</PostButton>
+          <PostButton onClick={() => window.open(this.state.post.job.link)}>apply</PostButton>
+        </ButtonContainer>
+      </MasterPostContainer>
     );
   }
 }
 
 export default Post;
+
+export {
+  MasterPostContainer,
+  UserImage
+}

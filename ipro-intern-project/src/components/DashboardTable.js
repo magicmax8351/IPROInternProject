@@ -308,7 +308,7 @@ class App extends Component {
   }
 
   getNewPostModal() {
-    if (!this.state.showNewPostModal || this.state.modalApp == null) {
+    if (this.state.modalApp == null) {
       return;
     }
 
