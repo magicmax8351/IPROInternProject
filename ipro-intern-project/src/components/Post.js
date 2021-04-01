@@ -99,7 +99,8 @@ class Post extends React.Component {
       company: null,
       comments: props.comments,
       addJobState: props.post.applied,
-      func: props.func
+      jobInfoFunc: props.jobInfoFunc,
+      showCommentsFunc: props.showCommentsFunc
     };
 
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
@@ -137,8 +138,10 @@ class Post extends React.Component {
       });
   }
 
+  
   render() {
     let addJobButtonText = this.addJobButtonText[this.state.addJobState];
+    
     return (
       <MasterPostContainer>
         <div>
@@ -163,7 +166,8 @@ class Post extends React.Component {
           </div>
         </Container>
         <ButtonContainer>
-          <PostButton onClick={() => this.state.func(addJobButtonText, this.addJobFromPost)}>job info</PostButton>
+          <PostButton onClick={() => this.state.jobInfoFunc(addJobButtonText, this.addJobFromPost)}>job info</PostButton>
+          <PostButton onClick={this.state.showCommentsFunc}>comments ({this.state.post.comments.length})</PostButton>
           <PostButton onClick={this.addJobFromPost}>{addJobButtonText}</PostButton>
           <PostButton onClick={() => window.open(this.state.post.job.link)}>apply</PostButton>
         </ButtonContainer>

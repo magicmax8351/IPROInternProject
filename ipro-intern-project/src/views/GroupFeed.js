@@ -9,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
 import JobInfo from "../components/JobInfo";
 import ModalDialog from "react-bootstrap/esm/ModalDialog";
+import PostComment from "../components/PostComment";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -110,8 +111,10 @@ class GroupFeed extends React.Component {
       modal: null,
       showNewPostModal: false,
       showPostSubmittedModal: false,
+      showPostCommentsModal: false,
       postSubmitted: 0,
       groups_toggle: null,
+      showCommentsData: []
     };
     this.count = 50;
 
@@ -127,10 +130,12 @@ class GroupFeed extends React.Component {
 
     this.getNewPostModal = this.getNewPostModal.bind(this);
     this.getPostSubmittedModal = this.getPostSubmittedModal.bind(this);
+    this.getPostCommentsModal = this.getPostCommentsModal.bind(this);
 
     this.closeNewPostModal = this.closeNewPostModal.bind(this);
     this.closePostSubmittedModal = this.closePostSubmittedModal.bind(this);
     this.closeJobInfoModal = this.closeJobInfoModal.bind(this);
+    this.closeShowCommentsModal = this.closeShowCommentsModal.bind(this);
 
     this.setJobInfoId = this.setJobInfoId.bind(this);
 
@@ -262,9 +267,14 @@ class GroupFeed extends React.Component {
           post={posts[i]}
           key={posts[i].id}
           token={this.state.token}
-          func={(dashboardStatus, applyFunc) =>
+          jobInfoFunc={(dashboardStatus, applyFunc) =>
             this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
           }
+          showCommentsFunc={() => 
+            this.setState({
+              showCommentsData: posts[i].comments,
+              showPostCommentsModal: true
+            })}
         />
       );
     }
@@ -331,7 +341,11 @@ class GroupFeed extends React.Component {
 
   getJobInfoModal() {
     let newModal = (
-      <Modal size="lg" show={this.state.showJobInfoModal} onHide={this.closeJobInfoModal}>
+      <Modal
+        size="lg"
+        show={this.state.showJobInfoModal}
+        onHide={this.closeJobInfoModal}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Job Info</Modal.Title>
         </Modal.Header>
@@ -346,7 +360,6 @@ class GroupFeed extends React.Component {
     );
     return newModal;
   }
-
 
   getNewPostModal() {
     let newModal = (
@@ -391,6 +404,27 @@ class GroupFeed extends React.Component {
     );
   }
 
+  getPostCommentsModal() {
+    return (
+      <Modal
+        show={this.state.showPostCommentsModal}
+        onHide={this.closeShowCommentsModal}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Post Comments!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PostComment comments={this.state.showCommentsData}/>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.closeShowCommentsModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
   closeNewPostModal() {
     this.setState({ showNewPostModal: false });
   }
@@ -401,6 +435,10 @@ class GroupFeed extends React.Component {
 
   closeJobInfoModal() {
     this.setState({ showJobInfoModal: false });
+  }
+
+  closeShowCommentsModal() {
+    this.setState({ showPostCommentsModal: false });
   }
 
   flipViewGroupState(group_id) {
@@ -418,12 +456,14 @@ class GroupFeed extends React.Component {
     let newPostModal = this.getNewPostModal();
     let postSubmittedModal = this.getPostSubmittedModal();
     let jobInfoModal = this.getJobInfoModal();
+    let postCommentsModal = this.getPostCommentsModal(); 
 
     return (
       <div>
         {newPostModal}
         {postSubmittedModal}
         {jobInfoModal}
+        {postCommentsModal}
         <FeedContainer>
           <SidebarFlexContainer>
             <SidebarContainer>
