@@ -1,6 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-
+import Modal from "react-bootstrap/Modal";
+import JobInfo from "../components/JobInfo";
+import PostComment from "../components/PostComment";
+import Button from "react-bootstrap/Button";
 
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
 
@@ -70,10 +73,9 @@ const PostButton = styled.button`
   transition: 0.1s all ease-out;
 
   &:hover {
-    background-color: #A7A5C6;
+    background-color: #a7a5c6;
     color: white;
   }
-
 `;
 
 const ButtonContainer = styled.div`
@@ -87,29 +89,21 @@ class Post extends React.Component {
     super(props);
     this.state = {
       post: props.post,
-      post_expand: 0,
-      comment_expand: 0,
-      description_expand: 0,
-      information_expand: 0,
-      comment_expand: 0,
-      post_comment: 0,
-      job: null,
-      group: null,
-      user: null,
-      company: null,
-      comments: props.comments,
-      addJobState: props.post.applied,
-      jobInfoFunc: props.jobInfoFunc,
-      showCommentsFunc: props.showCommentsFunc
+      showPostCommentsModal: false,
+      showJobInfoModal: false,
     };
 
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
-
     this.token = props.token;
-
     this.addJobFromPost = this.addJobFromPost.bind(this);
+    this.getJobInfoModal = this.getJobInfoModal.bind(this);
+    this.getPostCommentsModal = this.getPostCommentsModal.bind(this);
+    this.getButtonText = this.getButtonText.bind(this);
   }
 
+  getButtonText() {
+    return this.addJobButtonText[this.state.post.applied];
+  }
 
   addJobFromPost() {
     fetch("http://" + window.location.hostname + ":8000/applications/add", {
@@ -125,7 +119,9 @@ class Post extends React.Component {
     })
       .then((res) => {
         if (res.status == 200) {
-          this.setState({ addJobState: 1 });
+          let post_update = this.state.post;
+          post_update["applied"] = 1;
+          this.setState({ post: post_update });
         } else if (res.status == 411) {
           this.setState({ addJobState: 1 });
           throw new Error("Job already added!");
@@ -138,47 +134,106 @@ class Post extends React.Component {
       });
   }
 
-  
-  render() {
-    let addJobButtonText = this.addJobButtonText[this.state.addJobState];
-    
+  getPostCommentsModal() {
     return (
-      <MasterPostContainer>
-        <div>
-          <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />
-          <PostAuthor>
-            {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
-            {this.state.post.group.name}{" "}
-          </PostAuthor>
-        </div>
-        <Container>
-          <CompanyInfoContainer>
-            <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />
-            <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
-            <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
-            <CompanyInfo>Posted 3/23</CompanyInfo>
-          </CompanyInfoContainer>
+      <Modal
+        show={this.state.showPostCommentsModal}
+        onHide={() => this.setState({ showPostCommentsModal: false })}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Post Comments!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PostComment comments={this.state.post.comments} />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => this.setState({ showPostCommentsModal: false })}
+          >
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
+  getJobInfoModal() {
+    let newModal = (
+      <Modal
+        size="lg"
+        show={this.state.showJobInfoModal}
+        onHide={() => this.setState({ showJobInfoModal: false })}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Job Info</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <JobInfo
+            job={this.state.post.job}
+            dashboardStatus={this.getButtonText()}
+            applyFunc={this.addJobFromPost}
+          />
+        </Modal.Body>
+      </Modal>
+    );
+    return newModal;
+  }
+
+  render() {
+    let jobInfoModal = this.getJobInfoModal();
+    let postCommentsModal = this.getPostCommentsModal();
+
+    return (
+      <div>
+        {jobInfoModal}
+        {postCommentsModal}
+        <MasterPostContainer>
           <div>
-            <PostCardHeading>
-              {this.state.post.job.name} | Summer 2021
-            </PostCardHeading>
-            <p>{this.state.post.body}</p>
+            <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />
+            <PostAuthor>
+              {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
+              {this.state.post.group.name}{" "}
+            </PostAuthor>
           </div>
-        </Container>
-        <ButtonContainer>
-          <PostButton onClick={() => this.state.jobInfoFunc(addJobButtonText, this.addJobFromPost)}>job info</PostButton>
-          <PostButton onClick={this.state.showCommentsFunc}>comments ({this.state.post.comments.length})</PostButton>
-          <PostButton onClick={this.addJobFromPost}>{addJobButtonText}</PostButton>
-          <PostButton onClick={() => window.open(this.state.post.job.link)}>apply</PostButton>
-        </ButtonContainer>
-      </MasterPostContainer>
+          <Container>
+            <CompanyInfoContainer>
+              <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />
+              <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
+              <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
+              <CompanyInfo>Posted 3/23</CompanyInfo>
+            </CompanyInfoContainer>
+            <div>
+              <PostCardHeading>
+                {this.state.post.job.name} | Summer 2021
+              </PostCardHeading>
+              <p>{this.state.post.body}</p>
+            </div>
+          </Container>
+          <ButtonContainer>
+            <PostButton
+              onClick={() => this.setState({ showJobInfoModal: true })}
+            >
+              job info
+            </PostButton>
+            <PostButton
+              onClick={() => this.setState({ showPostCommentsModal: true })}
+            >
+              comments ({this.state.post.comments.length})
+            </PostButton>
+            <PostButton onClick={this.addJobFromPost}>
+              {this.getButtonText()}
+            </PostButton>
+            <PostButton onClick={() => window.open(this.state.post.job.link)}>
+              apply
+            </PostButton>
+          </ButtonContainer>
+        </MasterPostContainer>
+      </div>
     );
   }
 }
 
 export default Post;
 
-export {
-  MasterPostContainer,
-  UserImage
-}
+export { MasterPostContainer, UserImage };
