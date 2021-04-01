@@ -24,7 +24,6 @@ class NewDashboardTableEntry extends React.Component {
       companies: null,
       groups: null,
       body: null,
-      subject: null,
       new_company_name: null
     };
     this.enter_company = this.enter_company.bind(this);

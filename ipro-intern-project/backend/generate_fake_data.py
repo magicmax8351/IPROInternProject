@@ -200,11 +200,6 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     for i in range(100):
         posts.append(
             PostORM(
-                subject=lipsum.paragraph(
-                    nb_sentences=2,
-                    variable_nb_sentences=False,
-                    ext_word_list=linkedin_shill_txt.split()
-                ),
                 body=lipsum.paragraph(
                     nb_sentences=5,
                     variable_nb_sentences=False,

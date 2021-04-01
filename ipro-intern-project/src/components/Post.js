@@ -99,46 +99,16 @@ class Post extends React.Component {
       company: null,
       comments: props.comments,
       addJobState: props.post.applied,
+      func: props.func
     };
 
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
 
     this.token = props.token;
 
-    this.description_button_event = this.description_button_event.bind(this);
-    this.information_button_event = this.information_button_event.bind(this);
-    this.comment_button_event = this.comment_button_event.bind(this);
-    this.post_button_event = this.post_button_event.bind(this);
-    this.post_comment_event = this.post_comment_event.bind(this);
     this.addJobFromPost = this.addJobFromPost.bind(this);
   }
 
-  description_button_event() {
-    this.setState({
-      description_expand: !this.state.description_expand,
-    });
-  }
-  information_button_event() {
-    this.setState({
-      information_expand: !this.state.information_expand,
-    });
-  }
-  comment_button_event() {
-    this.setState({
-      comment_expand: !this.state.comment_expand,
-    });
-  }
-  post_button_event() {
-    this.setState({
-      post_expand: !this.state.post_expand,
-    });
-  }
-
-  post_comment_event() {
-    this.setState({
-      post_comment: !this.state.post_comment,
-    });
-  }
 
   addJobFromPost() {
     fetch("http://" + window.location.hostname + ":8000/applications/add", {
@@ -168,6 +138,7 @@ class Post extends React.Component {
   }
 
   render() {
+    let addJobButtonText = this.addJobButtonText[this.state.addJobState];
     return (
       <MasterPostContainer>
         <div>
@@ -192,8 +163,8 @@ class Post extends React.Component {
           </div>
         </Container>
         <ButtonContainer>
-          <PostButton>job info</PostButton>
-          <PostButton onClick={this.addJobFromPost}>{this.addJobButtonText[this.state.addJobState]}</PostButton>
+          <PostButton onClick={() => this.state.func(addJobButtonText, this.addJobFromPost)}>job info</PostButton>
+          <PostButton onClick={this.addJobFromPost}>{addJobButtonText}</PostButton>
           <PostButton onClick={() => window.open(this.state.post.job.link)}>apply</PostButton>
         </ButtonContainer>
       </MasterPostContainer>

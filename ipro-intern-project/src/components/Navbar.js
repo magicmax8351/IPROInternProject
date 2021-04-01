@@ -6,16 +6,19 @@ const NavbarDiv = styled.div`
   width: 100%;
   background-color: #7c79a8;
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   justify-content: space-between;
   align-items: baseline;
 `;
 
 const NavbarItemBox = styled.ul`
-  display: inline-block;
+  display: flex;
+  max-width: 700px;
+  width: 100%;
+  justify-content: space-between;
 `;
 const NavbarItem = styled.a`
-  margin: 10px;
+  margin: 5px;
   font-family: "Work-Sans-Light", sans-serif;
   font-size: 30px;
   color: #ffffff;
@@ -31,23 +34,24 @@ const BasicLogo = styled.h1`
 
 const UserImage = styled.img`
   border-radius: 100px;
-  display: inline-block;
+  margin-top: 10px;
+  margin-left: -30px;
   max-width: 30px;
   max-height: 30px;
-  margin-right: 10px;
-  margin-top: -8px;
-  border: 1px solid black;
+  position: absolute;
+  border: 1px;
 `;
 
 const UserName = styled.h1`
   font-size: 30px;
+  margin: 5px;
   display: inline-block;
   color: #ffffff;
   font-family: "Work-Sans-Light";
 `;
 
 const UserDiv = styled.div`
-  padding-right: 5px;
+  display: flex;
   width: 150px;
 `;
 
@@ -55,7 +59,8 @@ let userName = Cookies.get("name");
 let userImage = Cookies.get("image");
 
 userName = "martin";
-userImage = "https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3"
+userImage =
+  "https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3";
 
 const userInfo = (
   <UserDiv>

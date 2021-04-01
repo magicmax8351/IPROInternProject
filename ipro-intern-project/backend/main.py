@@ -195,7 +195,6 @@ def add_post(new_post: PostModel):
     uid = get_uid_token(new_post.token)["uid"]
 
     new_post_orm = PostORM(
-        subject=new_post.subject,
         body=new_post.body,
         timestamp=datetime.datetime.now(),
         job_id=new_post.job_id,

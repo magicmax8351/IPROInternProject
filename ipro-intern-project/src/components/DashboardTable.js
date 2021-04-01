@@ -312,7 +312,7 @@ class App extends Component {
       return;
     }
 
-    // Process modalApp to figure out subject and body info:
+    // Process modalApp to figure and body info:
     let app = this.state.modalApp;
     let lastEvent, e;
     for (let i = 0; i < app.applicationEvents.length; i++) {
@@ -322,26 +322,15 @@ class App extends Component {
       }
     }
 
-    let subject, body;
+    let body;
     let emotion_map = [null, "Good news!", "Bad news :( "];
     if (lastEvent) {
-      subject =
-        "Update from " +
-        app.job.company.name +
-        ", " +
-        lastEvent.stage.name +
-        ": " +
-        emotion_map[lastEvent.status];
-
       body =
         "I just heard back from " +
         app.job.company.name +
         ", and it's " +
         emotion_map[lastEvent.status].toLocaleLowerCase();
     } else {
-      subject =
-        "Interesting job @ " + app.job.company.name + ": " + app.job.name;
-
       body = "This looks like a great opprotunity!";
     }
 
@@ -353,7 +342,6 @@ class App extends Component {
         <Modal.Body>
           <NewPost
             body={body}
-            subject={subject}
             job_id={app.job.id}
             company_id={app.job.company.id}
             token={this.state.token}

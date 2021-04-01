@@ -7,6 +7,8 @@ import { MasterPostContainer, UserImage } from "../components/Post";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
+import JobInfo from "../components/JobInfo";
+import ModalDialog from "react-bootstrap/esm/ModalDialog";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -109,8 +111,9 @@ class GroupFeed extends React.Component {
       showNewPostModal: false,
       showPostSubmittedModal: false,
       postSubmitted: 0,
+      groups_toggle: null,
     };
-    this.count = 10;
+    this.count = 50;
 
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
@@ -127,6 +130,11 @@ class GroupFeed extends React.Component {
 
     this.closeNewPostModal = this.closeNewPostModal.bind(this);
     this.closePostSubmittedModal = this.closePostSubmittedModal.bind(this);
+    this.closeJobInfoModal = this.closeJobInfoModal.bind(this);
+
+    this.setJobInfoId = this.setJobInfoId.bind(this);
+
+    this.checkbox_map = ["✖", "✔"];
 
     if (this.group_id == -1) {
       this.state.group = {
@@ -138,7 +146,6 @@ class GroupFeed extends React.Component {
 
   enter_filter(event) {
     this.setState({ filter: event.target.value });
-    console.log("reee");
   }
 
   componentDidMount() {
@@ -162,6 +169,11 @@ class GroupFeed extends React.Component {
       .then((res) => res.json())
       .then((json) => {
         this.setState({ groups: json });
+        let groups_toggle = {};
+        for (let i = 0; i < json.length; i++) {
+          groups_toggle[json[i].id] = 1;
+        }
+        this.setState({ groups_toggle: groups_toggle });
       });
   }
 
@@ -194,8 +206,15 @@ class GroupFeed extends React.Component {
   }
 
   filterPost(post) {
+    if (!this.state.groups_toggle) {
+      return false;
+    }
+
+    if (!this.state.groups_toggle[post.group.id]) {
+      return false;
+    }
+
     let filter_targets = [
-      post.subject,
       post.body,
       post.job.name,
       post.job.location,
@@ -224,13 +243,29 @@ class GroupFeed extends React.Component {
     return false;
   }
 
+  setJobInfoId(job, dashboardStatus, applyFunc) {
+    this.setState({
+      jobInfo: job,
+      showJobInfoModal: true,
+      dashboardStatus: dashboardStatus,
+      applyFunc: applyFunc,
+    });
+  }
+
   postList(group_posts) {
     let out_posts = [];
     let posts = group_posts.filter(this.filterPost);
 
     for (let i = 0; i < posts.length; i++) {
       out_posts.push(
-        <Post post={posts[i]} key={posts[i].id} token={this.state.token} />
+        <Post
+          post={posts[i]}
+          key={posts[i].id}
+          token={this.state.token}
+          func={(dashboardStatus, applyFunc) =>
+            this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
+          }
+        />
       );
     }
     return out_posts;
@@ -251,7 +286,7 @@ class GroupFeed extends React.Component {
           posts: posts_update,
           showNewPostModal: false,
           showPostSubmittedModal: true,
-          group_name: json.group.name
+          group_name: json.group.name,
         });
       })
       .catch((err) => {
@@ -265,7 +300,7 @@ class GroupFeed extends React.Component {
 
   renderGroups() {
     let groups = [];
-    if (!this.state.groups) {
+    if (!this.state.groups || !this.state.groups_toggle) {
       return null;
     }
     for (let i = 0; i < this.state.groups.length; i += 2) {
@@ -273,15 +308,20 @@ class GroupFeed extends React.Component {
       groups.push(
         <GreyGroupRow>
           <GroupRowName>{g.name}</GroupRowName>
-          <GroupRowButton>☑</GroupRowButton>
+          <GroupRowButton onClick={() => this.flipViewGroupState(g.id)}>
+            {this.checkbox_map[this.state.groups_toggle[g.id]]}
+          </GroupRowButton>
         </GreyGroupRow>
       );
       if (i + 1 != this.state.groups.length) {
         let g2 = this.state.groups[i + 1];
+
         groups.push(
           <WhiteGroupRow>
             <GroupRowName>{g2.name}</GroupRowName>
-            <GroupRowButton>☑</GroupRowButton>
+            <GroupRowButton onClick={() => this.flipViewGroupState(g2.id)}>
+              {this.checkbox_map[this.state.groups_toggle[g2.id]]}
+            </GroupRowButton>
           </WhiteGroupRow>
         );
       }
@@ -289,11 +329,34 @@ class GroupFeed extends React.Component {
     return groups;
   }
 
+  getJobInfoModal() {
+    let newModal = (
+      <Modal size="lg" show={this.state.showJobInfoModal} onHide={this.closeJobInfoModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Job Info</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <JobInfo
+            job={this.state.jobInfo}
+            dashboardStatus={this.state.dashboardStatus}
+            applyFunc={this.state.applyFunc}
+          />
+        </Modal.Body>
+      </Modal>
+    );
+    return newModal;
+  }
+
+
   getNewPostModal() {
     let newModal = (
-      <Modal show={this.state.showNewPostModal} onHide={this.closeNewPostModal}>
+      <Modal
+        size="lg"
+        show={this.state.showNewPostModal}
+        onHide={this.closeNewPostModal}
+      >
         <Modal.Header closeButton>
-          <Modal.Title>Share Dashboard Update</Modal.Title>
+          <Modal.Title>Create New Post</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <NewPost
@@ -336,6 +399,16 @@ class GroupFeed extends React.Component {
     this.setState({ showPostSubmittedModal: false });
   }
 
+  closeJobInfoModal() {
+    this.setState({ showJobInfoModal: false });
+  }
+
+  flipViewGroupState(group_id) {
+    let groups_update = this.state.groups_toggle;
+    groups_update[group_id] = (groups_update[group_id] + 1) % 2;
+    this.setState({ groups_toggle: groups_update });
+  }
+
   render() {
     if (!this.state.token) {
       document.location.replace("/login");
@@ -344,11 +417,13 @@ class GroupFeed extends React.Component {
     let renderedGroups = this.renderGroups();
     let newPostModal = this.getNewPostModal();
     let postSubmittedModal = this.getPostSubmittedModal();
+    let jobInfoModal = this.getJobInfoModal();
 
     return (
       <div>
         {newPostModal}
         {postSubmittedModal}
+        {jobInfoModal}
         <FeedContainer>
           <SidebarFlexContainer>
             <SidebarContainer>

@@ -236,7 +236,6 @@ class PostORM(Base):
     __tablename__ = "post"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    subject = Column(String(32), nullable=False)
     body = Column(String(32), nullable=False)
     timestamp = Column(DateTime)
     job_id = Column(Integer, ForeignKey("job.id"))
@@ -253,7 +252,6 @@ class PostModel(BaseModel):
         # arbitrary_types_allowed = True
 
     id: Optional[int]
-    subject: str
     body: str
     # tags: List[TagModel]
     timestamp: Optional[datetime.datetime]
