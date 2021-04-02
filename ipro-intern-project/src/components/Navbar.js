@@ -13,12 +13,12 @@ const NavbarDiv = styled.div`
 
 const NavbarItemBox = styled.ul`
   display: flex;
-  max-width: 700px;
+  max-width: 500px;
   width: 100%;
   justify-content: space-between;
 `;
 const NavbarItem = styled.a`
-  margin: 5px;
+  margin: 0px 5px 0px 5px;
   font-family: "Work-Sans-Light", sans-serif;
   font-size: 30px;
   color: #ffffff;
@@ -34,12 +34,9 @@ const BasicLogo = styled.h1`
 
 const UserImage = styled.img`
   border-radius: 100px;
-  margin-top: 10px;
-  margin-left: -30px;
-  max-width: 30px;
   max-height: 30px;
-  position: absolute;
   border: 1px;
+  margin-bottom: 10px;
 `;
 
 const UserName = styled.h1`
@@ -51,8 +48,7 @@ const UserName = styled.h1`
 `;
 
 const UserDiv = styled.div`
-  display: flex;
-  width: 150px;
+  white-space: nowrap;
 `;
 
 let userName = Cookies.get("name");
