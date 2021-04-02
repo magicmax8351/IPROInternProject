@@ -13,7 +13,7 @@ const NavbarDiv = styled.div`
 
 const NavbarItemBox = styled.ul`
   display: flex;
-  max-width: 500px;
+  max-width: 575px;
   width: 100%;
   justify-content: space-between;
 `;
