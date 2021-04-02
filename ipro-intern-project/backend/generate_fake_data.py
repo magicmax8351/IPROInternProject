@@ -219,7 +219,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
         return random.choice(s.query(PostORM).all()).id
 
     comments = []
-    for i in range(10):
+    for i in range(1000):
         comments.append(
             CommentORM(text=lipsum.paragraph(
                 nb_sentences=2,

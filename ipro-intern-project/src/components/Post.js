@@ -139,9 +139,10 @@ class Post extends React.Component {
       <Modal
         show={this.state.showPostCommentsModal}
         onHide={() => this.setState({ showPostCommentsModal: false })}
+        scrollable={true}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Post Comments!</Modal.Title>
+          <Modal.Title>comments</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <PostComment comments={this.state.post.comments} />
@@ -152,6 +153,12 @@ class Post extends React.Component {
             onClick={() => this.setState({ showPostCommentsModal: false })}
           >
             Close
+          </Button>
+
+          <Button
+          variant="primary"
+          >
+            post new comment
           </Button>
         </Modal.Footer>
       </Modal>
@@ -190,7 +197,7 @@ class Post extends React.Component {
         {postCommentsModal}
         <MasterPostContainer>
           <div>
-            <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />
+            <UserImage src={this.state.post.user.pic} />
             <PostAuthor>
               {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
               {this.state.post.group.name}{" "}

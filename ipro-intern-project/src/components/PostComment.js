@@ -1,20 +1,46 @@
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
-
-const Container = styled.div`
-  min-width: 500px;
-  background-color: white;
-  padding: 15px;
-  border-radius: 5px;
-  margin: 20px;
+const CommentContainer = styled.div`
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
 `;
 
-const PostCardHeading = styled.h2`
-  font-size: 22pt;
+const ProfilePicContainer = styled.div`
+  max-width: 60px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 5px;
 `;
+
+const ProfilePic = styled.img`
+  border-radius: 100px;
+  border: 1px;
+  width: 70%;
+`;
+
+const CommentTextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-radius: 0px 10px 10px 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  width: 100%;
+`;
+
+const AuthorContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const AuthorText = styled.p`
+  font-size: 10pt;
+  font-weight: bold;
+`;
+
+
 
 class Comment extends React.Component {
   constructor(props) {
@@ -24,12 +50,20 @@ class Comment extends React.Component {
 
   render() {
     return (
-      <div>
-        <img src={this.comment.user.pic} />
-        <p>By: {this.comment.user.fname}</p>
-        <p>{this.comment.timestamp.substring(0, 10)}</p>
-        <p>{this.comment.text}</p>
-      </div>
+      <CommentContainer>
+        <ProfilePicContainer>
+          <ProfilePic src={this.comment.user.pic} />
+        </ProfilePicContainer>
+        <CommentTextContainer>
+          <AuthorContainer>
+            <AuthorText>
+              {this.comment.user.fname} {this.comment.user.lname}
+            </AuthorText>
+            <AuthorText>{this.comment.timestamp.substring(0, 10)}</AuthorText>
+          </AuthorContainer>
+          <p>{this.comment.text}</p>
+        </CommentTextContainer>
+      </CommentContainer>
     );
   }
 }
@@ -51,7 +85,13 @@ class PostComment extends React.Component {
         </div>
       );
     } else {
-      comments = <div>{this.state.comments.map((x) => <Comment comment={x} />)}</div>;
+      comments = (
+        <div>
+          {this.state.comments.map((x) => (
+            <Comment comment={x} />
+          ))}
+        </div>
+      );
     }
     return <div>{comments}</div>;
   }
