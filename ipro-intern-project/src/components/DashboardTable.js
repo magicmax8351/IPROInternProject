@@ -8,6 +8,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
+import CuteButton from "./CuteDashboardShareButton";
 
 const DashboardTag = styled.p`
   background: #eeeeeeee;
@@ -38,7 +39,9 @@ class App extends Component {
       modal: null,
       showNewPostModal: false,
       showPostSubmittedModal: false,
-      postSubmitted: 0
+      postSubmitted: 0,
+      color: props.color, //so that color can be passed 
+      alt: 0 //this helps alternate color lmao
     };
 
     this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
@@ -178,6 +181,7 @@ class App extends Component {
     for (let i = 0; i < filtered_apps.length; i++) {
       dashboardData.push(this.buildDashboardTableRow(filtered_apps[i]));
     }
+    
     return <tbody>{dashboardData}</tbody>;
   }
 
@@ -190,23 +194,39 @@ class App extends Component {
     }
   }
 
+  
+
   buildDashboardTableRow(applicationBase) {
     let tableRowData = [];
+    this.state.alt = this.state.alt + 1; //increment alt by 1
+    if(this.state.alt % 2 == 0){  //if divisible by two, set no color
+      this.state.color = "";
+    }
+    else{
+      this.state.color = "#ac9adb"; //else set purple
+    }
     // Include metadata as specified by header. See `buildDashboardTableHeader`.
     applicationBase.applicationEvents.sort((x, y) => x.stage_id > y.stage_id);
     tableRowData.push(
-      <button
+      <CuteButton
         onClick={() => {
           this.setState({ modalApp: applicationBase, showNewPostModal: true });
         }}
       >
         Share
-      </button>
+      </CuteButton>
     );
     tableRowData.push(<td>{applicationBase.job.name}</td>);
+    var color = "blue";//it'll never equal blue lmao
+    if(this.state.color == "#ac9adb"){ //checkig color of row to change link text color
+      color = "#ede6ff"; //idk what color the link should be if not blue lmao
+    }
+    else{
+      color = "#ac9adb";
+    } 
     tableRowData.push(
       <td>
-        <a href={applicationBase.job.link}>{applicationBase.job.link}</a>
+        <a style={{color: color}} href={applicationBase.job.link}>{applicationBase.job.link}</a>
       </td>
     );
     tableRowData.push(<td>{applicationBase.job.company.name}</td>);
@@ -217,17 +237,31 @@ class App extends Component {
     let jobTags_filtered = applicationBase.job.tags.filter((x) =>
       this.tagStringMatch(x.tag.tag)
     );
+
+   
     for (let i = 0; i < jobTags_filtered.length; i++) {
-      tags.push(<DashboardTag>{jobTags_filtered[i].tag.tag}</DashboardTag>);
+      tags.push(<DashboardTag style={{backgroundColor:"#ede6ff"}}>{jobTags_filtered[i].tag.tag}</DashboardTag>); // left this logic so that all tags are attached to job, this way when filtering other tags will show up that match the filter
+    }
+    let showTags = [];  //create tags to be shown
+    for(let x = 0; x < jobTags_filtered.length; x++){ //guarantees won't break if total tags < 3
+      if(x == 3){
+        showTags.push("..."); //adds this to indicate there are more tags
+        x = jobTags_filtered.length; //exists the loop after 3 or total tag length, whichever comes first
+      }
+      else{
+        showTags.push(tags[x]); //build showTags with tags
+      }
     }
 
     tableRowData.push(
       <td>
-        <DashboardContainer>{tags}</DashboardContainer>
+        <DashboardContainer>{showTags}</DashboardContainer>
       </td>
     );
 
+
     for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
+
       let e = applicationBase.applicationEvents[i];
       tableRowData.push(
         <td>
@@ -242,7 +276,7 @@ class App extends Component {
         </td>
       );
     }
-    return <tr>{tableRowData}</tr>;
+    return <tr style={{backgroundColor: this.state.color}}>{tableRowData}</tr>;
   }
 
   filterDashboardTableRow(applicationBase) {
@@ -399,9 +433,9 @@ class App extends Component {
       );
     } else {
       newEntry = (
-        <button onClick={() => this.setState({ addApplication: 1 })}>
+        <CuteButton onClick={() => this.setState({ addApplication: 1 })}>
           Add Job to Dashboard
-        </button>
+        </CuteButton>
       );
     }
 

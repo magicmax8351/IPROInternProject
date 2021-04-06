@@ -9,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+
 // Logic for adding posts is broken.
 // Use https://formik.org/docs/overview to handle adding things to the database.
 
@@ -261,6 +262,7 @@ class NewDashboardTableEntry extends React.Component {
       );
     }
   }
+
 
 
   render() {
