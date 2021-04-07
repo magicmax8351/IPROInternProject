@@ -232,7 +232,7 @@ class App extends Component {
     tableRowData.push(
       <td>
         <a style={{ color: color }} href={applicationBase.job.link}>
-          {applicationBase.job.link}
+          Job Link
         </a>
       </td>
     );

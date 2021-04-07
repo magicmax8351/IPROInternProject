@@ -145,7 +145,7 @@ def gen_fake_data():
     # Add some jobs
 
 
-    fake_job_urls = ['https://myjob.me', 'https://ilovemartainshray.jobs', 'https://microsoft.gov']
+    fake_job_urls = ["https://www.coinbase.com/careers/positions/1724688?gh_jid=1724688", "https://www.job.com/job/marketing-director-in-chicago-il/47904624"]
     jobs = []
     for i in range(10):
         jobs.append(
