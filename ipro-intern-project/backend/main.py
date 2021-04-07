@@ -88,15 +88,15 @@ def add_user(new_user: UserModel):
 
     groups = [g for g in orm_session.query(GroupMembershipORM).all()]
     
-    print("Groups", groups)
     memberships = []
     for g in groups:
-        memberships.append(
-            MembershipORM(
-                uid=new_user_ORM.id,
-                group_membership_id=g.id
+        if(random.randint(0, 3) == 2):
+            memberships.append(
+                MembershipORM(
+                    uid=new_user_ORM.id,
+                    group_membership_id=g.id
+                )
             )
-        )
 
     orm_session.add_all(memberships)
 
@@ -233,10 +233,18 @@ def get_post(token: str, count: int, start_id: int, group_id: int):
         else:
             query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
     else:
-        if (start_id == -1):
-            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+        group = s.query(GroupORM).filter(GroupORM.id == group_id).one()
+        if group == None:
+            s.close()
+            raise HTTPException(430, "Group not found!")
+        if((group.privacy != 2) or (group.id in group_ids)):
+            if (start_id == -1):
+                query = s.query(PostORM).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+            else:
+                query = s.query(PostORM).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
         else:
-            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+            s.close()
+            raise HTTPException(422, "Private group!")
 
     for post in query:
         post_model = PostModel.from_orm(post)
@@ -675,14 +683,21 @@ def add_group(new_group: GroupModel):
 
 
 @app.get("/groups/get_id")
-def get_group_by_id(group_id: int):
+def get_group_by_id(group_id: int, token: str):
     """Get group by group ID. """
-    orm_session = orm_parent_session()
-    for u in orm_session.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group_id):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
+    s = orm_parent_session()
+    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
+    for u in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group_id):
         group = GroupMembershipModel.from_orm(u)
-        orm_session.close()
+        group.group.activeUserInGroup = bool(group.group.id in group_ids)
+        s.close()
         return group
-    orm_session.close()
+    s.close()
     return
 
 
@@ -692,10 +707,22 @@ def get_user_groups(token: str):
     s = orm_parent_session()
     groups = []
     uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
     group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
     group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
-    for group in s.query(GroupORM).filter(GroupORM.id.in_(group_ids)):
-        groups.append(GroupModel.from_orm(group))
+    for group in s.query(GroupORM):
+        g = GroupModel.from_orm(group)
+        if(g.id in group_ids):
+            g.activeUserInGroup = True
+            groups.append(g)
+        elif (g.privacy == 0):
+            g.activeUserInGroup = False
+            groups.append(g)
+        else:
+            pass
+
     s.close()
     return groups
 

@@ -8,11 +8,11 @@ import Button from "react-bootstrap/Button";
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
 
 const MasterPostContainer = styled.div`
-  max-width: 700px;
   background-color: white;
   padding: 5px;
   border-radius: 5px;
   margin-bottom: 10px;
+  width: 100%;
 `;
 
 const Container = styled.div`

@@ -13,6 +13,7 @@ import NewUser from "./components/NewUser";
 import { CookiesProvider } from "react-cookie";
 import Login from "./components/Login";
 import styled from "styled-components";
+import ViewGroups from "./views/ViewGroups"
 
 const BackgroundGrey = styled.div`
   background-color: #f0f0f0;
@@ -31,6 +32,7 @@ class App extends Component {
               <Route exact path="/dashboard" component={Dashboard} />
               <Route exact path="/settings" component={Settings} />
               <Route exact path="/group/id/:id" component={GroupPage} />
+              <Route exact path="/groups" component={ViewGroups} />
               <Route exact path="/newuser" component={NewUser} />
               <Route exact path="/login" component={Login} />
             </div>

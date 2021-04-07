@@ -7,6 +7,7 @@ import { MasterPostContainer, UserImage } from "../components/Post";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
+import GroupHeaderCard from "../components/GroupHeaderCard";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -21,12 +22,15 @@ const PostsContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: 10px;
+  max-width: 630px;
+  min-width: 500px;
 `;
 
 const SidebarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 310px;
+  margin-top: 320px;
+  min-width: 100px;
 `;
 
 const SidebarContainer = styled.div`
@@ -74,33 +78,19 @@ const UserRowName = styled.p`
 
 const MakeNewPostButton = styled.button`
   background: #f0f0f0;
-  border: none;
   font-size: 18px;
   width: 100%;
   text-align: left;
   border-radius: 5px;
+  border: solid 1px;
 `;
 
 const NewPostContainer = styled(MasterPostContainer)`
   display: flex;
 `;
 
-const GroupImageContainer = styled.div`
-  max-width: 700px;
-  max-height: 300px;
-  object-fit: center;
-  overflow: hidden;
-  margin-bottom: 10px;
-`;
-
-const GroupImageName = styled.h3`
-  position: absolute;
-  background: white;
-  width: 100%;
-  max-width: 700px;
-  border-radius: 0px 0px 5px 5px;
-  margin-top: 260px;
-  padding: 5px;
+const GroupDescription = styled.p`
+  margin-bottom: 0px;
 `;
 
 class GroupPage extends React.Component {
@@ -169,7 +159,9 @@ class GroupPage extends React.Component {
         "http://" +
           window.location.hostname +
           ":8000/groups/get_id?group_id=" +
-          this.group_id
+          this.group_id +
+          "&token=" +
+          this.state.token
       )
         .then((res) => res.json())
         .then((json) => this.setState({ groupMembership: json }));
@@ -212,6 +204,10 @@ class GroupPage extends React.Component {
       })
       .then((json) => {
         let posts_update = [...this.state.posts, ...json.posts];
+        console.log(posts_update);
+        if(posts_update.length == 0) {
+          return;
+        }
         this.setState({
           posts: posts_update,
           start_id: posts_update[posts_update.length - 1].id,
@@ -345,8 +341,9 @@ class GroupPage extends React.Component {
 
   renderMembers() {
     let members = [];
+    console.log(this.state.groupMembership.membership);
+
     for (let i = 0; i < this.state.groupMembership.membership.length; i += 2) {
-      console.log(this.state.groupMembership.membership);
       let m = this.state.groupMembership.membership[i].user;
       members.push(
         <GreyGroupRow>
@@ -468,12 +465,7 @@ class GroupPage extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
-            <GroupImageContainer>
-              <GroupImageName>
-                {this.state.groupMembership.group.name}
-              </GroupImageName>
-              <img src="https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg" />
-            </GroupImageContainer>
+            {GroupHeaderCard(this.state.groupMembership.group)}
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton
@@ -489,7 +481,9 @@ class GroupPage extends React.Component {
           <SidebarFlexContainer>
             <SidebarContainer>
               <h4>description</h4>
-              <p>{this.state.groupMembership.group.desc}</p>
+              <GroupDescription>
+                {this.state.groupMembership.group.desc}
+              </GroupDescription>
             </SidebarContainer>
             <SidebarContainer>
               <h4>members</h4>

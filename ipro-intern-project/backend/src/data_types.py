@@ -126,6 +126,8 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
+    background = Column(String(128), nullable=False)
+    privacy = Column(Integer) # 0 = public, 1 = unlisted, 2 = private
 
 class GroupModel(BaseModel):
     class Config:
@@ -134,6 +136,9 @@ class GroupModel(BaseModel):
     name: Optional[str]
     icon: Optional[str]
     desc: Optional[str]
+    background: Optional[str]
+    privacy: Optional[int]
+    activeUserInGroup: Optional[bool]
 
 class GroupMembershipORM(Base):
     __tablename__ = "group_membership"

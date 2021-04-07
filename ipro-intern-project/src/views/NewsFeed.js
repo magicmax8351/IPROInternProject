@@ -21,6 +21,7 @@ const PostsContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: 10px;
+  max-width: 700px;
 `;
 
 const SidebarFlexContainer = styled.div`
@@ -69,11 +70,11 @@ const GroupRowName = styled.p`
 
 const MakeNewPostButton = styled.button`
   background: #f0f0f0;
-  border: none;
   font-size: 18px;
   width: 100%;
   text-align: left;
   border-radius: 5px;
+  border: solid 1px;
 `;
 
 const NewPostContainer = styled(MasterPostContainer)`

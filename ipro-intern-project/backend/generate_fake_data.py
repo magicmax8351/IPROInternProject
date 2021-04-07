@@ -54,22 +54,34 @@ def gen_fake_data():
     
     # Add some groups
     groups = []
+
+    groupImages = [
+        "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
+        "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
+        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
+    ]
     groups.append(
         GroupORM(name="ACM @ IIT",
                  icon="/var/www/images/acm_logo.png",
-                 desc="Advancing Computing as a Science & Profession"))
+                 desc="Advancing Computing as a Science & Profession",
+                 background=random.choice(groupImages),
+                 privacy=0))
     groups.append(
         GroupORM(name="AEPKS",
                  icon="/var/www/images/pks_logo.png",
-                 desc="Men of Honor"))
+                 desc="Men of Honor",
+                 background=random.choice(groupImages),
+                 privacy=0))
     groups.append(
         GroupORM(name="Tesla Fan Club",
                  icon="/var/www/images/pks_logo.png",
-                 desc="I love Elon's Musk"))
+                 desc="I love Elon's Musk",
+                 background=random.choice(groupImages),
+                 privacy=0))
 
     # Randomly generate a heck ton of groups:
 
-    for i in range(3):
+    for i in range(10):
         groups.append(
             GroupORM(
                 name=lipsum.paragraph(
@@ -80,7 +92,9 @@ def gen_fake_data():
                 desc=lipsum.paragraph(
                     nb_sentences=8,
                     variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:256]
+                    ext_word_list=word_list.split())[:256],
+                privacy=0,
+                background=random.choice(groupImages)
             )
         )
         
@@ -172,7 +186,7 @@ def gen_fake_data():
     print("Added sample jobs to DB")
 
     def g_id():
-        return random.choice(s.query(GroupORM).all()).id
+        return random.choice(groups).id
 
     # Add some posts
 
@@ -184,7 +198,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(100):
+    for i in range(1000):
         posts.append(
             PostORM(
                 body=lipsum.paragraph(
