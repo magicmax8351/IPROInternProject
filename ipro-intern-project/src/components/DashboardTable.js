@@ -231,9 +231,10 @@ class App extends Component {
     }
     tableRowData.push(
       <td>
-        <a style={{ color: color }} href={applicationBase.job.link}>
-          Job Link
-        </a>
+        <CuteButton 
+          onClick={() => window.open(applicationBase.job.link)}
+        >Job Link
+        </CuteButton>
       </td>
     );
     tableRowData.push(<td>{applicationBase.job.company.name}</td>);
