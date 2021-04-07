@@ -80,7 +80,25 @@ const NewPostContainer = styled(MasterPostContainer)`
   display: flex;
 `;
 
-class GroupFeed extends React.Component {
+const GroupImageContainer = styled.div`
+  max-width: 700px;
+  max-height: 300px;
+  object-fit: center;
+  overflow: hidden;
+  margin-bottom: 10px;
+`;
+
+const GroupImageName = styled.h3`
+position: absolute;
+background: white;
+width: 100%;
+max-width: 700px;
+border-radius: 0px 0px 5px 5px;
+margin-top: 260px;
+padding: 5px;
+`;
+
+class GroupPage extends React.Component {
   constructor(props) {
     super(props);
     if (document.location.pathname.includes("id")) {
@@ -264,11 +282,12 @@ class GroupFeed extends React.Component {
           jobInfoFunc={(dashboardStatus, applyFunc) =>
             this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
           }
-          showCommentsFunc={() => 
+          showCommentsFunc={() =>
             this.setState({
               showCommentsData: posts[i].comments,
-              showPostCommentsModal: true
-            })}
+              showPostCommentsModal: true,
+            })
+          }
         />
       );
     }
@@ -333,8 +352,6 @@ class GroupFeed extends React.Component {
     return groups;
   }
 
-
-
   getNewPostModal() {
     let newModal = (
       <Modal
@@ -377,8 +394,6 @@ class GroupFeed extends React.Component {
       </Modal>
     );
   }
-
-
 
   closeNewPostModal() {
     this.setState({ showNewPostModal: false });
@@ -429,6 +444,10 @@ class GroupFeed extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
+            <GroupImageContainer>
+              <GroupImageName>{this.state.group.name}</GroupImageName>
+              <img src="https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg" />
+            </GroupImageContainer>
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton
@@ -437,6 +456,7 @@ class GroupFeed extends React.Component {
                 Make a new post...
               </MakeNewPostButton>
             </NewPostContainer>
+
             {renderedPosts}
             <button onClick={this.getMorePostsButton}>Get More Posts!</button>
           </PostsContainer>
@@ -446,4 +466,4 @@ class GroupFeed extends React.Component {
   }
 }
 
-export default GroupFeed;
+export default GroupPage;

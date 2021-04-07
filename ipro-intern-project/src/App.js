@@ -5,11 +5,10 @@ import Home from "./views/Home";
 import Profile from "./views/Profile";
 import Dashboard from "./views/Dashboard";
 import Settings from "./views/Settings";
-import GroupFeed from "./views/GroupFeed";
 import NewsFeed from "./views/NewsFeed";
+import GroupPage from "./views/GroupPage"
 import Navbar from "./components/Navbar";
 import "antd/dist/antd.css";
-import ProfilePic from "./components/ProfilePic";
 import NewUser from "./components/NewUser";
 import { CookiesProvider } from "react-cookie";
 import Login from "./components/Login";
@@ -31,7 +30,7 @@ class App extends Component {
               <Route exact path="/profile" component={Profile} />
               <Route exact path="/dashboard" component={Dashboard} />
               <Route exact path="/settings" component={Settings} />
-              <Route exact path="/group/id/:id" component={GroupFeed} />
+              <Route exact path="/group/id/:id" component={GroupPage} />
               <Route exact path="/newuser" component={NewUser} />
               <Route exact path="/login" component={Login} />
             </div>
