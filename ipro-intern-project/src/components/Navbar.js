@@ -71,7 +71,7 @@ const getNavbarItem = (obj) => (
 
 // Jank way to stitch the objects together
 let names = ["feed", "dashboard", "groups", "jobs"];
-let links = ["./", "./dashboard", "./groups", "./jobs"];
+let links = ["/", "/dashboard", "/group/id/1", "/jobs"];
 
 let objs = [];
 for (let i = 0; i < names.length; i++) {

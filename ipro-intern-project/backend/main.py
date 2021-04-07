@@ -86,21 +86,19 @@ def add_user(new_user: UserModel):
 
     # DEBUG: Add user to random number between 1 and 10 groups. 
 
-    groups = [g for g in orm_session.query(GroupORM).all()]
-
+    groups = [g for g in orm_session.query(GroupMembershipORM).all()]
+    
+    print("Groups", groups)
     memberships = []
     for g in groups:
-        if(new_user.fname == "admin" or random.randint(0, 10) == 1):
-             memberships.append(
-                    MembershipORM(
-                        uid=new_user_ORM.id,
-                        group_id=g.id,
-                        permission=random.randint(0, 3)
-                    )
-                )
+        memberships.append(
+            MembershipORM(
+                uid=new_user_ORM.id,
+                group_membership_id=g.id
+            )
+        )
 
-    for m in memberships:
-        orm_session.add(m)
+    orm_session.add_all(memberships)
 
 
     ret = NewUserReturn(
@@ -224,20 +222,21 @@ def get_post(token: str, count: int, start_id: int, group_id: int):
         raise HTTPException(410, "User token invalid!")
 
     s = orm_parent_session()
-    membership = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
     applications = {a.job_id: a for a in s.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)}
     posts = []
 
     if(group_id == -1):
         if (start_id == -1):
-            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).order_by(PostORM.id.desc()).limit(count).all()
         else:
-            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
     else:
         if (start_id == -1):
-            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
         else:
-            query = s.query(PostORM).filter(PostORM.group_id.in_(membership)).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
 
     for post in query:
         post_model = PostModel.from_orm(post)
@@ -679,8 +678,8 @@ def add_group(new_group: GroupModel):
 def get_group_by_id(group_id: int):
     """Get group by group ID. """
     orm_session = orm_parent_session()
-    for u in orm_session.query(GroupORM).filter(GroupORM.id == group_id):
-        group = GroupModel.from_orm(u)
+    for u in orm_session.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group_id):
+        group = GroupMembershipModel.from_orm(u)
         orm_session.close()
         return group
     orm_session.close()
@@ -693,9 +692,10 @@ def get_user_groups(token: str):
     s = orm_parent_session()
     groups = []
     uid = get_uid_token(token)["uid"]
-    membership_ids = [m.group_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    for group in membership_ids:
-        groups.append(GroupModel.from_orm(s.query(GroupORM).filter(GroupORM.id == group).one()))
+    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
+    for group in s.query(GroupORM).filter(GroupORM.id.in_(group_ids)):
+        groups.append(GroupModel.from_orm(group))
     s.close()
     return groups
 

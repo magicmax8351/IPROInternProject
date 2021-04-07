@@ -78,14 +78,22 @@ def gen_fake_data():
                     ext_word_list=word_list.split())[:4],
                 icon="/fake/image.png",
                 desc=lipsum.paragraph(
-                    nb_sentences=1,
+                    nb_sentences=8,
                     variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:8]
+                    ext_word_list=word_list.split())[:256]
             )
         )
         
     for g in groups:
         s.add(g)
+    s.commit()
+
+    groupMembershipORMObjects = []
+    for g in groups:
+        groupMembershipORMObjects.append(
+            GroupMembershipORM(group_id=g.id)
+        )
+    s.add_all(groupMembershipORMObjects)
     s.commit()
 
     icons = [
@@ -162,27 +170,6 @@ def gen_fake_data():
     s.add_all(jobs)
     s.commit()
     print("Added sample jobs to DB")
-
-    # Adding group membership
-
-    membership = []
-    for user in users:
-        for group in groups:
-            if random.randint(0, 2) == 1:
-                membership.append(
-                    MembershipORM(
-                        uid=user.id,
-                        group_id=group.id,
-                        permission=random.randint(0, 3)
-                    )
-                )
-
-    for m in membership:
-        s.add(m)
-
-    s.commit()
-    print("Added membership to DB")
-
 
     def g_id():
         return random.choice(s.query(GroupORM).all()).id
