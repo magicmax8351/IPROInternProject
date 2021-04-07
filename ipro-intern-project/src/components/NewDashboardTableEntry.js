@@ -9,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+
 // Logic for adding posts is broken.
 // Use https://formik.org/docs/overview to handle adding things to the database.
 
@@ -24,11 +25,7 @@ class NewDashboardTableEntry extends React.Component {
       companies: null,
       groups: null,
       body: null,
-      subject: null,
-      new_company_name: null,
-      new_resume_name: null,
-      new_resume_file: null,
-      resume_id: -1
+      new_company_name: null
     };
     this.enter_company = this.enter_company.bind(this);
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
@@ -381,6 +378,7 @@ class NewDashboardTableEntry extends React.Component {
       );
     }
   }
+
 
   render() {
     //   const [value, setValue] = React.useState("**Hello world!!!**");

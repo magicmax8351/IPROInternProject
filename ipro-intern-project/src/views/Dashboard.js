@@ -10,21 +10,20 @@ class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: Cookies.get("token")
+      token: Cookies.get("token"),
     };
   }
 
   render() {
     return (
-      <div>
+      <PageContent>
       <Helmet>
         <title>Dashboard</title>
       </Helmet>
-      <PageHeader title="Dashboard" />
       <PageContent>
-        <DashboardTable token={this.state.token}></DashboardTable>
+        <DashboardTable color={this.state.color} token={this.state.token}></DashboardTable>
       </PageContent>
-    </div>
+    </PageContent>
     )
   }
 }

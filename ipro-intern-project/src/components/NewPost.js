@@ -25,7 +25,6 @@ class NewPost extends React.Component {
       companies: null,
       groups: null,
       body: props.body,
-      subject: props.subject,
       dashboard_add: props.dashboard_add,
       new_company_name: null,
     };
@@ -33,7 +32,6 @@ class NewPost extends React.Component {
     this.dropdown_change = this.dropdown_change.bind(this);
     this.renderAddCompany = this.renderAddCompany.bind(this);
     this.renderAddJob = this.renderAddJob.bind(this);
-    this.renderWriteSubject = this.renderWriteSubject.bind(this);
     this.renderWriteBody = this.renderWriteBody.bind(this);
     this.renderListCompany = this.renderListCompany.bind(this);
     this.renderListJob = this.renderListJob.bind(this);
@@ -42,7 +40,6 @@ class NewPost extends React.Component {
     this.enter_company = this.enter_company.bind(this);
     this.enter_job = this.enter_job.bind(this);
     this.enter_body = this.enter_body.bind(this);
-    this.enter_subject = this.enter_subject.bind(this);
     this.enter_group = this.enter_group.bind(this);
 
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
@@ -95,11 +92,7 @@ class NewPost extends React.Component {
   }
 
   enter_body(event) {
-    this.setState({ body: event });
-  }
-
-  enter_subject(event) {
-    this.setState({ subject: event.target.value });
+    this.setState({ body: event.target.value });
   }
 
   enter_new_company_name(event) {
@@ -189,11 +182,9 @@ class NewPost extends React.Component {
       this.state.job_id > 0 &&
       this.state.company_id > 0 &&
       this.state.group_id > 0 &&
-      this.state.body.length > 1 &&
-      this.state.subject.length > 1
+      this.state.body.length > 1
     ) {
       let post = {
-        subject: this.state.subject,
         body: this.state.body,
         job_id: this.state.job_id,
         token: this.token,
@@ -384,24 +375,6 @@ class NewPost extends React.Component {
     }
   }
 
-  renderWriteSubject() {
-    if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-      return (
-        <Form.Group>
-          <Form.Label>Subject</Form.Label>
-          <Form.Control
-            placeholder="Money is good, people are not. Avoid."
-            maxLength="140"
-            onChange={this.enter_subject}
-            value={this.state.subject}
-          />
-        </Form.Group>
-      );
-    } else {
-      return null;
-    }
-  }
-
   renderWriteBody() {
     let value;
     if (this.state.body) {
@@ -416,7 +389,7 @@ class NewPost extends React.Component {
       return (
         <Form.Group>
           <Form.Label>Body</Form.Label>
-          <MDEditor id="body" value={value} onChange={this.enter_body} />
+          <Form.Control as="textarea" rows={5} value={this.state.body} onChange={this.enter_body}/> 
         </Form.Group>
       );
     } else {
@@ -456,7 +429,6 @@ class NewPost extends React.Component {
           {this.renderAddCompany()}
           {this.renderListJob()}
           {this.renderAddJob()}
-          {this.renderWriteSubject()}
           {this.renderWriteBody()}
           {this.renderChooseGroups()}
           <Button variant="primary" type="submit" onClick={this.submitPost}>

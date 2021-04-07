@@ -1,8 +1,25 @@
+@font-face {
+  font-family: 'Work-Sans';
+  src: local('Work-Sans'), url(./fonts/WorkSans-Regular.ttf) format('truetype')
+}
+
+@font-face {
+  font-family: 'Work-Sans-Light';
+  src: local('Work-Sans'), url(./fonts/WorkSans-Light.ttf) format('truetype')
+}
+
+h1 {
+  font-family: "Work-Sans", sans-serif;
+}
+
+h2 h3 h4 h5 body {
+  font-family: 'Aerial', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -16,3 +33,8 @@ code {
   display: flex;
   align-items: right;
 }
+
+body {
+  background-color: #F0F0F0;
+}
+

@@ -26,6 +26,7 @@ const PostsContainer = styled.div`
 const SidebarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 310px;
 `;
 
 const SidebarContainer = styled.div`
@@ -34,6 +35,7 @@ const SidebarContainer = styled.div`
   padding: 10px;
   border-radius: 5px;
   margin-top: 10px;
+  max-width: 220px;
 `;
 
 const UserInput = styled.input`
@@ -57,14 +59,17 @@ const GreyGroupRow = styled.div`
   padding: 5px;
 `;
 
-const GroupRowButton = styled.button`
-  border: none;
-  background: none;
-`;
-
-const GroupRowName = styled.p`
+const GroupRowName = styled.a`
   font-size: 16px;
   margin: 0px;
+  color: black;
+  text-decoration-line: underline;
+`;
+
+const UserRowName = styled.p`
+  font-size: 16px;
+  margin: 0px;
+  color: black;
 `;
 
 const MakeNewPostButton = styled.button`
@@ -80,7 +85,25 @@ const NewPostContainer = styled(MasterPostContainer)`
   display: flex;
 `;
 
-class NewsFeed extends React.Component {
+const GroupImageContainer = styled.div`
+  max-width: 700px;
+  max-height: 300px;
+  object-fit: center;
+  overflow: hidden;
+  margin-bottom: 10px;
+`;
+
+const GroupImageName = styled.h3`
+  position: absolute;
+  background: white;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 0px 0px 5px 5px;
+  margin-top: 260px;
+  padding: 5px;
+`;
+
+class GroupPage extends React.Component {
   constructor(props) {
     super(props);
     if (document.location.pathname.includes("id")) {
@@ -122,6 +145,7 @@ class NewsFeed extends React.Component {
     this.filterStringMatch = this.filterStringMatch.bind(this);
     this.filterPost = this.filterPost.bind(this);
     this.renderGroups = this.renderGroups.bind(this);
+    this.renderMembers = this.renderMembers.bind(this);
 
     this.getNewPostModal = this.getNewPostModal.bind(this);
     this.getPostSubmittedModal = this.getPostSubmittedModal.bind(this);
@@ -132,15 +156,6 @@ class NewsFeed extends React.Component {
     this.closeShowCommentsModal = this.closeShowCommentsModal.bind(this);
 
     this.setJobInfoId = this.setJobInfoId.bind(this);
-
-    this.checkbox_map = ["✖", "✔"];
-
-    if (this.group_id == -1) {
-      this.state.group = {
-        name: "All posts",
-        desc: "Your News Feed",
-      };
-    }
   }
 
   enter_filter(event) {
@@ -157,7 +172,7 @@ class NewsFeed extends React.Component {
           this.group_id
       )
         .then((res) => res.json())
-        .then((json) => this.setState({ group: json }));
+        .then((json) => this.setState({ groupMembership: json }));
     }
     fetch(
       "http://" +
@@ -264,11 +279,12 @@ class NewsFeed extends React.Component {
           jobInfoFunc={(dashboardStatus, applyFunc) =>
             this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
           }
-          showCommentsFunc={() => 
+          showCommentsFunc={() =>
             this.setState({
               showCommentsData: posts[i].comments,
-              showPostCommentsModal: true
-            })}
+              showPostCommentsModal: true,
+            })
+          }
         />
       );
     }
@@ -311,10 +327,7 @@ class NewsFeed extends React.Component {
       let g = this.state.groups[i];
       groups.push(
         <GreyGroupRow>
-          <GroupRowName>{g.name}</GroupRowName>
-          <GroupRowButton onClick={() => this.flipViewGroupState(g.id)}>
-            {this.checkbox_map[this.state.groups_toggle[g.id]]}
-          </GroupRowButton>
+          <GroupRowName href={"/group/id/" + g.id}>{g.name}</GroupRowName>
         </GreyGroupRow>
       );
       if (i + 1 != this.state.groups.length) {
@@ -322,10 +335,7 @@ class NewsFeed extends React.Component {
 
         groups.push(
           <WhiteGroupRow>
-            <GroupRowName>{g2.name}</GroupRowName>
-            <GroupRowButton onClick={() => this.flipViewGroupState(g2.id)}>
-              {this.checkbox_map[this.state.groups_toggle[g2.id]]}
-            </GroupRowButton>
+            <GroupRowName href={"/group/id/" + g2.id}>{g2.name}</GroupRowName>
           </WhiteGroupRow>
         );
       }
@@ -333,7 +343,31 @@ class NewsFeed extends React.Component {
     return groups;
   }
 
-
+  renderMembers() {
+    let members = [];
+    for (let i = 0; i < this.state.groupMembership.membership.length; i += 2) {
+      console.log(this.state.groupMembership.membership);
+      let m = this.state.groupMembership.membership[i].user;
+      members.push(
+        <GreyGroupRow>
+          <UserRowName>
+            {m.fname} {m.lname}
+          </UserRowName>
+        </GreyGroupRow>
+      );
+      if (i + 1 != this.state.groupMembership.membership.length) {
+        let m2 = this.state.groupMembership.membership[i + 1].user;
+        members.push(
+          <WhiteGroupRow>
+            <UserRowName>
+              {m2.fname} {m2.lname}
+            </UserRowName>
+          </WhiteGroupRow>
+        );
+      }
+    }
+    return members;
+  }
 
   getNewPostModal() {
     let newModal = (
@@ -378,8 +412,6 @@ class NewsFeed extends React.Component {
     );
   }
 
-
-
   closeNewPostModal() {
     this.setState({ showNewPostModal: false });
   }
@@ -406,10 +438,17 @@ class NewsFeed extends React.Component {
     if (!this.state.token) {
       document.location.replace("/login");
     }
+
+    if (this.state.groupMembership == null) {
+      return null;
+    }
+
     let renderedPosts = this.postList(this.state.posts);
     let renderedGroups = this.renderGroups();
     let newPostModal = this.getNewPostModal();
     let postSubmittedModal = this.getPostSubmittedModal();
+    let renderedMembers = this.renderMembers();
+
     return (
       <div>
         {newPostModal}
@@ -429,6 +468,12 @@ class NewsFeed extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
+            <GroupImageContainer>
+              <GroupImageName>
+                {this.state.groupMembership.group.name}
+              </GroupImageName>
+              <img src="https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg" />
+            </GroupImageContainer>
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton
@@ -437,13 +482,24 @@ class NewsFeed extends React.Component {
                 Make a new post...
               </MakeNewPostButton>
             </NewPostContainer>
+
             {renderedPosts}
             <button onClick={this.getMorePostsButton}>Get More Posts!</button>
           </PostsContainer>
+          <SidebarFlexContainer>
+            <SidebarContainer>
+              <h4>description</h4>
+              <p>{this.state.groupMembership.group.desc}</p>
+            </SidebarContainer>
+            <SidebarContainer>
+              <h4>members</h4>
+              {renderedMembers}
+            </SidebarContainer>
+          </SidebarFlexContainer>
         </FeedContainer>
       </div>
     );
   }
 }
 
-export default NewsFeed;
+export default GroupPage;

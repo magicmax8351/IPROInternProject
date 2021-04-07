@@ -78,14 +78,22 @@ def gen_fake_data():
                     ext_word_list=word_list.split())[:4],
                 icon="/fake/image.png",
                 desc=lipsum.paragraph(
-                    nb_sentences=1,
+                    nb_sentences=8,
                     variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:8]
+                    ext_word_list=word_list.split())[:256]
             )
         )
         
     for g in groups:
         s.add(g)
+    s.commit()
+
+    groupMembershipORMObjects = []
+    for g in groups:
+        groupMembershipORMObjects.append(
+            GroupMembershipORM(group_id=g.id)
+        )
+    s.add_all(groupMembershipORMObjects)
     s.commit()
 
     icons = [
@@ -145,7 +153,7 @@ def gen_fake_data():
     # Add some jobs
 
 
-    fake_job_urls = ['https://myjob.me', 'https://ilovemartainshray.jobs', 'https://microsoft.gov']
+    fake_job_urls = ["https://www.coinbase.com/careers/positions/1724688?gh_jid=1724688", "https://www.job.com/job/marketing-director-in-chicago-il/47904624"]
     jobs = []
     for i in range(10):
         jobs.append(
@@ -163,27 +171,6 @@ def gen_fake_data():
     s.commit()
     print("Added sample jobs to DB")
 
-    # Adding group membership
-
-    membership = []
-    for user in users:
-        for group in groups:
-            if random.randint(0, 2) == 1:
-                membership.append(
-                    MembershipORM(
-                        uid=user.id,
-                        group_id=group.id,
-                        permission=random.randint(0, 3)
-                    )
-                )
-
-    for m in membership:
-        s.add(m)
-
-    s.commit()
-    print("Added membership to DB")
-
-
     def g_id():
         return random.choice(s.query(GroupORM).all()).id
 
@@ -200,11 +187,6 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     for i in range(100):
         posts.append(
             PostORM(
-                subject=lipsum.paragraph(
-                    nb_sentences=2,
-                    variable_nb_sentences=False,
-                    ext_word_list=linkedin_shill_txt.split()
-                ),
                 body=lipsum.paragraph(
                     nb_sentences=5,
                     variable_nb_sentences=False,
@@ -224,7 +206,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
         return random.choice(s.query(PostORM).all()).id
 
     comments = []
-    for i in range(10):
+    for i in range(1000):
         comments.append(
             CommentORM(text=lipsum.paragraph(
                 nb_sentences=2,

@@ -8,6 +8,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
+import CuteButton from "./CuteDashboardShareButton";
 
 const DashboardTag = styled.p`
   background: #eeeeeeee;
@@ -38,7 +39,9 @@ class App extends Component {
       modal: null,
       showNewPostModal: false,
       showPostSubmittedModal: false,
-      postSubmitted: 0
+      postSubmitted: 0,
+      color: props.color, //so that color can be passed
+      alt: 0, //this helps alternate color lmao
     };
 
     this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
@@ -49,7 +52,7 @@ class App extends Component {
 
     this.getNewPostModal = this.getNewPostModal.bind(this);
     this.getPostSubmittedModal = this.getPostSubmittedModal.bind(this);
-    
+
     this.closeNewPostModal = this.closeNewPostModal.bind(this);
     this.closePostSubmittedModal = this.closePostSubmittedModal.bind(this);
 
@@ -69,23 +72,25 @@ class App extends Component {
       body: JSON.stringify({
         job_id: job_id,
         token: this.state.token,
-        resume_id: 1
+        resume_id: 1,
+      }),
+    })
+      .then((res) => {
+        if (res.status == 200) {
+          alert("Job succesfully added!");
+          return res.json();
+        } else if (res.status == 411) {
+          throw new Error("Job already added!");
+        } else {
+          throw new Error("Something else broke!");
+        }
       })
-    })
-    .then((res) => {
-      if(res.status == 200) {
-        alert("Job succesfully added!");
-        return res.json();
-      } else if (res.status == 411) {
-        throw new Error("Job already added!");
-      } else {
-        throw new Error("Something else broke!");
-      }
-    }).then((json) => {
-      this.setState({ applications: [...this.state.applications, json]});
-    }).catch(error => {
-      alert(error);
-    })
+      .then((json) => {
+        this.setState({ applications: [...this.state.applications, json] });
+      })
+      .catch((error) => {
+        alert(error);
+      })
       .then((res) => {
         if (res.status == 200) {
           return res.json();
@@ -178,12 +183,13 @@ class App extends Component {
     for (let i = 0; i < filtered_apps.length; i++) {
       dashboardData.push(this.buildDashboardTableRow(filtered_apps[i]));
     }
+
     return <tbody>{dashboardData}</tbody>;
   }
 
   updateApplicationStatus(applicationBase, applicationEventId, newStatus) {
-    for(let i = 0; i < applicationBase.applicationEvents.length; i++) {
-      if(applicationBase.applicationEvents[i].id == applicationEventId) {
+    for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
+      if (applicationBase.applicationEvents[i].id == applicationEventId) {
         applicationBase.applicationEvents[i].status = newStatus;
         return;
       }
@@ -192,21 +198,43 @@ class App extends Component {
 
   buildDashboardTableRow(applicationBase) {
     let tableRowData = [];
+    this.state.alt = this.state.alt + 1; //increment alt by 1
+    if (this.state.alt % 2 == 0) {
+      //if divisible by two, set no color
+      this.state.color = "";
+    } else {
+      this.state.color = "#ac9adb"; //else set purple
+    }
     // Include metadata as specified by header. See `buildDashboardTableHeader`.
     applicationBase.applicationEvents.sort((x, y) => x.stage_id > y.stage_id);
     tableRowData.push(
-      <button
-        onClick={() => {
-          this.setState({ modalApp: applicationBase, showNewPostModal: true });
-        }}
-      >
-        Share
-      </button>
+      <td>
+        <CuteButton
+          onClick={() => {
+            this.setState({
+              modalApp: applicationBase,
+              showNewPostModal: true,
+            });
+          }}
+        >
+          Share
+        </CuteButton>
+      </td>
     );
     tableRowData.push(<td>{applicationBase.job.name}</td>);
+    var color = "blue"; //it'll never equal blue lmao
+    if (this.state.color == "#ac9adb") {
+      //checkig color of row to change link text color
+      color = "#ede6ff"; //idk what color the link should be if not blue lmao
+    } else {
+      color = "#ac9adb";
+    }
     tableRowData.push(
       <td>
-        <a href={applicationBase.job.link}>{applicationBase.job.link}</a>
+        <CuteButton 
+          onClick={() => window.open(applicationBase.job.link)}
+        >Job Link
+        </CuteButton>
       </td>
     );
     tableRowData.push(<td>{applicationBase.job.company.name}</td>);
@@ -217,13 +245,28 @@ class App extends Component {
     let jobTags_filtered = applicationBase.job.tags.filter((x) =>
       this.tagStringMatch(x.tag.tag)
     );
+
     for (let i = 0; i < jobTags_filtered.length; i++) {
-      tags.push(<DashboardTag>{jobTags_filtered[i].tag.tag}</DashboardTag>);
+      tags.push(
+        <DashboardTag style={{ backgroundColor: "#ede6ff" }}>
+          {jobTags_filtered[i].tag.tag}
+        </DashboardTag>
+      ); // left this logic so that all tags are attached to job, this way when filtering other tags will show up that match the filter
+    }
+    let showTags = []; //create tags to be shown
+    for (let x = 0; x < jobTags_filtered.length; x++) {
+      //guarantees won't break if total tags < 3
+      if (x == 3) {
+        showTags.push("..."); //adds this to indicate there are more tags
+        x = jobTags_filtered.length; //exists the loop after 3 or total tag length, whichever comes first
+      } else {
+        showTags.push(tags[x]); //build showTags with tags
+      }
     }
 
     tableRowData.push(
       <td>
-        <DashboardContainer>{tags}</DashboardContainer>
+        <DashboardContainer>{showTags}</DashboardContainer>
       </td>
     );
 
@@ -237,12 +280,16 @@ class App extends Component {
             applicationBaseId={e.applicationBaseId}
             token={this.state.token}
             key={e.id}
-            func={(status) => this.updateApplicationStatus(applicationBase, e.id, status)}
+            func={(status) =>
+              this.updateApplicationStatus(applicationBase, e.id, status)
+            }
           />
         </td>
       );
     }
-    return <tr>{tableRowData}</tr>;
+    return (
+      <tr style={{ backgroundColor: this.state.color }}>{tableRowData}</tr>
+    );
   }
 
   filterDashboardTableRow(applicationBase) {
@@ -300,7 +347,11 @@ class App extends Component {
     })
       .then((res) => res.json())
       .then((json) => {
-        this.setState({ group_name: json.group.name, showNewPostModal: false, showPostSubmittedModal: true });
+        this.setState({
+          group_name: json.group.name,
+          showNewPostModal: false,
+          showPostSubmittedModal: true,
+        });
       })
       .catch((err) => {
         console.error(err);
@@ -308,11 +359,11 @@ class App extends Component {
   }
 
   getNewPostModal() {
-    if (!this.state.showNewPostModal || this.state.modalApp == null) {
+    if (this.state.modalApp == null) {
       return;
     }
 
-    // Process modalApp to figure out subject and body info:
+    // Process modalApp to figure and body info:
     let app = this.state.modalApp;
     let lastEvent, e;
     for (let i = 0; i < app.applicationEvents.length; i++) {
@@ -322,26 +373,15 @@ class App extends Component {
       }
     }
 
-    let subject, body;
+    let body;
     let emotion_map = [null, "Good news!", "Bad news :( "];
     if (lastEvent) {
-      subject =
-        "Update from " +
-        app.job.company.name +
-        ", " +
-        lastEvent.stage.name +
-        ": " +
-        emotion_map[lastEvent.status];
-
       body =
         "I just heard back from " +
         app.job.company.name +
         ", and it's " +
         emotion_map[lastEvent.status].toLocaleLowerCase();
     } else {
-      subject =
-        "Interesting job @ " + app.job.company.name + ": " + app.job.name;
-
       body = "This looks like a great opprotunity!";
     }
 
@@ -353,7 +393,6 @@ class App extends Component {
         <Modal.Body>
           <NewPost
             body={body}
-            subject={subject}
             job_id={app.job.id}
             company_id={app.job.company.id}
             token={this.state.token}
@@ -368,11 +407,16 @@ class App extends Component {
 
   getPostSubmittedModal() {
     return (
-      <Modal show={this.state.showPostSubmittedModal} onHide={this.closePostSubmittedModal}>
+      <Modal
+        show={this.state.showPostSubmittedModal}
+        onHide={this.closePostSubmittedModal}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Post submitted!</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Successfully submitted post to {this.state.group_name}</Modal.Body>
+        <Modal.Body>
+          Successfully submitted post to {this.state.group_name}
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.closePostSubmittedModal}>
             Close
@@ -383,7 +427,7 @@ class App extends Component {
   }
 
   closeNewPostModal() {
-    this.setState({ showNewPostModal: false});
+    this.setState({ showNewPostModal: false });
   }
 
   closePostSubmittedModal() {
@@ -395,7 +439,7 @@ class App extends Component {
       return null;
     }
     let newPostModal = this.getNewPostModal();
-    let postSubmittedModal = this.getPostSubmittedModal(); 
+    let postSubmittedModal = this.getPostSubmittedModal();
 
     let table = this.buildDashboardTable(
       this.state.applications,
@@ -411,9 +455,9 @@ class App extends Component {
       );
     } else {
       newEntry = (
-        <button onClick={() => this.setState({ addApplication: 1 })}>
+        <CuteButton onClick={() => this.setState({ addApplication: 1 })}>
           Add Job to Dashboard
-        </button>
+        </CuteButton>
       );
     }
 

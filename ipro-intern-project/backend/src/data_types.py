@@ -104,6 +104,22 @@ class SettingsModel(BaseModel):
     id: Optional[int]
     visibility: str
 
+class MembershipORM(Base):
+    __tablename__ = "membership"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    uid = Column(Integer, ForeignKey("user.id"))
+    group_membership_id = Column(Integer, ForeignKey("group_membership.id"))
+    user = relationship("UserORM")
+
+class MembershipModel(BaseModel):
+    class Config:
+        orm_mode = True
+    id: Optional[int]
+    uid: int
+    group_membership_id: int
+    user: Optional[UserModel]
+
 class GroupORM(Base):
     __tablename__ = "group"
     metadata = metadata
@@ -116,25 +132,25 @@ class GroupModel(BaseModel):
     class Config:
         orm_mode = True
     id: Optional[int]
-    name: str
-    icon: str
-    desc: str
+    name: Optional[str]
+    icon: Optional[str]
+    desc: Optional[str]
 
-class MembershipORM(Base):
-    __tablename__ = "membership"
+class GroupMembershipORM(Base):
+    __tablename__ = "group_membership"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
-    permission = Column(Integer)
+    membership = relationship("MembershipORM")
+    group = relationship("GroupORM")
 
-class MembershipModel(BaseModel):
+class GroupMembershipModel(BaseModel):
     class Config:
         orm_mode = True
     id: Optional[int]
-    permission: int
-    # [group id relationship model]
-    # # [user id relationship model]  
+    group_id: Optional[int]
+    membership: Optional[List[MembershipModel]]
+    group: Optional[GroupModel]
 
 class CommentORM(Base):
     __tablename__ = "comment"
@@ -145,7 +161,6 @@ class CommentORM(Base):
     post_id = Column(Integer, ForeignKey("post.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     user = relationship("UserORM")
-
 
 class CommentModel(BaseModel):
     class Config:
@@ -158,7 +173,6 @@ class CommentModel(BaseModel):
     uid: Optional[int]
     token: Optional[str]
     user: Optional[UserModel]
-
 
 class CompanyORM(Base):
     __tablename__ = "company"
@@ -237,16 +251,15 @@ class PostORM(Base):
     __tablename__ = "post"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    subject = Column(String(32), nullable=False)
     body = Column(String(32), nullable=False)
     timestamp = Column(DateTime)
     job_id = Column(Integer, ForeignKey("job.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
-    group = relationship("GroupORM")
     job = relationship("JobORM")
     comments = relationship("CommentORM")
     user = relationship("UserORM")
+    group = relationship("GroupORM")
 
 class PostModel(BaseModel):
     class Config:
@@ -254,7 +267,6 @@ class PostModel(BaseModel):
         # arbitrary_types_allowed = True
 
     id: Optional[int]
-    subject: str
     body: str
     # tags: List[TagModel]
     timestamp: Optional[datetime.datetime]
@@ -263,11 +275,11 @@ class PostModel(BaseModel):
     group_id: Optional[int]
     token: Optional[str]
     user: Optional[UserModel]
-    group: Optional[GroupModel]
     job: Optional[JobModel]
     comments: Optional[List[CommentModel]]
     applied: Optional[int]
     key: Optional[int]
+    group: Optional[GroupModel]
 
 
 class ApplicationEventModel(BaseModel):
@@ -313,7 +325,6 @@ class ApplicationBaseModel(BaseModel):
     token: Optional[str]
     key: Optional[int]
     job: Optional[JobModel]
-    
 
     class Config:
         orm_mode = True
