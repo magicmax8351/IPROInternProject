@@ -78,7 +78,7 @@ class GroupHeaderCard extends React.Component {
       userGroupButton = (
         <ButtonDiv>
           <ActiveUserInGroupButton>in group</ActiveUserInGroupButton>
-          <ActiveUserNotInGroupButton>share group</ActiveUserNotInGroupButton>
+          <ActiveUserNotInGroupButton>share</ActiveUserNotInGroupButton>
         </ButtonDiv>
       );
     } else {

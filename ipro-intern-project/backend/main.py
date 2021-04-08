@@ -352,7 +352,7 @@ def get_applications(token: str):
 
     stages = [StageModel.from_orm(stage) for stage in s.query(StageORM)]
     apps_model = [ApplicationBaseModel.from_orm(
-        app) for app in s.query(ApplicationBaseORM)]
+        app) for app in s.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)]
 
     s.close()
 
@@ -715,7 +715,7 @@ def get_resume(token: str):
     s = orm_parent_session()
     apps_orm = {}
 
-    res_model = [ResumeModel.from_orm(res) for res in s.query(ResumeORM)]
+    res_model = [ResumeModel.from_orm(res) for res in s.query(ResumeORM).filter(ResumeORM.uid == uid)]
 
     s.close()
 
