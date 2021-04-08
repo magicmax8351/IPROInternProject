@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+import re
 
 app = FastAPI()
 
@@ -30,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class HelloResponse(BaseModel):
     name: str
     message: str
@@ -45,49 +47,52 @@ def gen_token():
     return tok
 
 # CRUD functions for each table
+
+
 @app.post("/users/add")
 def add_user(new_user: UserModel):
     """Adds a new row to user table."""
     orm_session = orm_parent_session()
-    # Generate a salt, then hash the password. 
-    # Don't verify password strength here - do that on frontend. 
+    # Generate a salt, then hash the password.
+    # Don't verify password strength here - do that on frontend.
 
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(bytes(new_user.password, 'utf-8'), salt)
     token = gen_token()
 
     new_user_ORM = UserORM(
-        fname = new_user.fname,
-        lname = new_user.lname,
-        salt = salt,
-        hashed = hashed,
-        email = new_user.email,
-        pic = new_user.pic,
-        graddate = new_user.graddate,
-        city = new_user.city,
-        state = new_user.state
+        fname=new_user.fname,
+        lname=new_user.lname,
+        salt=salt,
+        hashed=hashed,
+        email=new_user.email,
+        pic=new_user.pic,
+        graddate=new_user.graddate,
+        city=new_user.city,
+        state=new_user.state
     )
 
     try:
         orm_session.add(new_user_ORM)
         orm_session.commit()
-    except Exception as e: 
+    except Exception as e:
         # User failed to add. Almost certainly an IntegrityError.
         orm_session.close()
-        raise HTTPException(400, "User already exists! Detailed message: " + str(e))
+        raise HTTPException(
+            400, "User already exists! Detailed message: " + str(e))
 
     new_token_ORM = TokenORM(
-        val = token,
-        uid = new_user_ORM.id
+        val=token,
+        uid=new_user_ORM.id
     )
 
     orm_session.add(new_token_ORM)
     orm_session.commit()
 
-    # DEBUG: Add user to random number between 1 and 10 groups. 
+    # DEBUG: Add user to random number between 1 and 10 groups.
 
     groups = [g for g in orm_session.query(GroupMembershipORM).all()]
-    
+
     memberships = []
     for g in groups:
         if(random.randint(0, 3) == 2):
@@ -100,25 +105,26 @@ def add_user(new_user: UserModel):
 
     orm_session.add_all(memberships)
 
-
     ret = NewUserReturn(
-        user = UserModel.from_orm(new_user_ORM),
-        token = TokenModel.from_orm(new_token_ORM)
+        user=UserModel.from_orm(new_user_ORM),
+        token=TokenModel.from_orm(new_token_ORM)
     )
 
     orm_session.commit()
     orm_session.close()
     return ret
 
+
 @app.post("/users/login")
 def login_user(user_creds: LoginData):
     """Adds a new row to user table."""
     orm_session = orm_parent_session()
-    # Generate a salt, then hash the password. 
-    # Don't verify password strength here - do that on frontend. 
+    # Generate a salt, then hash the password.
+    # Don't verify password strength here - do that on frontend.
 
     try:
-        user = orm_session.query(UserORM).filter(UserORM.email == user_creds.email).one()
+        user = orm_session.query(UserORM).filter(
+            UserORM.email == user_creds.email).one()
     except NoResultFound:
         time.sleep(random.randrange(.5, 2))
         orm_session.close()
@@ -133,24 +139,26 @@ def login_user(user_creds: LoginData):
     token = gen_token()
 
     new_token_ORM = TokenORM(
-        val = token,
-        uid = user.id
+        val=token,
+        uid=user.id
     )
 
     orm_session.add(new_token_ORM)
     orm_session.commit()
 
-    # DEBUG: Add user to random number between 1 and 10 groups. 
+    # DEBUG: Add user to random number between 1 and 10 groups.
 
     ret = NewUserReturn(
-        user = UserModel.from_orm(user),
-        token = TokenModel.from_orm(new_token_ORM)
+        user=UserModel.from_orm(user),
+        token=TokenModel.from_orm(new_token_ORM)
     )
     orm_session.close()
 
     return ret
 
 # NOT AN ENDPOINT
+
+
 def get_user(uid: int):
     """Returns a user object with the given ID."""
     orm_session = orm_parent_session()
@@ -160,6 +168,7 @@ def get_user(uid: int):
         return user
     orm_session.close()
     raise ValueError("uid not found!")
+
 
 @app.post("/users/update")
 def update_user(updated_user: UserModel):
@@ -172,7 +181,8 @@ def update_user(updated_user: UserModel):
 def delete_user(uid: int):
     """Removes the user with the given ID."""
     raise HTTPException(400, "Not implemented")
- 
+
+
 @app.get("/token/test")
 def get_uid_token(token: str):
     """Tests if a token is valid. If invalid, sleep a little bit. FIXME THIS IS BAD"""
@@ -186,6 +196,8 @@ def get_uid_token(token: str):
         return {"result": 0, "uid": -1}
 
 # Post
+
+
 @app.post("/posts/add")
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
@@ -204,7 +216,8 @@ def add_post(new_post: PostModel):
     orm_session.commit()
     ret = PostModel.from_orm(new_post_orm)
     ret.key = ret.id
-    applied = orm_session.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
+    applied = orm_session.query(ApplicationBaseORM).filter(
+        ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
     if applied:
         ret.applied = 1
     else:
@@ -215,33 +228,40 @@ def add_post(new_post: PostModel):
 
 
 @app.get("/posts/get")
-def get_post(token: str, count: int, start_id: int, group_id: int):
+def get_post(token: str, count: int, start_id: int, group_link: str):
     """Returns all posts."""
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
 
     s = orm_parent_session()
-    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
-    applications = {a.job_id: a for a in s.query(ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)}
+    group_memberships = [m.group_membership_id for m in s.query(
+        MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id.in_(group_memberships))]
+    applications = {a.job_id: a for a in s.query(
+        ApplicationBaseORM).filter(ApplicationBaseORM.uid == uid)}
     posts = []
 
-    if(group_id == -1):
+    if(group_link == ""):
         if (start_id == -1):
-            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(
+                group_ids)).order_by(PostORM.id.desc()).limit(count).all()
         else:
-            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+            query = s.query(PostORM).filter(PostORM.group_id.in_(group_ids)).filter(
+                PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
     else:
-        group = s.query(GroupORM).filter(GroupORM.id == group_id).one()
+        group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
         if group == None:
             s.close()
             raise HTTPException(430, "Group not found!")
         if((group.privacy != 2) or (group.id in group_ids)):
             if (start_id == -1):
-                query = s.query(PostORM).filter(PostORM.group_id == group_id).order_by(PostORM.id.desc()).limit(count).all()
+                query = s.query(PostORM).filter(PostORM.group_id == group.id).order_by(
+                    PostORM.id.desc()).limit(count).all()
             else:
-                query = s.query(PostORM).filter(PostORM.group_id == group_id).filter(PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
+                query = s.query(PostORM).filter(PostORM.group_id == group.id).filter(
+                    PostORM.id < start_id).order_by(PostORM.id.desc()).limit(count).all()
         else:
             s.close()
             raise HTTPException(422, "Private group!")
@@ -252,7 +272,7 @@ def get_post(token: str, count: int, start_id: int, group_id: int):
             post_model.applied = 1
         else:
             post_model.applied = 0
-            
+
         post_model.key = post_model.id
         posts.append(post_model)
     s.close()
@@ -291,7 +311,7 @@ def add_comment(new_comment: CommentModel):
     new_comment_orm = CommentORM(
         text=new_comment.text,
         timestamp=datetime.datetime.now(),
-        post_id = new_comment.post_id,
+        post_id=new_comment.post_id,
         uid=uid
     )
 
@@ -318,6 +338,7 @@ def get_comments_post_id(post_id: int):
 
     return comments
 
+
 @app.get("/applications/get")
 def get_applications(token: str):
     uid = get_uid_token(token)["uid"]
@@ -328,7 +349,8 @@ def get_applications(token: str):
     apps_orm = {}
 
     stages = [StageModel.from_orm(stage) for stage in s.query(StageORM)]
-    apps_model = [ApplicationBaseModel.from_orm(app) for app in s.query(ApplicationBaseORM)]
+    apps_model = [ApplicationBaseModel.from_orm(
+        app) for app in s.query(ApplicationBaseORM)]
 
     s.close()
 
@@ -338,12 +360,14 @@ def get_applications(token: str):
     )
 
 # Application
+
+
 @app.post("/applications/add")
-def add_application(new_application: ApplicationBaseModel, applied:bool = False):
+def add_application(new_application: ApplicationBaseModel, applied: bool = False):
     """Adds a new row to application table.
-    
+
     Test CURL: 
-    
+
     curl --request POST \
     --url 'http://localhost:8000/applications/add?token=ccab4e01998b735345a702ce16147378' \
     --header 'Content-Type: application/json' \
@@ -361,26 +385,26 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
     orm_session = orm_parent_session()
 
     new_application_base_orm = ApplicationBaseORM(
-        job_id = new_application.job_id,
-        resume_id = new_application.resume_id,
-        uid = uid
+        job_id=new_application.job_id,
+        resume_id=new_application.resume_id,
+        uid=uid
     )
 
     r = []
 
-    try: 
+    try:
         orm_session.add(new_application_base_orm)
 
         for s in orm_session.query(StageORM).all():
             e = ApplicationEventORM(
-                date = datetime.datetime.now(),
-                status = 0,
-                applicationBaseId = new_application_base_orm.id,
-                stage_id = s.id
+                date=datetime.datetime.now(),
+                status=0,
+                applicationBaseId=new_application_base_orm.id,
+                stage_id=s.id
             )
             if s.id == 1 and applied:
                 e.status = 1
-                
+
             orm_session.add(e)
 
         orm_session.commit()
@@ -395,11 +419,12 @@ def add_application(new_application: ApplicationBaseModel, applied:bool = False)
     ret_app.key = ret_app.id
     return ret_app
 
+
 @app.post("/applications/update")
 def update_application(newApplicationEvent: ApplicationEventModel):
     """Updates the application with the given ID with new information.
        Checks to make sure that the application exists first.
-       
+
        Test request code: 
        curl --request POST \
         --url http://localhost:8000/applications/update \
@@ -423,14 +448,14 @@ def update_application(newApplicationEvent: ApplicationEventModel):
         ApplicationBaseORM.uid == uid,
         ApplicationBaseORM.id == newApplicationEvent.applicationBaseId
     ).one()
-    
+
     if base == None:
         orm_session.close()
         raise HTTPException(411, "Couldn't match Base ID to user!")
 
     event_obj = orm_session.query(ApplicationEventORM).filter(
-                    ApplicationEventORM.id == newApplicationEvent.id).one()
-                    
+        ApplicationEventORM.id == newApplicationEvent.id).one()
+
     if(event_obj == None):
         orm_session.close()
         raise HTTPException(412, "Event ID not found!")
@@ -440,7 +465,6 @@ def update_application(newApplicationEvent: ApplicationEventModel):
     orm_session.commit()
     orm_session.close()
     return ret
-
 
 
 @app.post("/applications/delete")
@@ -482,15 +506,15 @@ def get_job_by_id(job_id: int):
         tag_map[tag.id] = TagModel.from_orm(tag)
 
     job = None
-    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True).filter(JobORM.id==job_id):
+    for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True).filter(JobORM.id == job_id):
         if(not job):
             job = JobModel.from_orm(p[0])
             job.key = job.id
             job.tags = []
-        
+
         if(p[1]):
             job.tags.append(tag_map[p[1].tag_id])
-    
+
     s.close()
     return job
 
@@ -507,7 +531,7 @@ def get_jobs(token: str):
     tag_map = {}
     for tag in s.query(TagORM):
         tag_map[tag.id] = TagModel.from_orm(tag)
-    
+
     j = {}
     for p in s.query(JobORM, JobTagORM).join(JobTagORM, isouter=True):
         job = JobModel.from_orm(p[0])
@@ -516,10 +540,10 @@ def get_jobs(token: str):
             job.key = job.id
             job.tags = []
             job.company = get_company_id(job.company_id)
-        
+
         if(p[1]):
             j[job.id].tags.append(tag_map[p[1].tag_id])
-    
+
     s.close()
     return list(j.values())
 
@@ -547,7 +571,7 @@ def add_company(new_company: CompanyModel):
 
     s = orm_parent_session()
     c = CompanyORM(
-        name = new_company.name
+        name=new_company.name
     )
     s.add(c)
     s.commit()
@@ -571,6 +595,7 @@ def get_company(token: str):
         c.append(t)
     s.close()
     return c
+
 
 @app.get("/companies/get/id")
 def get_company_id(company_id: int):
@@ -679,29 +704,70 @@ def delete_jobtag(jobtag_id: int):
 @app.post("/groups/add")
 def add_group(new_group: GroupModel):
     """Adds a new row to group table."""
-    raise HTTPException(400, "Not implemented")
+    uid = get_uid_token(new_group.token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
+    s = orm_parent_session()
+
+    groupImages = [
+        "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
+        "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
+        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
+    ]
+
+    new_group.link = re.sub("[^0-9a-zA-Z]+", "",
+                            new_group.name.replace(" ", "_"))
+    if(new_group.privacy != 0):
+        new_group.link += "_" + gen_token()[:8]
+
+    new_group_ORM = GroupORM(
+        name=new_group.name,
+        icon="/fake/image.png",
+        desc=new_group.desc,
+        background=random.choice(groupImages),
+        privacy=new_group.privacy,
+        link=new_group.link
+    )
+    s.add(new_group_ORM)
+    s.commit()
+    new_group_membership_ORM = GroupMembershipORM(group_id=new_group_ORM.id)
+
+    s.add(new_group_membership_ORM)
+    s.commit()
+
+    s.add(MembershipORM(group_membership_id=new_group_membership_ORM.id, uid=uid))
+    s.commit()
+
+    return GroupModel.from_orm(new_group_ORM)
 
 
-@app.get("/groups/get_id")
-def get_group_by_id(group_id: int, token: str):
+@app.get("/groups/{link}/{token}")
+def get_group_by_id(link: str, token: str):
     """Get group by group ID. """
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
     s = orm_parent_session()
-    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
-    for u in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group_id):
-        group = GroupMembershipModel.from_orm(u)
-        group.group.activeUserInGroup = bool(group.group.id in group_ids)
+    group_memberships = [m.group_membership_id for m in s.query(
+        MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id.in_(group_memberships))]
+    group = s.query(GroupORM).filter(GroupORM.link == link).one()
+    if((group.id not in group_ids) and group.privacy == 2):
         s.close()
-        return group
+        raise HTTPException(422, "Not in that group!")
+
+    groupMembershipObject = GroupMembershipModel.from_orm(s.query(
+        GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one())
+    groupMembershipObject.group.activeUserInGroup = bool(groupMembershipObject.group.id in group_ids)
+
     s.close()
-    return
+    return groupMembershipObject
 
 
-@app.get("/groups/get")
+@app.get("/grouplist")
 def get_user_groups(token: str):
     """Returns all groups a user has membership in."""
     s = orm_parent_session()
@@ -710,10 +776,13 @@ def get_user_groups(token: str):
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
-    group_memberships = [m.group_membership_id for m in s.query(MembershipORM).filter(MembershipORM.uid == uid)]
-    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id.in_(group_memberships))]
+    group_memberships = [m.group_membership_id for m in s.query(
+        MembershipORM).filter(MembershipORM.uid == uid)]
+    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id.in_(group_memberships))]
     for group in s.query(GroupORM):
         g = GroupModel.from_orm(group)
+        g.key = g.id
         if(g.id in group_ids):
             g.activeUserInGroup = True
             groups.append(g)
@@ -722,9 +791,9 @@ def get_user_groups(token: str):
             groups.append(g)
         else:
             pass
-
     s.close()
     return groups
+
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):

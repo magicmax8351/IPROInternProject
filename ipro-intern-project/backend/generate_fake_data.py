@@ -52,63 +52,7 @@ def gen_fake_data():
     The C++ teams work on applications where C++ is used for computational heavy-lifting and for applications that have timing-critical, low-latency processes such as trading strategies. C++ provides the flexibility and low-level control that our developers need to get maximum performance out of multi-core, super-scalar processors. No previous experience in finance or trading is required. Training and continuous education is provided for all engineers to ensure they have the skills and knowledge needed to be successful.        
     """
     
-    # Add some groups
-    groups = []
 
-    groupImages = [
-        "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
-        "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
-        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
-    ]
-    groups.append(
-        GroupORM(name="ACM @ IIT",
-                 icon="/var/www/images/acm_logo.png",
-                 desc="Advancing Computing as a Science & Profession",
-                 background=random.choice(groupImages),
-                 privacy=0))
-    groups.append(
-        GroupORM(name="AEPKS",
-                 icon="/var/www/images/pks_logo.png",
-                 desc="Men of Honor",
-                 background=random.choice(groupImages),
-                 privacy=0))
-    groups.append(
-        GroupORM(name="Tesla Fan Club",
-                 icon="/var/www/images/pks_logo.png",
-                 desc="I love Elon's Musk",
-                 background=random.choice(groupImages),
-                 privacy=0))
-
-    # Randomly generate a heck ton of groups:
-
-    for i in range(10):
-        groups.append(
-            GroupORM(
-                name=lipsum.paragraph(
-                    nb_sentences=1,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:4],
-                icon="/fake/image.png",
-                desc=lipsum.paragraph(
-                    nb_sentences=8,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:256],
-                privacy=0,
-                background=random.choice(groupImages)
-            )
-        )
-        
-    for g in groups:
-        s.add(g)
-    s.commit()
-
-    groupMembershipORMObjects = []
-    for g in groups:
-        groupMembershipORMObjects.append(
-            GroupMembershipORM(group_id=g.id)
-        )
-    s.add_all(groupMembershipORMObjects)
-    s.commit()
 
     icons = [
         "/profile_pictures/p1.svg",
@@ -143,6 +87,64 @@ def gen_fake_data():
 
     adminUser = get_user(1)
 
+    token = login_user(LoginData(
+        email="admin",
+        password="admin"
+    )).token.val
+
+    print(adminUser)
+
+        # Add some groups
+    groups = []
+
+    groupImages = [
+        "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
+        "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
+        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
+    ]
+    groups.append(
+        GroupModel(name="ACM @ IIT",
+                 icon="/var/www/images/acm_logo.png",
+                 desc="Advancing Computing as a Science & Profession",
+                 token=token,
+                 privacy=0))
+    groups.append(
+        GroupModel(name="AEPKS",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="Men of Honor",
+                 token=token,
+                 privacy=0))
+    groups.append(
+        GroupModel(name="Tesla Fan Club",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="I love Elon's Musk",
+                 token=token,
+                 privacy=0))
+
+    # Randomly generate a heck ton of groups:
+
+    for i in range(10):
+        groups.append(
+            GroupModel(
+                name=lipsum.paragraph(
+                    nb_sentences=1,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:4],
+                icon="/fake/image.png",
+                desc=lipsum.paragraph(
+                    nb_sentences=8,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:256],
+                privacy=0,
+                background=random.choice(groupImages),
+                token=token
+            )
+        )
+    
+    added_groups = []
+    for g in groups:
+        added_groups.append(add_group(g))
+    
     print("Added sample users to DB")
 
     def uid():
@@ -186,7 +188,7 @@ def gen_fake_data():
     print("Added sample jobs to DB")
 
     def g_id():
-        return random.choice(groups).id
+        return random.choice(added_groups).id
 
     # Add some posts
 

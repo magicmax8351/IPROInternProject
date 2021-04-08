@@ -150,20 +150,10 @@ class NewsFeed extends React.Component {
 
   componentDidMount() {
     this.getMorePosts();
-    if (this.group_id != -1) {
-      fetch(
-        "http://" +
-          window.location.hostname +
-          ":8000/groups/get_id?group_id=" +
-          this.group_id
-      )
-        .then((res) => res.json())
-        .then((json) => this.setState({ group: json }));
-    }
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/groups/get?token=" +
+        ":8000/grouplist?token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -187,8 +177,7 @@ class NewsFeed extends React.Component {
         this.count +
         "&start_id=" +
         this.state.start_id +
-        "&group_id=" +
-        this.group_id
+        "&group_link="
     )
       .then((res) => {
         if (res.status != 200) {

@@ -29,7 +29,7 @@ const PostsContainer = styled.div`
 const SidebarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 320px;
+  margin-top: 224px;
   min-width: 100px;
 `;
 
@@ -96,13 +96,10 @@ const GroupDescription = styled.p`
 class GroupPage extends React.Component {
   constructor(props) {
     super(props);
-    if (document.location.pathname.includes("id")) {
-      const regex = /\/id\/[0-9]+/;
-      let match = document.location.pathname.match(regex)[0];
-      this.group_id = parseInt(match.substring(4));
-    } else {
-      this.group_id = -1;
-    }
+
+    const regex = /\/group\/.*/;
+    let match = document.location.pathname.match(regex)[0];
+    this.group_link = match.substring(7);
 
     this.state = {
       ready: 0,
@@ -158,9 +155,9 @@ class GroupPage extends React.Component {
       fetch(
         "http://" +
           window.location.hostname +
-          ":8000/groups/get_id?group_id=" +
-          this.group_id +
-          "&token=" +
+          ":8000/groups/" +
+          this.group_link +
+          "/" +
           this.state.token
       )
         .then((res) => res.json())
@@ -169,7 +166,7 @@ class GroupPage extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/groups/get?token=" +
+        ":8000/grouplist?token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -193,8 +190,8 @@ class GroupPage extends React.Component {
         this.count +
         "&start_id=" +
         this.state.start_id +
-        "&group_id=" +
-        this.group_id
+        "&group_link=" +
+        this.group_link
     )
       .then((res) => {
         if (res.status != 200) {
@@ -205,7 +202,7 @@ class GroupPage extends React.Component {
       .then((json) => {
         let posts_update = [...this.state.posts, ...json.posts];
         console.log(posts_update);
-        if(posts_update.length == 0) {
+        if (posts_update.length == 0) {
           return;
         }
         this.setState({
@@ -216,14 +213,6 @@ class GroupPage extends React.Component {
   }
 
   filterPost(post) {
-    if (!this.state.groups_toggle) {
-      return false;
-    }
-
-    if (!this.state.groups_toggle[post.group.id]) {
-      return false;
-    }
-
     let filter_targets = [
       post.body,
       post.job.name,
@@ -235,8 +224,8 @@ class GroupPage extends React.Component {
     for (let i = 0; i < post.job.tags.length; i++) {
       filter_targets.push(post.job.tags[i].tag.tag);
     }
-
     let results = filter_targets.map(this.filterStringMatch);
+
     return results.some((x) => x == true);
   }
 
@@ -323,7 +312,7 @@ class GroupPage extends React.Component {
       let g = this.state.groups[i];
       groups.push(
         <GreyGroupRow>
-          <GroupRowName href={"/group/id/" + g.id}>{g.name}</GroupRowName>
+          <GroupRowName href={"/group/" + g.link}>{g.name}</GroupRowName>
         </GreyGroupRow>
       );
       if (i + 1 != this.state.groups.length) {
@@ -331,7 +320,7 @@ class GroupPage extends React.Component {
 
         groups.push(
           <WhiteGroupRow>
-            <GroupRowName href={"/group/id/" + g2.id}>{g2.name}</GroupRowName>
+            <GroupRowName href={"/group/" + g2.link}>{g2.name}</GroupRowName>
           </WhiteGroupRow>
         );
       }
@@ -465,7 +454,7 @@ class GroupPage extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
-            {GroupHeaderCard(this.state.groupMembership.group)}
+            <GroupHeaderCard group={this.state.groupMembership.group} />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton

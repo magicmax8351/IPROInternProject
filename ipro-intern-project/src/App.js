@@ -31,7 +31,7 @@ class App extends Component {
               <Route exact path="/profile" component={Profile} />
               <Route exact path="/dashboard" component={Dashboard} />
               <Route exact path="/settings" component={Settings} />
-              <Route exact path="/group/id/:id" component={GroupPage} />
+              <Route exact path="/group/:link" component={GroupPage} />
               <Route exact path="/groups" component={ViewGroups} />
               <Route exact path="/newuser" component={NewUser} />
               <Route exact path="/login" component={Login} />

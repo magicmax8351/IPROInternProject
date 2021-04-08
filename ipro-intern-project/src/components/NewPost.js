@@ -76,7 +76,7 @@ class NewPost extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/groups/get?token=" +
+        ":8000/grouplist?token=" +
         this.token
     )
       .then((res) => res.json())
