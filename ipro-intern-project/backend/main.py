@@ -716,7 +716,7 @@ def add_group(new_group: GroupModel):
         "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
     ]
 
-    new_group.link = re.sub("[^0-9a-zA-Z]+", "",
+    new_group.link = re.sub("[^0-9a-zA-Z_]+", "",
                             new_group.name.replace(" ", "_"))
     if(new_group.privacy != 0):
         new_group.link += "_" + gen_token()[:8]
