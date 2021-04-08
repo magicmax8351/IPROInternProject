@@ -38,6 +38,10 @@ class NewDashboardTableEntry extends React.Component {
     this.enter_new_job_location = this.enter_new_job_location.bind(this);
     this.submitAddJob = this.submitAddJob.bind(this);
     
+    this.enter_resume = this.enter_resume.bind(this);
+    this.enter_new_resume_name = this.enter_new_resume_name.bind(this);
+    this.enter_new_resume_file = this.enter_new_resume_file.bind(this);
+    this.submitAddResume = this.submitAddResume.bind(this);
   }
 
   componentDidMount() {
@@ -48,6 +52,10 @@ class NewDashboardTableEntry extends React.Component {
     fetch("http://" + window.location.hostname + ":8000/companies/get?token=" + this.token)
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
+
+    fetch("http://" + window.location.hostname + ":8000/resumes/get?token=" + this.token)
+      .then((res) => res.json())
+      .then((json) => this.setState({ resumes: json }));
   }
 
   enter_company(event) {
@@ -56,6 +64,10 @@ class NewDashboardTableEntry extends React.Component {
 
   enter_job(event) {
     this.setState({ job_id: event.target.value });
+  }
+
+  enter_resume(event) {
+    this.setState({ resume_id: event.target.value });
   }
 
   enter_new_company_name(event) {
@@ -76,6 +88,14 @@ class NewDashboardTableEntry extends React.Component {
 
   enter_new_job_location(event) {
     this.setState({ new_job_location: event.target.value });
+  }
+
+  enter_new_resume_name(event) {
+    this.setState({ new_resume_name: event.target.value });
+  }
+
+  enter_new_resume_file(event) {
+    this.setState({ new_resume_file: event.target.files[0], new_resume_name: event.target.files[0].name });
   }
 
   submitAddCompany(event) {
@@ -124,6 +144,45 @@ class NewDashboardTableEntry extends React.Component {
         this.setState({
           jobs: [...this.state.jobs, json],
           job_id: json.id
+        });
+      });
+    }
+  }
+
+  submitAddResume(event) {
+    event.preventDefault();
+
+    let resume_name = this.state.new_resume_name;
+    if(resume_name == undefined || resume_name.length <= 2) {
+      resume_name = "Untitled Resume";
+    }
+
+    if(this.state.new_resume_file != null) {
+      let form = new FormData();
+      form.append("resume", this.state.new_resume_file);
+      fetch("http://" + window.location.hostname + ":8000/resumes/upload", {
+        method: "POST",
+        body: form
+      })
+      .then((res) => res.json())
+      .then((json) => {
+        fetch("http://" + window.location.hostname + ":8000/resumes/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: resume_name,
+            filename: json.filename,
+            token: this.token
+          }),
+        })
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            resumes: [...this.state.resumes, json],
+            resume_id: json.id
+          });
         });
       });
     }
@@ -202,6 +261,28 @@ class NewDashboardTableEntry extends React.Component {
     );
   }
 
+  renderListResume() {
+    if (!this.state.resumes) {
+      return null;
+    }
+    let resumes = [[-1, "Please select..."]];
+
+    for (let i = 0; i < this.state.resumes.length; i++) {
+      resumes.push([
+        this.state.resumes[i].id,
+        this.state.resumes[i].name,
+      ]);
+    }
+    resumes.push([-2, "Add New"]);
+
+    return(
+      <Form.Group>
+        <Form.Label>Resume:</Form.Label>
+        {this.renderDropdown("Resumes", resumes, "resume_id", this.enter_resume)}
+      </Form.Group>
+    );
+  }
+
   renderAddCompany() {
     if (this.state.company_id != -2) {
       return null;
@@ -220,11 +301,6 @@ class NewDashboardTableEntry extends React.Component {
         </Form>
       );
     }
-  }
-
-  submitForm(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
   }
 
   renderAddJob() {
@@ -263,7 +339,36 @@ class NewDashboardTableEntry extends React.Component {
     }
   }
 
+  renderAddResume() {
+    if(this.state.resume_id != -2) {
+      return null;
+    } else {
+      return(
+        <Form>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Resume Name</Form.Label>
+              <Form.Control onChange={this.enter_new_resume_name} placeholder="New resume name" value={this.state.new_resume_name} />
+            </Form.Group>
+          </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Resume File</Form.Label>
+              <Form.Control onChange={this.enter_new_resume_file} type="file" />
+            </Form.Group>
+          </Form.Row>
+          <Button variant="primary" type="submit" onClick={this.submitAddResume}>
+            Add resume
+          </Button>
+        </Form>
+      );
+    }
+  }
 
+  submitForm(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+  }
 
   render() {
     //   const [value, setValue] = React.useState("**Hello world!!!**");
@@ -274,7 +379,9 @@ class NewDashboardTableEntry extends React.Component {
           {this.renderAddCompany()}
           {this.renderListJob()}
           {this.renderAddJob()}
-          <Button variant="primary" type="submit" onClick={(event) => { event.preventDefault(); return this.func(this.state.job_id); }}>
+          {this.renderListResume()}
+          {this.renderAddResume()}
+          <Button variant="primary" type="submit" onClick={(event) => { event.preventDefault(); return this.func(this.state.job_id, this.state.resume_id); }}>
             Submit
           </Button>
         </Form>

@@ -250,7 +250,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
 
     admin_resume = ResumeORM(
         name="admin_resume",
-        filename="/var/www/resume.pdf",
+        filename="resume.pdf",
         date=datetime.datetime.now(),
         uid=adminUser.id
     )

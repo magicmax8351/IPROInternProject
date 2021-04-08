@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +14,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 import re
+import os
+import string
 
 app = FastAPI()
 
@@ -649,16 +651,75 @@ def delete_stage(stage_id: int):
 
 
 # Resume
+@app.post("/resumes/upload")
+def upload_resume(resume: UploadFile = File(...)):
+    """Uploads aand saves a resume file"""
+    if not os.path.exists('resumes'):
+        os.makedirs('resumes')
+    unique_name = ''
+    extension = resume.filename.split('.')[1]
+    while True:
+        unique_name = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase + string.digits, k=10)) + '.' + extension
+        if not os.path.isfile('resumes/' + unique_name):
+            break
+    with open('resumes/' + unique_name, "wb+") as file_object:
+        file_object.write(resume.file.read())
+    return {'filename': unique_name}
+
+@app.get("/resumes/download")
+def download_resume(token: str, resume_id: int):
+    """Download the resume with given ID"""
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+    s = orm_parent_session()
+    resume = s.query(ResumeORM).get(resume_id)
+    s.close()
+    file_path = 'resumes/' + resume.filename
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    else:
+        raise HTTPException(404, f"Resume id={resume_id} Not Found")
+        return {'error': f"Resume id={resume_id} Not Found"}
+
 @app.post("/resumes/add")
 def add_resume(new_resume: ResumeModel):
     """Adds a new row to resume table."""
-    raise HTTPException(400, "Not implemented")
+    uid = get_uid_token(new_resume.token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
+    s = orm_parent_session()
+    c = ResumeORM(
+        name = new_resume.name,
+        filename = new_resume.filename,
+        date = datetime.datetime.now(),
+        uid = uid
+    )
+    s.add(c)
+    s.commit()
+    r = ResumeModel.from_orm(c)
+    s.close()
+    return r
+    #print(new_resume.name)
+    #print(new_resume.filename)
 
 
 @app.get("/resumes/get")
-def get_resume(resume_id: int):
-    """Returns a resume object with the given ID."""
-    raise HTTPException(400, "Not implemented")
+def get_resume(token: str):
+    """Get all resumes for a given user"""
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+
+    s = orm_parent_session()
+    apps_orm = {}
+
+    res_model = [ResumeModel.from_orm(res) for res in s.query(ResumeORM)]
+
+    s.close()
+
+    return res_model
 
 
 @app.post("/resumes/update")

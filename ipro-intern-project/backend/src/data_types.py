@@ -64,7 +64,8 @@ class ResumeModel(BaseModel):
     id: Optional[int]
     name: str
     filename: str
-    date: datetime.datetime
+    date: Optional[datetime.datetime]
+    token: Optional[str]
 
 class StageORM(Base):
     __tablename__ = "stage"
@@ -312,6 +313,7 @@ class ApplicationBaseORM(Base):
     __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
                      )
     job = relationship("JobORM")
+    resume = relationship("ResumeORM")
     applicationEvents = relationship("ApplicationEventORM")
 
 class ApplicationEventORM(Base):
@@ -329,6 +331,7 @@ class ApplicationBaseModel(BaseModel):
     job_id: Optional[int]
     uid: Optional[int]
     resume_id: Optional[int]
+    resume: Optional[ResumeModel]
     applicationEvents: Optional[List[ApplicationEventModel]]
     token: Optional[str]
     key: Optional[int]
