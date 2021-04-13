@@ -116,6 +116,12 @@ def add_user(new_user: UserModel):
     orm_session.close()
     return ret
 
+@app.get("/users/get")
+def get_user_token(token: str):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not authenticated!")
+    return get_user(uid)
 
 @app.post("/users/login")
 def login_user(user_creds: LoginData):

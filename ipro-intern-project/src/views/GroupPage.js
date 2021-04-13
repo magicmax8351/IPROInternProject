@@ -120,6 +120,7 @@ class GroupPage extends React.Component {
       showPostCommentsModal: false,
       postSubmitted: 0,
       groups_toggle: null,
+      user: null
     };
     this.count = 50;
 
@@ -178,6 +179,15 @@ class GroupPage extends React.Component {
         }
         this.setState({ groups_toggle: groups_toggle });
       });
+
+      fetch(
+        "http://" +
+          window.location.hostname +
+          ":8000/users/get?token=" +
+          this.state.token
+      )
+        .then((res) => res.json())
+        .then((json) => this.setState({ user: json }));
   }
 
   getMorePosts() {
@@ -258,6 +268,7 @@ class GroupPage extends React.Component {
     for (let i = 0; i < posts.length; i++) {
       out_posts.push(
         <Post
+          user={this.state.user}
           post={posts[i]}
           key={posts[i].id}
           token={this.state.token}
@@ -425,7 +436,7 @@ class GroupPage extends React.Component {
       document.location.replace("/login");
     }
 
-    if (this.state.groupMembership == null) {
+    if (this.state.user == null || this.state.groupMembership == null) {
       return null;
     }
 

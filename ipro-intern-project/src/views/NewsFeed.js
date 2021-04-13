@@ -111,6 +111,7 @@ class NewsFeed extends React.Component {
       showPostCommentsModal: false,
       postSubmitted: 0,
       groups_toggle: null,
+      user: null,
     };
     this.count = 50;
 
@@ -165,6 +166,15 @@ class NewsFeed extends React.Component {
         }
         this.setState({ groups_toggle: groups_toggle });
       });
+
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/users/get?token=" +
+        this.state.token
+    )
+      .then((res) => res.json())
+      .then((json) => this.setState({ user: json }));
   }
 
   getMorePosts() {
@@ -248,17 +258,19 @@ class NewsFeed extends React.Component {
     for (let i = 0; i < posts.length; i++) {
       out_posts.push(
         <Post
+          user={this.state.user}
           post={posts[i]}
           key={posts[i].id}
           token={this.state.token}
           jobInfoFunc={(dashboardStatus, applyFunc) =>
             this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
           }
-          showCommentsFunc={() => 
+          showCommentsFunc={() =>
             this.setState({
               showCommentsData: posts[i].comments,
-              showPostCommentsModal: true
-            })}
+              showPostCommentsModal: true,
+            })
+          }
         />
       );
     }
@@ -323,8 +335,6 @@ class NewsFeed extends React.Component {
     return groups;
   }
 
-
-
   getNewPostModal() {
     let newModal = (
       <Modal
@@ -368,8 +378,6 @@ class NewsFeed extends React.Component {
     );
   }
 
-
-
   closeNewPostModal() {
     this.setState({ showNewPostModal: false });
   }
@@ -395,6 +403,9 @@ class NewsFeed extends React.Component {
   render() {
     if (!this.state.token) {
       document.location.replace("/login");
+    }
+    if(this.state.user == null) {
+      return null;
     }
     let renderedPosts = this.postList(this.state.posts);
     let renderedGroups = this.renderGroups();

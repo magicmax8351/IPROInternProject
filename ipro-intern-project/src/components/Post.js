@@ -92,7 +92,7 @@ class Post extends React.Component {
       showPostCommentsModal: false,
       showJobInfoModal: false,
     };
-
+    this.user = props.user;
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
     this.token = props.token;
     this.addJobFromPost = this.addJobFromPost.bind(this);
@@ -100,6 +100,7 @@ class Post extends React.Component {
     this.getPostCommentsModal = this.getPostCommentsModal.bind(this);
     this.getButtonText = this.getButtonText.bind(this);
   }
+
 
   getButtonText() {
     return this.addJobButtonText[this.state.post.applied];
@@ -145,7 +146,7 @@ class Post extends React.Component {
           <Modal.Title>comments</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <PostComment comments={this.state.post.comments} />
+          <PostComment post_id={this.state.post.id} comments={this.state.post.comments} token={this.token}  user={this.user}/>
         </Modal.Body>
         <Modal.Footer>
           <Button
