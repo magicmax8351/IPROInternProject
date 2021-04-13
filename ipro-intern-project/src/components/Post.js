@@ -155,12 +155,6 @@ class Post extends React.Component {
           >
             Close
           </Button>
-
-          <Button
-          variant="primary"
-          >
-            post new comment
-          </Button>
         </Modal.Footer>
       </Modal>
     );
