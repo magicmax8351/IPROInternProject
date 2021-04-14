@@ -68,24 +68,28 @@ const ButtonDiv = styled(NameFlexBox)`
   justify-content: flex-end;
 `;
 
-const popover = (
-  <Popover id="popover-basic">
-    <Popover.Title as="h3">Group Link</Popover.Title>
-    <Popover.Content>
-      Copied the group link to clipboard! Anyone you share it with can join.
-    </Popover.Content>
-  </Popover>
-);
-
-
+function buildPopover(url) {
+  return (
+    <Popover id="popover-basic">
+      <Popover.Title as="h3">Group Link</Popover.Title>
+      <Popover.Content>
+        <p>
+          Copied the group link to clipboard! Anyone you share it with can join.
+        </p>
+        <a href={url}>{url}</a>
+      </Popover.Content>
+    </Popover>
+  );
+}
 
 class GroupHeaderCard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       group: props.group,
-      groupUrl: ("http://" + window.location.hostname + "/group/" + props.group.link)
-    }
+      groupUrl:
+        "http://" + window.location.hostname + "/group/" + props.group.link,
+    };
     this.token = props.token;
     this.joinGroup = this.joinGroup.bind(this);
   }
@@ -95,20 +99,23 @@ class GroupHeaderCard extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/group/join?token=" + this.token + "&group_link=" + this.state.group.link)
+        ":8000/group/join?token=" +
+        this.token +
+        "&group_link=" +
+        this.state.group.link
+    )
       .then((res) => res.status)
       .then((status) => {
-        if(status == 200) {
-          let newGroup = this.state.group
+        if (status == 200) {
+          let newGroup = this.state.group;
           newGroup.activeUserInGroup = true;
-          this.setState({group: newGroup});
+          this.setState({ group: newGroup });
         } else {
           alert("Failed to join group!");
         }
         return null;
       });
-    }
-  
+  }
 
   render() {
     let userGroupButton;
@@ -119,7 +126,7 @@ class GroupHeaderCard extends React.Component {
           <OverlayTrigger
             trigger="click"
             placement="right"
-            overlay={popover}
+            overlay={buildPopover(this.state.groupUrl)}
           >
             <ActiveUserNotInGroupButton
               onClick={() => navigator.clipboard.writeText(this.state.groupUrl)}
@@ -132,9 +139,9 @@ class GroupHeaderCard extends React.Component {
     } else {
       userGroupButton = (
         <ButtonDiv>
-            <ActiveUserNotInGroupButton onClick={this.joinGroup}>
-              join
-            </ActiveUserNotInGroupButton>
+          <ActiveUserNotInGroupButton onClick={this.joinGroup}>
+            join
+          </ActiveUserNotInGroupButton>
         </ButtonDiv>
       );
     }
