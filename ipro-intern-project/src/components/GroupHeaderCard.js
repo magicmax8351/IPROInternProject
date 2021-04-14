@@ -1,5 +1,7 @@
 import React from "react";
 import styled from "styled-components";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Popover from "react-bootstrap/Popover";
 
 const GroupImageContainer = styled.div`
   max-width: 700px;
@@ -40,7 +42,6 @@ const GroupImageName = styled.a`
   }
 `;
 
-
 const ActiveUserInGroupButton = styled.button`
   height: 80%;
   margin-top: auto;
@@ -67,32 +68,83 @@ const ButtonDiv = styled(NameFlexBox)`
   justify-content: flex-end;
 `;
 
+const popover = (
+  <Popover id="popover-basic">
+    <Popover.Title as="h3">Group Link</Popover.Title>
+    <Popover.Content>
+      Copied the group link to clipboard! Anyone you share it with can join.
+    </Popover.Content>
+  </Popover>
+);
+
+
+
 class GroupHeaderCard extends React.Component {
   constructor(props) {
     super(props);
-    this.group = props.group;
+    this.state = {
+      group: props.group,
+      groupUrl: ("http://" + window.location.hostname + "/group/" + props.group.link)
+    }
+    this.token = props.token;
+    this.joinGroup = this.joinGroup.bind(this);
   }
+
+  joinGroup() {
+    console.log(this);
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/group/join?token=" + this.token + "&group_link=" + this.state.group.link)
+      .then((res) => res.status)
+      .then((status) => {
+        if(status == 200) {
+          let newGroup = this.state.group
+          newGroup.activeUserInGroup = true;
+          this.setState({group: newGroup});
+        } else {
+          alert("Failed to join group!");
+        }
+        return null;
+      });
+    }
+  
+
   render() {
     let userGroupButton;
-    if (this.group.activeUserInGroup) {
+    if (this.state.group.activeUserInGroup) {
       userGroupButton = (
         <ButtonDiv>
           <ActiveUserInGroupButton>in group</ActiveUserInGroupButton>
-          <ActiveUserNotInGroupButton>share</ActiveUserNotInGroupButton>
+          <OverlayTrigger
+            trigger="click"
+            placement="right"
+            overlay={popover}
+          >
+            <ActiveUserNotInGroupButton
+              onClick={() => navigator.clipboard.writeText(this.state.groupUrl)}
+            >
+              share
+            </ActiveUserNotInGroupButton>
+          </OverlayTrigger>
         </ButtonDiv>
       );
     } else {
       userGroupButton = (
         <ButtonDiv>
-          <ActiveUserNotInGroupButton>join</ActiveUserNotInGroupButton>
+            <ActiveUserNotInGroupButton onClick={this.joinGroup}>
+              join
+            </ActiveUserNotInGroupButton>
         </ButtonDiv>
       );
     }
     return (
       <GroupImageContainer>
-        <GroupImage src={this.group.background} />
+        <GroupImage src={this.state.group.background} />
         <NameFlexBox>
-          <GroupImageName href={"/group/" + this.group.link} >{this.group.name}</GroupImageName>
+          <GroupImageName href={"/group/" + this.state.group.link}>
+            {this.state.group.name}
+          </GroupImageName>
           {userGroupButton}
         </NameFlexBox>
       </GroupImageContainer>

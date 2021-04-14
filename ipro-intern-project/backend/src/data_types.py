@@ -129,7 +129,7 @@ class GroupORM(Base):
     desc = Column(String(256), nullable=False)
     background = Column(String(128), nullable=False)
     privacy = Column(Integer) # 0 = public, 1 = unlisted, 2 = private
-    link = Column(String(64))
+    link = Column(String(64), unique=True)
 
 class GroupModel(BaseModel):
     class Config:

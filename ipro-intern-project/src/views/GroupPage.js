@@ -167,7 +167,7 @@ class GroupPage extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/grouplist?token=" +
+        ":8000/group/list?token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -465,7 +465,7 @@ class GroupPage extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
-            <GroupHeaderCard group={this.state.groupMembership.group} />
+            <GroupHeaderCard token={this.state.token} group={this.state.groupMembership.group} />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton

@@ -63,9 +63,11 @@ const GroupRowButton = styled.button`
   background: none;
 `;
 
-const GroupRowName = styled.p`
+const GroupRowName = styled.a`
   font-size: 16px;
   margin: 0px;
+  color: black;
+  text-decoration-line: underline;
 `;
 
 const MakeNewPostButton = styled.button`
@@ -154,7 +156,7 @@ class NewsFeed extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/grouplist?token=" +
+        ":8000/group/list?token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -313,7 +315,7 @@ class NewsFeed extends React.Component {
       let g = this.state.groups[i];
       groups.push(
         <GreyGroupRow>
-          <GroupRowName>{g.name}</GroupRowName>
+          <GroupRowName href={"/group/" + g.link}>{g.name}</GroupRowName>
           <GroupRowButton onClick={() => this.flipViewGroupState(g.id)}>
             {this.checkbox_map[this.state.groups_toggle[g.id]]}
           </GroupRowButton>
@@ -324,7 +326,7 @@ class NewsFeed extends React.Component {
 
         groups.push(
           <WhiteGroupRow>
-            <GroupRowName>{g2.name}</GroupRowName>
+            <GroupRowName href={"/group/" + g2.link}>{g2.name}</GroupRowName>
             <GroupRowButton onClick={() => this.flipViewGroupState(g2.id)}>
               {this.checkbox_map[this.state.groups_toggle[g2.id]]}
             </GroupRowButton>

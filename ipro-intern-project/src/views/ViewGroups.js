@@ -118,7 +118,7 @@ class ViewGroups extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/grouplist?token=" +
+        ":8000/group/list?browse=true&token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -136,7 +136,7 @@ class ViewGroups extends React.Component {
     }
     let groups_rendered = this.state.groups
         .filter((x) => x.name.toLowerCase().includes(this.state.filter.toLowerCase()))
-        .map((x) => <GroupHeaderCard key={x.id} group={x} />)
+        .map((x) => <GroupHeaderCard token={this.state.token} key={x.id} group={x} />)
         
     return (
       <div>

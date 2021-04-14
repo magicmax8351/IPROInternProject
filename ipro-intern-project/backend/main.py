@@ -116,12 +116,14 @@ def add_user(new_user: UserModel):
     orm_session.close()
     return ret
 
+
 @app.get("/users/get")
 def get_user_token(token: str):
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not authenticated!")
     return get_user(uid)
+
 
 @app.post("/users/login")
 def login_user(user_creds: LoginData):
@@ -665,12 +667,14 @@ def upload_resume(resume: UploadFile = File(...)):
     unique_name = ''
     extension = resume.filename.split('.')[1]
     while True:
-        unique_name = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase + string.digits, k=10)) + '.' + extension
+        unique_name = ''.join(random.choices(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits, k=10)) + '.' + extension
         if not os.path.isfile('resumes/' + unique_name):
             break
     with open('resumes/' + unique_name, "wb+") as file_object:
         file_object.write(resume.file.read())
     return {'filename': unique_name}
+
 
 @app.get("/resumes/download")
 def download_resume(token: str, resume_id: int):
@@ -688,6 +692,7 @@ def download_resume(token: str, resume_id: int):
         raise HTTPException(404, f"Resume id={resume_id} Not Found")
         return {'error': f"Resume id={resume_id} Not Found"}
 
+
 @app.post("/resumes/add")
 def add_resume(new_resume: ResumeModel):
     """Adds a new row to resume table."""
@@ -697,18 +702,18 @@ def add_resume(new_resume: ResumeModel):
 
     s = orm_parent_session()
     c = ResumeORM(
-        name = new_resume.name,
-        filename = new_resume.filename,
-        date = datetime.datetime.now(),
-        uid = uid
+        name=new_resume.name,
+        filename=new_resume.filename,
+        date=datetime.datetime.now(),
+        uid=uid
     )
     s.add(c)
     s.commit()
     r = ResumeModel.from_orm(c)
     s.close()
     return r
-    #print(new_resume.name)
-    #print(new_resume.filename)
+    # print(new_resume.name)
+    # print(new_resume.filename)
 
 
 @app.get("/resumes/get")
@@ -721,7 +726,8 @@ def get_resume(token: str):
     s = orm_parent_session()
     apps_orm = {}
 
-    res_model = [ResumeModel.from_orm(res) for res in s.query(ResumeORM).filter(ResumeORM.uid == uid)]
+    res_model = [ResumeModel.from_orm(res) for res in s.query(
+        ResumeORM).filter(ResumeORM.uid == uid)]
 
     s.close()
 
@@ -768,7 +774,7 @@ def delete_jobtag(jobtag_id: int):
 
 
 # Group
-@app.post("/groups/add")
+@app.post("/group/add")
 def add_group(new_group: GroupModel):
     """Adds a new row to group table."""
     uid = get_uid_token(new_group.token)["uid"]
@@ -784,7 +790,12 @@ def add_group(new_group: GroupModel):
     ]
 
     new_group.link = re.sub("[^0-9a-zA-Z_]+", "",
-                            new_group.name.replace(" ", "_"))
+           new_group.name.strip().replace(" ", "_").lower()).replace("__", "_")
+
+    while(s.query(GroupORM).filter(GroupORM.link == new_group.link).scalar() != None):
+        new_group.link += "_" + gen_token()[:8]
+
+
     if(new_group.privacy != 0):
         new_group.link += "_" + gen_token()[:8]
 
@@ -828,14 +839,15 @@ def get_group_by_id(link: str, token: str):
 
     groupMembershipObject = GroupMembershipModel.from_orm(s.query(
         GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one())
-    groupMembershipObject.group.activeUserInGroup = bool(groupMembershipObject.group.id in group_ids)
+    groupMembershipObject.group.activeUserInGroup = bool(
+        groupMembershipObject.group.id in group_ids)
 
     s.close()
     return groupMembershipObject
 
 
-@app.get("/grouplist")
-def get_user_groups(token: str):
+@app.get("/group/list")
+def get_user_groups(token: str, browse: bool = False):
     """Returns all groups a user has membership in."""
     s = orm_parent_session()
     groups = []
@@ -853,13 +865,38 @@ def get_user_groups(token: str):
         if(g.id in group_ids):
             g.activeUserInGroup = True
             groups.append(g)
-        elif (g.privacy == 0):
+        elif (browse and g.privacy == 0):
             g.activeUserInGroup = False
             groups.append(g)
         else:
             pass
     s.close()
     return groups
+
+@app.get("/group/join")
+def join_group(group_link: str, token: str):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
+    s = orm_parent_session()
+    try:
+        group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
+    except NoResultFound as e:
+        raise HTTPException(422, "Group not found!")
+    
+    groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    if(s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).scalar() != None):
+        raise HTTPException(430, "User already in group!")
+    
+    newMembershipORM = MembershipORM(
+        group_membership_id = groupMembershipObject.id,
+        uid=uid
+    )
+    s.add(newMembershipORM)
+    s.commit()
+    s.close()
+    return (200, "OK")
 
 
 @app.post("/groups/update")
