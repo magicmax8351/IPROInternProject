@@ -53,6 +53,7 @@ const ActiveUserInGroupButton = styled.button`
   padding: 10px;
   border: solid;
   padding-top: 3px;
+  max-height: 36px;
 `;
 
 const ActiveUserNotInGroupButton = styled(ActiveUserInGroupButton)`
@@ -89,13 +90,14 @@ class GroupHeaderCard extends React.Component {
       group: props.group,
       groupUrl:
         "http://" + window.location.hostname + "/group/" + props.group.link,
+      buttonText: "in group",
     };
     this.token = props.token;
     this.joinGroup = this.joinGroup.bind(this);
+    this.leaveGroup = this.leaveGroup.bind(this);
   }
 
   joinGroup() {
-    console.log(this);
     fetch(
       "http://" +
         window.location.hostname +
@@ -117,12 +119,60 @@ class GroupHeaderCard extends React.Component {
       });
   }
 
+  leaveGroup() {
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/group/leave?group_link=" +
+        this.state.group.link,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    )
+      .then((res) => res.status)
+      .then((status) => {
+        if (status == 200) {
+          this.setState({ buttonText: "left group" });
+        } else {
+          this.setState({ buttonText: "failed to leave group" });
+        }
+      });
+    return "leaving group";
+  }
+
   render() {
     let userGroupButton;
     if (this.state.group.activeUserInGroup) {
       userGroupButton = (
         <ButtonDiv>
-          <ActiveUserInGroupButton>in group</ActiveUserInGroupButton>
+          <ActiveUserInGroupButton
+            onMouseOver={() => {
+              if (this.state.buttonText == "in group") {
+                this.setState({ buttonText: "leave group?" });
+              }
+            }}
+            onMouseOut={() => {
+              if (this.state.buttonText == "leave group?") {
+                this.setState({ buttonText: "in group" });
+              }
+            }}
+            onClick={() => {
+              if (this.state.buttonText == "in group") {
+                return;
+              } else if (this.state.buttonText == "leave group?") {
+                this.setState({ buttonText: "please confirm" });
+              } else if (this.state.buttonText == "please confirm") {
+                this.setState({
+                  buttonText: this.leaveGroup(this.state.group.link),
+                });
+              } else if (this.state.buttonText == "left group") {
+                this.setState({ buttonText: "please stop clicking" });
+              }
+            }}
+          >
+            {this.state.buttonText}
+          </ActiveUserInGroupButton>
           <OverlayTrigger
             trigger="click"
             placement="right"
@@ -130,6 +180,8 @@ class GroupHeaderCard extends React.Component {
           >
             <ActiveUserNotInGroupButton
               onClick={() => navigator.clipboard.writeText(this.state.groupUrl)}
+              // visibility={(this.state.buttonText == "left group") ? "hidden" : "visible"}
+              visibility="hidden"
             >
               share
             </ActiveUserNotInGroupButton>
@@ -160,3 +212,5 @@ class GroupHeaderCard extends React.Component {
 }
 
 export default GroupHeaderCard;
+
+export { ActiveUserNotInGroupButton };

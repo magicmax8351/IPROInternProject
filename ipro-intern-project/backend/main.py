@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Cookie
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +22,8 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:8080",
-    "*"
+    "http://localhost:3000",
+    "http://wingman.justinjschmitz.com"
 ]
 
 app.add_middleware(
@@ -32,12 +33,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class HelloResponse(BaseModel):
-    name: str
-    message: str
-
 
 engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
@@ -775,9 +770,9 @@ def delete_jobtag(jobtag_id: int):
 
 # Group
 @app.post("/group/add")
-def add_group(new_group: GroupModel):
+def add_group(new_group: GroupModel, token: str = Cookie("")):
     """Adds a new row to group table."""
-    uid = get_uid_token(new_group.token)["uid"]
+    uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
 
@@ -898,6 +893,28 @@ def join_group(group_link: str, token: str):
     s.close()
     return (200, "OK")
 
+@app.post("/group/leave")
+def join_group(group_link: str, token: str = Cookie("")):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(422, "Not Authenticated")
+
+    s = orm_parent_session()
+    try:
+        group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
+    except NoResultFound as e:
+        raise HTTPException(422, "Group not found!")
+    
+    groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    try:
+        m = s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).one()
+    except NoResultFound:
+        raise HTTPException(430, "User not in group!")
+    
+    s.delete(m)
+    s.commit()
+    s.close()
+    return (200, "OK")
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):

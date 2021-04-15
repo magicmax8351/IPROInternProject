@@ -24,6 +24,7 @@ const PostsContainer = styled.div`
   margin: 10px;
   max-width: 630px;
   min-width: 500px;
+  width: 100%;
 `;
 
 const SidebarFlexContainer = styled.div`

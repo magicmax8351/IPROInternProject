@@ -4,9 +4,8 @@ import Cookies from "js-cookie";
 import "../styled";
 import { MasterPostContainer, UserImage } from "../components/Post";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import NewPost from "../components/NewPost";
 import GroupHeaderCard from "../components/GroupHeaderCard";
+import NewGroup from "../components/NewGroup";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -114,6 +113,27 @@ class ViewGroups extends React.Component {
     }
   }
 
+  getNewGroupModal() {
+    let newModal = (
+      <Modal
+        size="lg"
+        show={this.state.showNewGroupModal}
+        onHide={() => this.setState({ showNewGroupModal: false })}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Group</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <NewGroup
+            token={this.state.token}
+            func={() => this.setState({ showNewGroupModal: false })}
+          />
+        </Modal.Body>
+      </Modal>
+    );
+    return newModal;
+  }
+
   componentDidMount() {
     fetch(
       "http://" +
@@ -137,9 +157,11 @@ class ViewGroups extends React.Component {
     let groups_rendered = this.state.groups
         .filter((x) => x.name.toLowerCase().includes(this.state.filter.toLowerCase()))
         .map((x) => <GroupHeaderCard token={this.state.token} key={x.id} group={x} />)
-        
+    
+    let new_group_modal = this.getNewGroupModal();
     return (
       <div>
+        {new_group_modal}
         <FeedContainer>
           <PostsContainer>
             <TopRowContainer>
@@ -152,7 +174,7 @@ class ViewGroups extends React.Component {
               </SearchContainer>
               <SearchContainer>
                 <h4>create a new group</h4>
-                <MakeNewPostButton>Group Name</MakeNewPostButton>
+                <MakeNewPostButton onClick={() => this.setState({ showNewGroupModal: true })}>Group Name</MakeNewPostButton>
               </SearchContainer>
             </TopRowContainer>
             {groups_rendered}
