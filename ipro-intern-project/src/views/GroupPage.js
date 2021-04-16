@@ -160,7 +160,14 @@ class GroupPage extends React.Component {
         this.getMorePosts();
         this.setState({ loadNewPosts: false });
       }
-    }, 500);
+    }, 250);
+
+
+    window.setInterval(() => {
+      if(document.documentElement.scrollHeight < window.innerHeight) {
+        this.setState({ loadNewPosts: true });
+      }
+    }, 250)
 
     if (this.group_id != -1) {
       fetch(
