@@ -207,7 +207,8 @@ class NewsFeed extends React.Component {
         this.count +
         "&start_id=" +
         this.state.start_id +
-        "&group_link=",
+        "&group_link=&nonce=" + 
+        Math.floor(Math.random() * 25565), 
       {
         credentials: "include",
         "Cache-Control": "no-store"
