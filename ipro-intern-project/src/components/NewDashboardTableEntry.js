@@ -29,6 +29,7 @@ class NewDashboardTableEntry extends React.Component {
     };
     this.enter_company = this.enter_company.bind(this);
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
+    this.enter_new_company_logo = this.enter_new_company_logo.bind(this);
     this.submitAddCompany = this.submitAddCompany.bind(this);
 
     this.enter_job = this.enter_job.bind(this);
@@ -98,26 +99,44 @@ class NewDashboardTableEntry extends React.Component {
     this.setState({ new_resume_file: event.target.files[0], new_resume_name: event.target.files[0].name });
   }
 
+  enter_new_company_logo(event) {
+    this.setState({ new_company_logo: event.target.files[0] });
+  }
+
   submitAddCompany(event) {
     event.preventDefault()
-    if(this.state.new_company_name.length > 2) {
-      fetch("http://" + window.location.hostname + ":8000/companies/add", {
+    if(this.state.new_company_logo != null && this.state.new_company_name.length > 2) {
+      // upload company logo here
+      
+      let form = new FormData();
+      form.append("logoFile", this.state.new_company_logo);
+      fetch("http://" + window.location.hostname + ":8000/companies/logo/upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: this.state.new_company_name,
-          token: this.token
-        }),
+        body: form
       })
       .then((res) => res.json())
       .then((json) => {
-        this.setState({
-          companies: [...this.state.companies, json],
-          company_id: json.id,
-          job_id: 0
+
+        fetch("http://" + window.location.hostname + ":8000/companies/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: this.state.new_company_name,
+            logoFile: json.logoFile,
+            token: this.token
+          }),
+        })
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            companies: [...this.state.companies, json],
+            company_id: json.id,
+            job_id: 0
+          });
         });
+
       });
     }
   }
@@ -293,6 +312,12 @@ class NewDashboardTableEntry extends React.Component {
             <Form.Group as={Col}>
               <Form.Label>Company Name</Form.Label>
               <Form.Control onChange={this.enter_new_company_name} placeholder="New company name" />
+            </Form.Group>
+          </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Company Logo</Form.Label>
+              <Form.Control onChange={this.enter_new_company_logo} type="file" />
             </Form.Group>
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddCompany}>

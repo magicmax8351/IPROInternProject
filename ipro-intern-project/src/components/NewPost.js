@@ -44,6 +44,7 @@ class NewPost extends React.Component {
     this.enter_group = this.enter_group.bind(this);
 
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
+    this.enter_new_company_logo = this.enter_new_company_logo.bind(this);
     this.submitAddCompany = this.submitAddCompany.bind(this);
 
     this.enter_new_job_name = this.enter_new_job_name.bind(this);
@@ -100,6 +101,10 @@ class NewPost extends React.Component {
     this.setState({ new_company_name: event.target.value });
   }
 
+  enter_new_company_logo(event) {
+    this.setState({ new_company_logo: event.target.files[0] });
+  }
+
   enter_group(event) {
     // parseint() is a hack
     this.setState({ group_id: parseInt(event.target.value) });
@@ -128,7 +133,45 @@ class NewPost extends React.Component {
   }
 
   submitAddCompany(event) {
-    event.preventDefault();
+
+    
+    event.preventDefault()
+    if(this.state.new_company_logo != null && this.state.new_company_name.length > 2) {
+      // upload company logo here
+      
+      let form = new FormData();
+      form.append("logoFile", this.state.new_company_logo);
+      fetch("http://" + window.location.hostname + ":8000/companies/logo/upload", {
+        method: "POST",
+        body: form
+      })
+      .then((res) => res.json())
+      .then((json) => {
+
+        fetch("http://" + window.location.hostname + ":8000/companies/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: this.state.new_company_name,
+            logoFile: json.logoFile,
+            token: this.token
+          }),
+        })
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            companies: [...this.state.companies, json],
+            company_id: json.id,
+            job_id: 0
+          });
+        });
+
+      });
+    }
+
+    /*event.preventDefault();
     if (this.state.new_company_name.length > 2) {
       fetch("http://" + window.location.hostname + ":8000/companies/add", {
         method: "POST",
@@ -147,7 +190,7 @@ class NewPost extends React.Component {
             company_id: this.state.companies.length,
           });
         });
-    }
+    }*/
   }
 
   submitAddJob(event) {
@@ -309,6 +352,12 @@ class NewPost extends React.Component {
                 onChange={this.enter_new_company_name}
                 placeholder="New company name"
               />
+            </Form.Group>
+          </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Company Logo</Form.Label>
+              <Form.Control onChange={this.enter_new_company_logo} type="file" />
             </Form.Group>
           </Form.Row>
           <Button

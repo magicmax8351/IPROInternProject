@@ -153,11 +153,11 @@ def gen_fake_data():
 
     # Add some companies
     companies = []
-    companies.append(CompanyORM(name="Google"))
-    companies.append(CompanyORM(name="JPMorgan Chase"))
-    companies.append(CompanyORM(name="Uber"))
-    companies.append(CompanyORM(name="Citadel"))
-    companies.append(CompanyORM(name="Boeing"))
+    companies.append(CompanyORM(name="Google", logoFile="google_logo.jpg"))
+    companies.append(CompanyORM(name="JPMorgan Chase", logoFile="chase_logo.jpg"))
+    companies.append(CompanyORM(name="Uber", logoFile="uber_logo.jfif"))
+    companies.append(CompanyORM(name="Citadel", logoFile="citadel_logo.jfif"))
+    companies.append(CompanyORM(name="Boeing", logoFile="boeing_logo.jfif"))
 
     for c in companies:
         s.add(c)

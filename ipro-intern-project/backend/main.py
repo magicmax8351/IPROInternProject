@@ -597,7 +597,8 @@ def add_company(new_company: CompanyModel):
 
     s = orm_parent_session()
     c = CompanyORM(
-        name=new_company.name
+        name=new_company.name,
+        logoFile=new_company.logoFile
     )
     s.add(c)
     s.commit()
@@ -634,6 +635,37 @@ def get_company_id(company_id: int):
     s.close()
     raise ValueError
 
+@app.post("/companies/logo/upload")
+def upload_logo(logoFile: UploadFile = File(...)):
+    """Uploads aand saves a logo file"""
+    if not os.path.exists('logos'):
+        os.makedirs('logos')
+    unique_name = ''
+    extension = logoFile.filename.split('.')[1]
+    while True:
+        unique_name = ''.join(random.choices(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits, k=10)) + '.' + extension
+        if not os.path.isfile('logos/' + unique_name):
+            break
+    with open('logos/' + unique_name, "wb+") as file_object:
+        file_object.write(logoFile.file.read())
+    return {'logoFile': unique_name}
+
+@app.get("/companies/logo/download")
+def download_logo(company_id: int):
+    """Download the logo for the given company"""
+    #uid = get_uid_token(token)["uid"]
+    #if uid == -1:
+    #    raise HTTPException(422, "Not Authenticated")
+    s = orm_parent_session()
+    company = s.query(CompanyORM).get(company_id)
+    s.close()
+    file_path = 'logos/' + company.logoFile
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    else:
+        raise HTTPException(404, f"Company id={company_id} Not Found")
+        return {'error': f"Company id={company_id} Not Found"}
 
 @app.post("/companies/update")
 def update_company(updated_company: CompanyModel):

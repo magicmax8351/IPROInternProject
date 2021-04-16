@@ -188,12 +188,14 @@ class CompanyORM(Base):
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False) 
+    logoFile = Column(String(32), nullable=True)
 
 class CompanyModel(BaseModel):
     id: Optional[int]
     name: str
     token: Optional[str]
     key: Optional[int]
+    logoFile: str
 
     class Config:
         orm_mode = True

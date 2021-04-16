@@ -264,7 +264,7 @@ class Post extends React.Component {
           </RowFlexContainer>
           <Container>
             <CompanyInfoContainer>
-              <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />
+              <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.state.post.job.company.id} />
               <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
               <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
               <CompanyInfo>Posted 3/23</CompanyInfo>
