@@ -161,7 +161,13 @@ class NewsFeed extends React.Component {
         this.getMorePosts();
         this.setState({ loadNewPosts: false });
       }
-    }, 500)
+    }, 250)
+
+    window.setInterval(() => {
+      if(document.documentElement.scrollHeight < window.innerHeight) {
+        this.setState({ loadNewPosts: true });
+      }
+    }, 250)
 
     fetch(
       "http://" +
