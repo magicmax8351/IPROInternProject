@@ -51,6 +51,8 @@ const PostAuthor = styled.p`
   font-style: italic;
   margin-bottom: 0px;
   display: inline-block;
+  white-space: nowrap;
+
 `;
 
 const UserImage = styled.img`
@@ -78,11 +80,28 @@ const PostButton = styled.button`
   }
 `;
 
-const ButtonContainer = styled.div`
+const RowFlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  width: 100%;
+`;
+
+const ButtonContainer = styled(RowFlexContainer)`
+max-width: -webkit-fill-available;
   margin: 10px;
 `;
+
+const WideDiv = styled.div`
+  max-width: 100%;
+  display: flex;
+  flex-flow: nowrap;
+`;
+
+const ThumbButton = styled.button`
+border: none;
+background: none;
+font-size: 10pt;
+`
 
 class Post extends React.Component {
   constructor(props) {
@@ -92,15 +111,17 @@ class Post extends React.Component {
       showPostCommentsModal: false,
       showJobInfoModal: false,
     };
-    this.user = props.user;
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
+    this.likeIcon = ["⚫", "👍"]
+
+    this.user = props.user;
     this.token = props.token;
     this.addJobFromPost = this.addJobFromPost.bind(this);
     this.getJobInfoModal = this.getJobInfoModal.bind(this);
     this.getPostCommentsModal = this.getPostCommentsModal.bind(this);
     this.getButtonText = this.getButtonText.bind(this);
+    this.likePost = this.likePost.bind(this);
   }
-
 
   getButtonText() {
     return this.addJobButtonText[this.state.post.applied];
@@ -135,6 +156,25 @@ class Post extends React.Component {
       });
   }
 
+  likePost() {
+    let value = (this.state.post.userLike + 1) % this.likeIcon.length; 
+    let newPost = this.state.post;
+    newPost.userLike = value;
+    this.setState({ post: newPost });
+    fetch("http://" + window.location.hostname + ":8000/posts/like?post_id=" + this.state.post.id + "&value=" + value, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(res => res.status)
+    .then(status => {
+      if(status != 200) {
+        alert("Failed to like post!");
+      }
+    })
+  }
+
   getPostCommentsModal() {
     return (
       <Modal
@@ -146,7 +186,12 @@ class Post extends React.Component {
           <Modal.Title>comments</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <PostComment post_id={this.state.post.id} comments={this.state.post.comments} token={this.token}  user={this.user}/>
+          <PostComment
+            post_id={this.state.post.id}
+            comments={this.state.post.comments}
+            token={this.token}
+            user={this.user}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -182,6 +227,19 @@ class Post extends React.Component {
     return newModal;
   }
 
+  calcLikes(likesArray, userLike) {
+    let count = 0; 
+    for(let i = 0; i < likesArray.length; i++) {
+      if(likesArray[i].value != 0 && likesArray[i].uid != this.user.id) {
+        count += 1;
+      }
+    }
+    if(userLike != 0) {
+      count += 1;
+    }
+    return count;
+  }
+
   render() {
     let jobInfoModal = this.getJobInfoModal();
     let postCommentsModal = this.getPostCommentsModal();
@@ -191,13 +249,19 @@ class Post extends React.Component {
         {jobInfoModal}
         {postCommentsModal}
         <MasterPostContainer>
-          <div>
-            <UserImage src={this.state.post.user.pic} />
-            <PostAuthor>
-              {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
-              {this.state.post.group.name}{" "}
-            </PostAuthor>
-          </div>
+          <RowFlexContainer>
+            <WideDiv>
+              <UserImage src={this.state.post.user.pic} />
+              <PostAuthor>
+                {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
+                {this.state.post.group.name}{" "}
+              </PostAuthor>
+            </WideDiv>
+            <div>
+              <PostAuthor>{this.calcLikes(this.state.post.likes, this.state.post.userLike)} | </PostAuthor>
+              <ThumbButton onClick={this.likePost}>{this.likeIcon[this.state.post.userLike]}</ThumbButton>
+            </div>
+          </RowFlexContainer>
           <Container>
             <CompanyInfoContainer>
               <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />

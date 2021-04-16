@@ -114,8 +114,10 @@ class NewsFeed extends React.Component {
       postSubmitted: 0,
       groups_toggle: null,
       user: null,
+      loadNewPosts: false,
+      outOfPosts: false
     };
-    this.count = 50;
+    this.count = 10;
 
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
@@ -153,6 +155,14 @@ class NewsFeed extends React.Component {
 
   componentDidMount() {
     this.getMorePosts();
+
+    window.setInterval(() => {
+      if(this.state.loadNewPosts) {
+        this.getMorePosts();
+        this.setState({ loadNewPosts: false });
+      }
+    }, 500)
+
     fetch(
       "http://" +
         window.location.hostname +
@@ -176,26 +186,41 @@ class NewsFeed extends React.Component {
         this.state.token
     )
       .then((res) => res.json())
-      .then((json) => this.setState({ user: json }));
+      .then((json) => this.setState({ user: json }))
+
+    window.addEventListener("scroll", (event) => {
+      var _docHeight = document.documentElement.scrollHeight;
+      if ((_docHeight - (window.scrollY + window.innerHeight)) < 500) {
+        this.setState({ loadNewPosts: true });
+      }
+    });
   }
 
   getMorePosts() {
+    if(this.state.outOfPosts) {
+      return;
+    }
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/posts/get?token=" +
-        this.state.token +
-        "&count=" +
+        ":8000/posts/get?count=" +
         this.count +
         "&start_id=" +
         this.state.start_id +
-        "&group_link="
+        "&group_link=",
+      {
+        credentials: "include",
+      }
     )
       .then((res) => {
-        if (res.status != 200) {
-          window.location.replace("/login");
+        if(res.status == 200) {
+          return res.json();
+        } else if (res.status == 450) {
+          this.setState({ outOfPosts: true });
+          throw new Error("Out of posts!");
+        } else {
+          throw new Error("Something else broke!");
         }
-        return res.json();
       })
       .then((json) => {
         let posts_update = [...this.state.posts, ...json.posts];
@@ -203,7 +228,8 @@ class NewsFeed extends React.Component {
           posts: posts_update,
           start_id: posts_update[posts_update.length - 1].id,
         });
-      });
+      })
+      .catch((error) => console.error(error));
   }
 
   filterPost(post) {
@@ -406,7 +432,7 @@ class NewsFeed extends React.Component {
     if (!this.state.token) {
       document.location.replace("/login");
     }
-    if(this.state.user == null) {
+    if (this.state.user == null) {
       return null;
     }
     let renderedPosts = this.postList(this.state.posts);
@@ -441,7 +467,6 @@ class NewsFeed extends React.Component {
               </MakeNewPostButton>
             </NewPostContainer>
             {renderedPosts}
-            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
           </PostsContainer>
         </FeedContainer>
       </div>

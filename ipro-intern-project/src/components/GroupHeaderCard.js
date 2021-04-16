@@ -168,8 +168,13 @@ class GroupHeaderCard extends React.Component {
                 });
               } else if (this.state.buttonText == "left group") {
                 this.setState({ buttonText: "please stop clicking" });
+              } else if (this.state.buttonText == "please stop clicking") {
+                this.setState({ buttonText: "last warning" });
+              } else if (this.state.buttonText == "last warning") {
+                this.setState({ buttonText: "clicking revoked :(" });
               }
             }}
+            disabled={this.state.buttonText == "clicking revoked :("}
           >
             {this.state.buttonText}
           </ActiveUserInGroupButton>
@@ -180,8 +185,6 @@ class GroupHeaderCard extends React.Component {
           >
             <ActiveUserNotInGroupButton
               onClick={() => navigator.clipboard.writeText(this.state.groupUrl)}
-              // visibility={(this.state.buttonText == "left group") ? "hidden" : "visible"}
-              visibility="hidden"
             >
               share
             </ActiveUserNotInGroupButton>

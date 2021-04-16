@@ -131,7 +131,7 @@ def login_user(user_creds: LoginData):
         user = orm_session.query(UserORM).filter(
             UserORM.email == user_creds.email).one()
     except NoResultFound:
-        time.sleep(random.randrange(.5, 2))
+        time.sleep(random.randrange(1, 2))
         orm_session.close()
         raise HTTPException(400, "Email not found!")
 
@@ -158,7 +158,6 @@ def login_user(user_creds: LoginData):
         token=TokenModel.from_orm(new_token_ORM)
     )
     orm_session.close()
-
     return ret
 
 # NOT AN ENDPOINT
@@ -202,7 +201,6 @@ def get_uid_token(token: str):
 
 # Post
 
-
 @app.post("/posts/add")
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
@@ -233,7 +231,7 @@ def add_post(new_post: PostModel):
 
 
 @app.get("/posts/get")
-def get_post(token: str, count: int, start_id: int, group_link: str):
+def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")):
     """Returns all posts."""
     uid = get_uid_token(token)["uid"]
     if uid == -1:
@@ -273,6 +271,8 @@ def get_post(token: str, count: int, start_id: int, group_link: str):
 
     for post in query:
         post_model = PostModel.from_orm(post)
+        post_model.userLike = max(map(lambda x: x.value if (x.uid == uid) else 0, post_model.likes))
+
         if post.job.id in applications:
             post_model.applied = 1
         else:
@@ -282,8 +282,29 @@ def get_post(token: str, count: int, start_id: int, group_link: str):
         posts.append(post_model)
     s.close()
 
+    if(len(posts) == 0):
+        raise HTTPException(450, "No more posts!")
+
     return {'posts': posts, 'count': len(posts)}
 
+@app.get("/posts/like")
+def like_post(post_id: int, value: int, token: str = Cookie("")):
+    uid = get_uid_token(token)["uid"]
+    if uid == -1:
+        raise HTTPException(410, "User token invalid!")
+
+    s = orm_parent_session()
+    try:
+        like = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
+        like.value = value
+    except NoResultFound:
+        like = UserPostLikeORM(uid=uid, post_id=post_id, value=value)
+        s.add(like)
+
+    s.commit()
+    likeModel = UserPostLikeModel.from_orm(like)
+    s.close()
+    return likeModel
 
 @app.post("/posts/update")
 def update_post(updated_post: PostModel):

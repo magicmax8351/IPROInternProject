@@ -121,9 +121,10 @@ class GroupPage extends React.Component {
       showPostCommentsModal: false,
       postSubmitted: 0,
       groups_toggle: null,
-      user: null
+      user: null,
+      outOfPosts: false
     };
-    this.count = 50;
+    this.count = 5;
 
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
@@ -153,6 +154,14 @@ class GroupPage extends React.Component {
 
   componentDidMount() {
     this.getMorePosts();
+
+    window.setInterval(() => {
+      if (this.state.loadNewPosts) {
+        this.getMorePosts();
+        this.setState({ loadNewPosts: false });
+      }
+    }, 500);
+
     if (this.group_id != -1) {
       fetch(
         "http://" +
@@ -181,17 +190,27 @@ class GroupPage extends React.Component {
         this.setState({ groups_toggle: groups_toggle });
       });
 
-      fetch(
-        "http://" +
-          window.location.hostname +
-          ":8000/users/get?token=" +
-          this.state.token
-      )
-        .then((res) => res.json())
-        .then((json) => this.setState({ user: json }));
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/users/get?token=" +
+        this.state.token
+    )
+      .then((res) => res.json())
+      .then((json) => this.setState({ user: json }));
+
+    window.addEventListener("scroll", (event) => {
+      var _docHeight = document.documentElement.scrollHeight;
+      if (_docHeight - (window.scrollY + window.innerHeight) < 500) {
+        this.setState({ loadNewPosts: true });
+      }
+    });
   }
 
   getMorePosts() {
+    if(this.state.outOfPosts) {
+      return;
+    }
     fetch(
       "http://" +
         window.location.hostname +
@@ -202,17 +221,23 @@ class GroupPage extends React.Component {
         "&start_id=" +
         this.state.start_id +
         "&group_link=" +
-        this.group_link
+        this.group_link,
+      {
+        credentials: "include",
+      }
     )
       .then((res) => {
-        if (res.status != 200) {
-          window.location.replace("/login");
+        if (res.status == 200) {
+          return res.json();
+        } else if (res.status == 450) {
+          this.setState({ outOfPosts: true });
+          throw new Error("Out of posts!");
+        } else {
+          throw new Error("Something else broke!");
         }
-        return res.json();
       })
       .then((json) => {
         let posts_update = [...this.state.posts, ...json.posts];
-        console.log(posts_update);
         if (posts_update.length == 0) {
           return;
         }
@@ -220,7 +245,8 @@ class GroupPage extends React.Component {
           posts: posts_update,
           start_id: posts_update[posts_update.length - 1].id,
         });
-      });
+      })
+      .catch((error) => console.error(error));
   }
 
   filterPost(post) {
@@ -342,7 +368,6 @@ class GroupPage extends React.Component {
 
   renderMembers() {
     let members = [];
-    console.log(this.state.groupMembership.membership);
 
     for (let i = 0; i < this.state.groupMembership.membership.length; i += 2) {
       let m = this.state.groupMembership.membership[i].user;
@@ -382,6 +407,7 @@ class GroupPage extends React.Component {
             token={this.state.token}
             dashboard_add={false}
             func={this.submitPost}
+            force_group={this.state.groupMembership.group}
           />
         </Modal.Body>
       </Modal>
@@ -466,7 +492,10 @@ class GroupPage extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
-            <GroupHeaderCard token={this.state.token} group={this.state.groupMembership.group} />
+            <GroupHeaderCard
+              token={this.state.token}
+              group={this.state.groupMembership.group}
+            />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton
@@ -477,7 +506,6 @@ class GroupPage extends React.Component {
             </NewPostContainer>
 
             {renderedPosts}
-            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
           </PostsContainer>
           <SidebarFlexContainer>
             <SidebarContainer>

@@ -27,6 +27,7 @@ class NewPost extends React.Component {
       body: props.body,
       dashboard_add: props.dashboard_add,
       new_company_name: null,
+      force_group: props.force_group
     };
 
     this.dropdown_change = this.dropdown_change.bind(this);
@@ -389,7 +390,12 @@ class NewPost extends React.Component {
       return (
         <Form.Group>
           <Form.Label>Body</Form.Label>
-          <Form.Control as="textarea" rows={5} value={this.state.body} onChange={this.enter_body}/> 
+          <Form.Control
+            as="textarea"
+            rows={5}
+            value={this.state.body}
+            onChange={this.enter_body}
+          />
         </Form.Group>
       );
     } else {
@@ -407,9 +413,13 @@ class NewPost extends React.Component {
 
     let groups = [[-1, "Please select..."]];
 
-    for (let i = 0; i < this.state.groups.length; i++) {
-      if (1) {
-        groups.push([this.state.groups[i].id, this.state.groups[i].name]);
+    if (this.state.force_group != null) {
+      groups = [[this.state.force_group.id, this.state.force_group.name]];
+    } else {
+      for (let i = 0; i < this.state.groups.length; i++) {
+        if (1) {
+          groups.push([this.state.groups[i].id, this.state.groups[i].name]);
+        }
       }
     }
     return (

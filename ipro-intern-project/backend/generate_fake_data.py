@@ -72,12 +72,19 @@ def gen_fake_data():
             state="IL"
         )
     )
-    for x in range(3):
+    used_emails = set()
+
+    for x in range(50):
+        usr_email = email.ascii_free_email()
+        if usr_email in used_emails:
+            continue
+        used_emails.add(usr_email)
+
         users.append(
             UserModel(fname=fake.first_name(),
                     lname=fake.last_name(),
                     password=fake.last_name(),
-                    email=email.ascii_free_email(),
+                    email=usr_email,
                     pic=random.choice(icons),
                     graddate=datetime.date(year=2020, month=9, day=9),
                     city="Chicago",
@@ -92,8 +99,6 @@ def gen_fake_data():
         password="admin"
     )).token.val
 
-    print(adminUser)
-
         # Add some groups
     groups = []
 
@@ -106,24 +111,21 @@ def gen_fake_data():
         GroupModel(name="ACM @ IIT",
                  icon="/var/www/images/acm_logo.png",
                  desc="Advancing Computing as a Science & Profession",
-                 token=token,
                  privacy=0))
     groups.append(
         GroupModel(name="AEPKS",
                  icon="/var/www/images/pks_logo.png",
                  desc="Men of Honor",
-                 token=token,
                  privacy=0))
     groups.append(
         GroupModel(name="Tesla Fan Club",
                  icon="/var/www/images/pks_logo.png",
                  desc="I love Elon's Musk",
-                 token=token,
                  privacy=0))
 
     # Randomly generate a heck ton of groups:
 
-    for i in range(10):
+    for i in range(3):
         groups.append(
             GroupModel(
                 name=lipsum.paragraph(
@@ -136,14 +138,13 @@ def gen_fake_data():
                     variable_nb_sentences=False,
                     ext_word_list=word_list.split())[:256],
                 privacy=0,
-                background=random.choice(groupImages),
-                token=token
+                background=random.choice(groupImages)
             )
         )
     
     added_groups = []
     for g in groups:
-        added_groups.append(add_group(g))
+        added_groups.append(add_group(g, token))
     
     print("Added sample users to DB")
 
@@ -200,7 +201,7 @@ That said, as one door closes, another one opens.
 I am excited to announce I will be moving to Park City, Utah to work as a luxury winter intern at The St. Regis Deer Valley. At The St. Regis, I will be learning the ins-and-outs of the luxury hospitality industry while continuing my graduate education. Especially during these challenging times, I am so grateful Marriott International took a chance on me and gave me this opportunity. If anyone in my network goes skiing out west this winter, let me know!"""
 
     posts = []
-    for i in range(1000):
+    for i in range(100):
         posts.append(
             PostORM(
                 body=lipsum.paragraph(
@@ -220,6 +221,23 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
 
     def post_id():
         return random.choice(s.query(PostORM).all()).id
+
+    print("Adding some post likes!")
+    likes = []
+    for i in range(100):
+        for j in range(50):
+            # if (i % (j + 1) == 0):
+                # print(f"i: {i} j: {j}")
+            likes.append(
+                UserPostLikeORM(
+                    uid=uid(),
+                    post_id=post_id(),
+                    value=random.randint(0,2)
+                )
+            )
+
+    s.add_all(likes)
+    s.commit()
 
     comments = []
     for i in range(1000):
@@ -280,7 +298,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
                     date=datetime.datetime.now(),
                     applicationBaseId=app.id,
                     stage_id=stage.id,
-                    status=(random.randint(0,2))
+                    status=(random.randint(0,1))
                 )
             )
 
