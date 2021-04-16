@@ -210,7 +210,7 @@ class NewsFeed extends React.Component {
         "&group_link=",
       {
         credentials: "include",
-        fetchPolicy: "no-cache"
+        "Cache-Control": "no-store"
       }
     )
       .then((res) => {

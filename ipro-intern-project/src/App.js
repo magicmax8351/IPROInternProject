@@ -20,6 +20,29 @@ const BackgroundGrey = styled.div`
 `;
 
 class App extends Component {
+  componentDidMount() {
+    if(window.location.pathname.includes("login")) {
+      return;
+    }
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/token/test",
+        {
+          credentials: "include",
+          "Cache-Control": "no-store"
+        }
+    ).then(res => res.status)
+    .then(status => {
+      if(status == 200) {
+        return; 
+      } else if (status == 422) {
+        window.location.replace("/login")
+      } else {
+        alert("Some other error!");
+      }
+    })
+  }
   render() {
     return (
       <BackgroundGrey>

@@ -224,15 +224,23 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
 
     print("Adding some post likes!")
     likes = []
+    likes_test = {}
     for i in range(100):
         for j in range(50):
-            # if (i % (j + 1) == 0):
-                # print(f"i: {i} j: {j}")
+            if i in likes_test:
+                if j in likes_test[i]:
+                    continue
+                else:
+                    likes_test[i].append(j)
+            else:
+                likes_test[i] = [j]
+            
+
             likes.append(
                 UserPostLikeORM(
                     uid=uid(),
                     post_id=post_id(),
-                    value=random.randint(0,2)
+                    value=random.randint(0,1)
                 )
             )
 

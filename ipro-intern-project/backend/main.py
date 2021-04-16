@@ -188,8 +188,17 @@ def delete_user(uid: int):
 
 
 @app.get("/token/test")
+def token_test(token: str = Cookie("")):
+    s = orm_parent_session()
+    try:
+        t = s.query(TokenORM).filter(TokenORM.val == token).one()
+        s.close()
+        return 
+    except NoResultFound:
+        s.close()
+        raise HTTPException(422, "Not valid token!")
+
 def get_uid_token(token: str):
-    """Tests if a token is valid. If invalid, sleep a little bit. FIXME THIS IS BAD"""
     s = orm_parent_session()
     try:
         t = s.query(TokenORM).filter(TokenORM.val == token).one()
@@ -198,7 +207,6 @@ def get_uid_token(token: str):
     except NoResultFound:
         s.close()
         return {"result": 0, "uid": -1}
-
 # Post
 
 @app.post("/posts/add")
@@ -271,7 +279,10 @@ def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")
 
     for post in query:
         post_model = PostModel.from_orm(post)
-        post_model.userLike = max(map(lambda x: x.value if (x.uid == uid) else 0, post_model.likes))
+        if len(post_model.likes) > 0:
+            post_model.userLike = max(map(lambda x: x.value if (x.uid == uid) else 0, post_model.likes))
+        else:
+            post_model.userLike = 0
 
         if post.job.id in applications:
             post_model.applied = 1

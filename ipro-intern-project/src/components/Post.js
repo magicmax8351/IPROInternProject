@@ -73,6 +73,7 @@ const PostButton = styled.button`
   padding-left: 10px;
   padding-right: 10px;
   transition: 0.1s all ease-out;
+  white-space: nowrap;
 
   &:hover {
     background-color: #a7a5c6;
@@ -87,8 +88,7 @@ const RowFlexContainer = styled.div`
 `;
 
 const ButtonContainer = styled(RowFlexContainer)`
-max-width: -webkit-fill-available;
-  margin: 10px;
+padding: 5px;
 `;
 
 const WideDiv = styled.div`

@@ -224,7 +224,7 @@ class GroupPage extends React.Component {
         this.group_link,
       {
         credentials: "include",
-        fetchPolicy: "no-cache"
+        "Cache-Control": "no-store"
       }
     )
       .then((res) => {
@@ -248,6 +248,7 @@ class GroupPage extends React.Component {
         });
       })
       .catch((error) => console.error(error));
+      
   }
 
   filterPost(post) {
@@ -335,6 +336,7 @@ class GroupPage extends React.Component {
       })
       .catch((err) => {
         console.error(err);
+        window.location.replace("/login");
       });
   }
 

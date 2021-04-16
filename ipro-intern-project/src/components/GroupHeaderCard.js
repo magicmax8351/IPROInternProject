@@ -153,10 +153,11 @@ class GroupHeaderCard extends React.Component {
               }
             }}
             onMouseOut={() => {
-              if (this.state.buttonText == "leave group?") {
+              if (this.state.buttonText == "leave group?" || this.state.buttonText == "please confirm") {
                 this.setState({ buttonText: "in group" });
-              }
-            }}
+              } else if (this.state.buttonText != "clicking revoked :(") {
+                this.setState({ buttonText: "left group"});
+            }}}
             onClick={() => {
               if (this.state.buttonText == "in group") {
                 return;
