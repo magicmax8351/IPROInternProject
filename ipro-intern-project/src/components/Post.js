@@ -52,7 +52,6 @@ const PostAuthor = styled.p`
   margin-bottom: 0px;
   display: inline-block;
   white-space: nowrap;
-
 `;
 
 const UserImage = styled.img`
@@ -88,7 +87,7 @@ const RowFlexContainer = styled.div`
 `;
 
 const ButtonContainer = styled(RowFlexContainer)`
-padding: 5px;
+  padding: 5px;
 `;
 
 const WideDiv = styled.div`
@@ -98,10 +97,10 @@ const WideDiv = styled.div`
 `;
 
 const ThumbButton = styled.button`
-border: none;
-background: none;
-font-size: 10pt;
-`
+  border: none;
+  background: none;
+  font-size: 10pt;
+`;
 
 class Post extends React.Component {
   constructor(props) {
@@ -112,7 +111,7 @@ class Post extends React.Component {
       showJobInfoModal: false,
     };
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
-    this.likeIcon = ["⚫", "👍"]
+    this.likeIcon = ["⚫", "👍"];
 
     this.user = props.user;
     this.token = props.token;
@@ -124,7 +123,13 @@ class Post extends React.Component {
   }
 
   getButtonText() {
-    return this.addJobButtonText[this.state.post.applied];
+    let dashboardAdditions = this.calcDashboardAdditions(
+      this.state.post.activity,
+      this.state.post.applied,
+      this.user.id,
+      this.state.post
+    );
+    return this.addJobButtonText[this.state.post.applied] + " (" + dashboardAdditions + ")";
   }
 
   addJobFromPost() {
@@ -142,7 +147,7 @@ class Post extends React.Component {
       .then((res) => {
         if (res.status == 200) {
           let post_update = this.state.post;
-          post_update["applied"] = 1;
+          post_update.applied = 1;
           this.setState({ post: post_update });
         } else if (res.status == 411) {
           this.setState({ addJobState: 1 });
@@ -157,22 +162,33 @@ class Post extends React.Component {
   }
 
   likePost() {
-    let value = (this.state.post.userLike + 1) % this.likeIcon.length; 
+    let like = (this.state.post.userLike + 1) % this.likeIcon.length;
     let newPost = this.state.post;
-    newPost.userLike = value;
+    newPost.userLike = like;
     this.setState({ post: newPost });
-    fetch("http://" + window.location.hostname + ":8000/posts/like?post_id=" + this.state.post.id + "&value=" + value, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/posts/like?post_id=" +
+        this.state.post.id +
+        "&like=" +
+        like +
+        "&dashboard=" +
+        this.state.post.applied,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
-    }).then(res => res.status)
-    .then(status => {
-      if(status != 200) {
-        alert("Failed to like post!");
-      }
-    })
+    )
+      .then((res) => res.status)
+      .then((status) => {
+        if (status != 200) {
+          alert("Failed to like post!");
+        }
+      });
   }
 
   getPostCommentsModal() {
@@ -227,14 +243,33 @@ class Post extends React.Component {
     return newModal;
   }
 
-  calcLikes(likesArray, userLike) {
-    let count = 0; 
-    for(let i = 0; i < likesArray.length; i++) {
-      if(likesArray[i].value != 0 && likesArray[i].uid != this.user.id) {
+  calcDashboardAdditions(activityArray, userDashboard, uid, post) {
+    if(activityArray == null || userDashboard == null) {
+      return 0;
+    }
+    let count = 0;
+    for (let i = 0; i < activityArray.length; i++) {
+      if (activityArray[i].dashboard == 1 && activityArray[i].uid != uid) {
         count += 1;
       }
     }
-    if(userLike != 0) {
+    if (userDashboard == 1 && post.uid != uid) {
+      count += 1;
+    }
+    return count;
+  }
+
+  calcLikes(activityArray, userLike, userId) {
+    if(activityArray == null || userLike == null) {
+      return 0;
+    }
+    let count = 0;
+    for (let i = 0; i < activityArray.length; i++) {
+      if (activityArray[i].like != 0 && activityArray[i].uid != userId) {
+        count += 1;
+      }
+    }
+    if (userLike != 0) {
       count += 1;
     }
     return count;
@@ -258,13 +293,29 @@ class Post extends React.Component {
               </PostAuthor>
             </WideDiv>
             <div>
-              <PostAuthor>{this.calcLikes(this.state.post.likes, this.state.post.userLike)} | </PostAuthor>
-              <ThumbButton onClick={this.likePost}>{this.likeIcon[this.state.post.userLike]}</ThumbButton>
+              <PostAuthor>
+                {this.calcLikes(
+                  this.state.post.activity,
+                  this.state.post.userLike,
+                  this.user.id
+                )}{" "}
+                |{" "}
+              </PostAuthor>
+              <ThumbButton onClick={this.likePost}>
+                {this.likeIcon[this.state.post.userLike]}
+              </ThumbButton>
             </div>
           </RowFlexContainer>
           <Container>
             <CompanyInfoContainer>
-              <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.state.post.job.company.id} />
+              <CompanyLogo
+                src={
+                  "http://" +
+                  window.location.hostname +
+                  ":8000/companies/logo/download?company_id=" +
+                  this.state.post.job.company.id
+                }
+              />
               <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
               <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
               <CompanyInfo>Posted 3/23</CompanyInfo>
@@ -287,7 +338,7 @@ class Post extends React.Component {
             >
               comments ({this.state.post.comments.length})
             </PostButton>
-            <PostButton onClick={this.addJobFromPost}>
+            <PostButton disabled={this.state.post.applied == 1} onClick={this.addJobFromPost}>
               {this.getButtonText()}
             </PostButton>
             <PostButton onClick={() => window.open(this.state.post.job.link)}>

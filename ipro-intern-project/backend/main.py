@@ -279,8 +279,8 @@ def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")
 
     for post in query:
         post_model = PostModel.from_orm(post)
-        if len(post_model.likes) > 0:
-            post_model.userLike = max(map(lambda x: x.value if (x.uid == uid) else 0, post_model.likes))
+        if len(post_model.activity) > 0:
+            post_model.userLike = max(map(lambda x: x.like if (x.uid == uid and x.like != 0) else 0, post_model.activity))
         else:
             post_model.userLike = 0
 
@@ -299,7 +299,7 @@ def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")
     return {'posts': posts, 'count': len(posts)}
 
 @app.get("/posts/like")
-def like_post(post_id: int, value: int, token: str = Cookie("")):
+def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("")):
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
@@ -307,9 +307,10 @@ def like_post(post_id: int, value: int, token: str = Cookie("")):
     s = orm_parent_session()
     try:
         like = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
-        like.value = value
+        like.like = like
+        like.dashboard = dashboard
     except NoResultFound:
-        like = UserPostLikeORM(uid=uid, post_id=post_id, value=value)
+        like = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
         s.add(like)
 
     s.commit()

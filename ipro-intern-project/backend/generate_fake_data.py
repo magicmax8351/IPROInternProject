@@ -240,7 +240,8 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
                 UserPostLikeORM(
                     uid=uid(),
                     post_id=post_id(),
-                    value=random.randint(0,1)
+                    like=random.randint(0,1),
+                    dashboard=random.randint(0, 1)
                 )
             )
 

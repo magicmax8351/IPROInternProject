@@ -264,13 +264,15 @@ class UserPostLikeORM(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     post_id = Column(Integer, ForeignKey("post.id"))
     uid = Column(Integer, ForeignKey("user.id"))
-    value = Column(Integer)
+    like = Column(Integer)
+    dashboard = Column(Integer)
 
 class UserPostLikeModel(BaseModel):
     id: Optional[int]
     post_id: Optional[int]
     uid: Optional[int]
-    value: Optional[int]
+    like: Optional[int]
+    dashboard: Optional[int]
     
     class Config:
         orm_mode = True
@@ -288,7 +290,7 @@ class PostORM(Base):
     comments = relationship("CommentORM")
     user = relationship("UserORM")
     group = relationship("GroupORM")
-    likes = relationship("UserPostLikeORM")
+    activity = relationship("UserPostLikeORM")
 
 class PostModel(BaseModel):
     class Config:
@@ -309,9 +311,8 @@ class PostModel(BaseModel):
     applied: Optional[int]
     key: Optional[int]
     group: Optional[GroupModel]
-    likes: Optional[List[UserPostLikeModel]]
+    activity: Optional[List[UserPostLikeModel]]
     userLike: Optional[int]
-
 
 class ApplicationEventModel(BaseModel):
     id: Optional[int]
