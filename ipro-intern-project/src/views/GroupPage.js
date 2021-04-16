@@ -224,6 +224,7 @@ class GroupPage extends React.Component {
         this.group_link,
       {
         credentials: "include",
+        fetchPolicy: "no-cache"
       }
     )
       .then((res) => {
