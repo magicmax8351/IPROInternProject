@@ -4,7 +4,7 @@ import PageContent from '../components/PageContent'
 import { Helmet } from 'react-helmet'
 import DashboardTable from '../components/DashboardTable'
 import Cookies from "js-cookie";
-import dashboardSlim from '../components/dashboardSlim';
+import DashboardSlim from '../components/DashboardSlim';
 
 
 class Dashboard extends React.Component {
@@ -22,7 +22,7 @@ class Dashboard extends React.Component {
         <title>Dashboard</title>
       </Helmet>
       <PageContent>
-        <dashboardSlim color={this.state.color} token={this.state.token}></dashboardSlim>
+        <DashboardSlim color={this.state.color} token={this.state.token}></DashboardSlim>
       </PageContent>
     </PageContent>
     )

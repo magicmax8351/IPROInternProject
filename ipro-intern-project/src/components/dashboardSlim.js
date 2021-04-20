@@ -10,6 +10,8 @@ import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
 import CuteButton from "./CuteDashboardShareButton";
 
+
+
 const DashboardTag = styled.p`
   background: #eeeeeeee;
   text-align: center;
@@ -132,7 +134,7 @@ class App extends Component {
       });
   }
 
-  buildDashboardTable(applications, stages) {
+  buildDashboardTable(applications, stages) { //this is where dropdown feature must be added
     let header = this.buildDashboardTableHeader(stages);
     let body = this.buildDashboardData(applications);
     return (
@@ -148,28 +150,31 @@ class App extends Component {
     let metadata_stages = [
       "Share",
       "Job Name",
-      "Link",
       "Company Name",
-      "Location",
-      "Resume",
+      "Status",
     ];
     // Include metadata as specified by body. See `buildDashboardTableRow`.
+
     for (let i = 0; i < metadata_stages.length; i++) {
       tableHeaderData.push(<th>{metadata_stages[i]}</th>);
     }
 
-    tableHeaderData.push(
-      <th>
-        <input
-          onChange={this.enter_filter_tag}
-          placeholder="Search for a job"
-        />
-      </th>
-    );
+    //no more search tags
 
-    for (let i = 0; i < stages.length; i++) {
-      tableHeaderData.push(<th>{stages[i].name}</th>);
-    }
+    // tableHeaderData.push( -
+    //   <th>
+    //     <input
+    //       onChange={this.enter_filter_tag}
+    //       placeholder="Search for a job"
+    //     />
+    //   </th>
+    // );
+
+    //no more stages for jobs
+
+    // for (let i = 0; i < stages.length; i++) {
+    //   tableHeaderData.push(<th>{stages[i].name}</th>);
+    // }
     return (
       <thead>
         <tr>{tableHeaderData}</tr>
@@ -177,7 +182,7 @@ class App extends Component {
     );
   }
 
-  buildDashboardData(applications) {
+  buildDashboardData(applications) { //maybe this for collapsable as well?
     let dashboardData = [];
     let filtered_apps = applications.filter(this.filterDashboardTableRow);
 
@@ -185,8 +190,14 @@ class App extends Component {
       dashboardData.push(this.buildDashboardTableRow(filtered_apps[i]));
     }
 
-    return <tbody>{dashboardData}</tbody>;
+    return( 
+        
+        <tbody>
+        {dashboardData}</tbody>
+
+    );
   }
+  
 
   updateApplicationStatus(applicationBase, applicationEventId, newStatus) {
     for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
@@ -199,6 +210,7 @@ class App extends Component {
 
   buildDashboardTableRow(applicationBase) {
     let tableRowData = [];
+
     this.state.alt = this.state.alt + 1; //increment alt by 1
     if (this.state.alt % 2 == 0) {
       //if divisible by two, set no color
@@ -230,24 +242,28 @@ class App extends Component {
     } else {
       color = "#ac9adb";
     }
-    tableRowData.push(
-      <td>
-        <CuteButton 
-          onClick={() => window.open(applicationBase.job.link)}
-        >Job Link
-        </CuteButton>
-      </td>
-    );
+
     tableRowData.push(<td>{applicationBase.job.company.name}</td>);
-    tableRowData.push(<td>{applicationBase.job.location}</td>);
-    tableRowData.push(
-      <td>
-        <CuteButton 
-          onClick={() => window.open("http://" + window.location.hostname +":8000/resumes/download?token=" + this.state.token + "&resume_id=" + applicationBase.resume_id)}
-        >{applicationBase.resume.name}
-        </CuteButton>
-      </td>
-    );
+
+    // tableRowData.push(
+    //   <td>
+    //     <CuteButton 
+    //       onClick={() => window.open(applicationBase.job.link)}
+    //     >Job Link
+    //     </CuteButton>
+    //   </td>
+    // );
+    
+    // tableRowData.push(<td>{applicationBase.job.location}</td>);
+
+    // tableRowData.push(
+    //   <td>
+    //     <CuteButton 
+    //       onClick={() => window.open("http://" + window.location.hostname +":8000/resumes/download?token=" + this.state.token + "&resume_id=" + applicationBase.resume_id)}
+    //     >{applicationBase.resume.name}
+    //     </CuteButton>
+    //   </td>
+    // );
     //tableRowData.push(<td>{applicationBase.resume.name}</td>);
 
     let tags = [];
@@ -272,32 +288,44 @@ class App extends Component {
         showTags.push(tags[x]); //build showTags with tags
       }
     }
+    
+    let rounds = []
+    rounds.push("Round 1");
+    rounds.push("Applied");
+    rounds.push("Round 2");
+    rounds.push("N/A");
+    rounds.push("Round 3");
+
+    const randomElement = rounds[Math.floor(Math.random() * rounds.length)];
 
     tableRowData.push(
       <td>
-        <DashboardContainer>{showTags}</DashboardContainer>
+        {randomElement}
       </td>
     );
 
-    for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
-      let e = applicationBase.applicationEvents[i];
-      tableRowData.push(
-        <td>
-          <Icon
-            id={e.id}
-            status={e.status}
-            applicationBaseId={e.applicationBaseId}
-            token={this.state.token}
-            key={e.id}
-            func={(status) =>
-              this.updateApplicationStatus(applicationBase, e.id, status)
-            }
-          />
-        </td>
-      );
-    }
+    // for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
+    //   let e = applicationBase.applicationEvents[i];
+    //   tableRowData.push(
+    //     <td>
+    //       <Icon
+    //         id={e.id}
+    //         status={e.status}
+    //         applicationBaseId={e.applicationBaseId}
+    //         token={this.state.token}
+    //         key={e.id}
+    //         func={(status) =>
+    //           this.updateApplicationStatus(applicationBase, e.id, status)
+    //         }
+    //       />
+    //     </td>
+    //   );
+    // }
+
     return (
-      <tr style={{ backgroundColor: this.state.color }}>{tableRowData}</tr>
+
+    <tr style={{ backgroundColor: this.state.color }}>{tableRowData}</tr>
+
     );
   }
 
