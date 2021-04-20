@@ -7,6 +7,12 @@ const CommentContainer = styled.div`
   margin-bottom: 10px;
 `;
 
+const NewCommentContainer = styled(CommentContainer)`
+  background: #f0f0f0;
+  padding: 10px;
+  border-radius: 10px;
+`;
+
 const ProfilePicContainer = styled.div`
   max-width: 60px;
   width: 100%;
@@ -40,7 +46,17 @@ const AuthorText = styled.p`
   font-weight: bold;
 `;
 
-
+const NewCommentInput = styled.textarea`
+  width: 100%;
+  font-size: 18px;
+  margin-top: auto;
+  margin-bottom: auto;
+  border: none;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 10px;
+  height: auto;
+`;
 
 class Comment extends React.Component {
   constructor(props) {
@@ -68,14 +84,87 @@ class Comment extends React.Component {
   }
 }
 
+class NewComment extends React.Component {
+  constructor(props) {
+    super(props);
+    this.token = props.token;
+    this.user = props.user;
+    this.post_id = props.post_id;
+    this.func = props.func;
+    this.state = {
+      newComment: "",
+    };
+    this.submitComment = this.submitComment.bind(this);
+  }
+
+  submitComment(event) {
+    event.preventDefault();
+    if (this.state.newComment.length > 2) {
+      this.func(this.state.newComment);
+      this.setState({ newComment: "" });
+    }
+  }
+
+  render() {
+    return (
+      <div>
+
+      <NewCommentContainer>
+        <ProfilePicContainer>
+          <ProfilePic src={this.user.pic} />
+        </ProfilePicContainer>
+        <NewCommentInput
+          value={this.state.newComment}
+          onKeyPress={(event) =>
+            event.key === "Enter" ? this.submitComment(event) : null
+          }
+          rows={Math.max(1, Math.ceil(this.state.newComment.length / 50) + 1)}
+          onChange={(event) =>
+            this.setState({ newComment: event.target.value })
+          }
+          placeholder="Write a reply.."
+        />
+      </NewCommentContainer>
+      </div>
+
+    );
+  }
+}
+
 class PostComment extends React.Component {
   constructor(props) {
     super(props);
+    this.user = props.user;
+    this.post_id = props.post_id;
     this.state = {
       comments: props.comments,
     };
     this.token = props.token;
   }
+
+  submitComment(commentText, post_id) {
+    fetch("http://" + window.location.hostname + ":8000/comments/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: commentText,
+        post_id: post_id,
+        token: this.token,
+      }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        let comments = this.state.comments;
+        comments.push(json);
+        this.setState({ comments: comments });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   render() {
     let comments;
     if (this.state.comments.length == 0) {
@@ -93,7 +182,16 @@ class PostComment extends React.Component {
         </div>
       );
     }
-    return <div>{comments}</div>;
+    return (
+      <div>
+        {comments}
+        <NewComment
+          func={(commentText) => this.submitComment(commentText, this.post_id)}
+          token={this.token}
+          user={this.user}
+        />
+      </div>
+    );
   }
 }
 

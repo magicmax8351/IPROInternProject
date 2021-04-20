@@ -7,6 +7,7 @@ import { MasterPostContainer, UserImage } from "../components/Post";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
+import GroupHeaderCard from "../components/GroupHeaderCard";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -21,11 +22,16 @@ const PostsContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: 10px;
+  max-width: 630px;
+  min-width: 500px;
+  width: 100%;
 `;
 
 const SidebarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 224px;
+  min-width: 100px;
 `;
 
 const SidebarContainer = styled.div`
@@ -34,6 +40,7 @@ const SidebarContainer = styled.div`
   padding: 10px;
   border-radius: 5px;
   margin-top: 10px;
+  max-width: 220px;
 `;
 
 const UserInput = styled.input`
@@ -57,39 +64,43 @@ const GreyGroupRow = styled.div`
   padding: 5px;
 `;
 
-const GroupRowButton = styled.button`
-  border: none;
-  background: none;
-`;
-
-const GroupRowName = styled.p`
+const GroupRowName = styled.a`
   font-size: 16px;
   margin: 0px;
+  color: black;
+  text-decoration-line: underline;
+`;
+
+const UserRowName = styled.p`
+  font-size: 16px;
+  margin: 0px;
+  color: black;
 `;
 
 const MakeNewPostButton = styled.button`
   background: #f0f0f0;
-  border: none;
   font-size: 18px;
   width: 100%;
   text-align: left;
   border-radius: 5px;
+  border: solid 1px;
 `;
 
 const NewPostContainer = styled(MasterPostContainer)`
   display: flex;
 `;
 
-class GroupFeed extends React.Component {
+const GroupDescription = styled.p`
+  margin-bottom: 0px;
+`;
+
+class GroupPage extends React.Component {
   constructor(props) {
     super(props);
-    if (document.location.pathname.includes("id")) {
-      const regex = /\/id\/[0-9]+/;
-      let match = document.location.pathname.match(regex)[0];
-      this.group_id = parseInt(match.substring(4));
-    } else {
-      this.group_id = -1;
-    }
+
+    const regex = /\/group\/.*/;
+    let match = document.location.pathname.match(regex)[0];
+    this.group_link = match.substring(7);
 
     this.state = {
       ready: 0,
@@ -110,8 +121,10 @@ class GroupFeed extends React.Component {
       showPostCommentsModal: false,
       postSubmitted: 0,
       groups_toggle: null,
+      user: null,
+      outOfPosts: false
     };
-    this.count = 50;
+    this.count = 5;
 
     this.submitPost = this.submitPost.bind(this);
     this.postList = this.postList.bind(this);
@@ -122,6 +135,7 @@ class GroupFeed extends React.Component {
     this.filterStringMatch = this.filterStringMatch.bind(this);
     this.filterPost = this.filterPost.bind(this);
     this.renderGroups = this.renderGroups.bind(this);
+    this.renderMembers = this.renderMembers.bind(this);
 
     this.getNewPostModal = this.getNewPostModal.bind(this);
     this.getPostSubmittedModal = this.getPostSubmittedModal.bind(this);
@@ -132,15 +146,6 @@ class GroupFeed extends React.Component {
     this.closeShowCommentsModal = this.closeShowCommentsModal.bind(this);
 
     this.setJobInfoId = this.setJobInfoId.bind(this);
-
-    this.checkbox_map = ["✖", "✔"];
-
-    if (this.group_id == -1) {
-      this.state.group = {
-        name: "All posts",
-        desc: "Your News Feed",
-      };
-    }
   }
 
   enter_filter(event) {
@@ -149,20 +154,37 @@ class GroupFeed extends React.Component {
 
   componentDidMount() {
     this.getMorePosts();
+
+    window.setInterval(() => {
+      if (this.state.loadNewPosts) {
+        this.getMorePosts();
+        this.setState({ loadNewPosts: false });
+      }
+    }, 250);
+
+
+    window.setInterval(() => {
+      if(document.documentElement.scrollHeight < window.innerHeight) {
+        this.setState({ loadNewPosts: true });
+      }
+    }, 250)
+
     if (this.group_id != -1) {
       fetch(
         "http://" +
           window.location.hostname +
-          ":8000/groups/get_id?group_id=" +
-          this.group_id
+          ":8000/groups/" +
+          this.group_link +
+          "/" +
+          this.state.token
       )
         .then((res) => res.json())
-        .then((json) => this.setState({ group: json }));
+        .then((json) => this.setState({ groupMembership: json }));
     }
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/groups/get?token=" +
+        ":8000/group/list?token=" +
         this.state.token
     )
       .then((res) => res.json())
@@ -174,9 +196,28 @@ class GroupFeed extends React.Component {
         }
         this.setState({ groups_toggle: groups_toggle });
       });
+
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/users/get?token=" +
+        this.state.token
+    )
+      .then((res) => res.json())
+      .then((json) => this.setState({ user: json }));
+
+    window.addEventListener("scroll", (event) => {
+      var _docHeight = document.documentElement.scrollHeight;
+      if (_docHeight - (window.scrollY + window.innerHeight) < 500) {
+        this.setState({ loadNewPosts: true });
+      }
+    });
   }
 
   getMorePosts() {
+    if(this.state.outOfPosts) {
+      return;
+    }
     fetch(
       "http://" +
         window.location.hostname +
@@ -186,33 +227,39 @@ class GroupFeed extends React.Component {
         this.count +
         "&start_id=" +
         this.state.start_id +
-        "&group_id=" +
-        this.group_id
+        "&group_link=" +
+        this.group_link + "&nonce=" + 
+        Math.floor(Math.random() * 25565), 
+      {
+        credentials: "include",
+        "Cache-Control": "no-store"
+      }
     )
       .then((res) => {
-        if (res.status != 200) {
-          window.location.replace("/login");
+        if (res.status == 200) {
+          return res.json();
+        } else if (res.status == 450) {
+          this.setState({ outOfPosts: true });
+          throw new Error("Out of posts!");
+        } else {
+          throw new Error("Something else broke!");
         }
-        return res.json();
       })
       .then((json) => {
         let posts_update = [...this.state.posts, ...json.posts];
+        if (posts_update.length == 0) {
+          return;
+        }
         this.setState({
           posts: posts_update,
           start_id: posts_update[posts_update.length - 1].id,
         });
-      });
+      })
+      .catch((error) => console.error(error));
+      
   }
 
   filterPost(post) {
-    if (!this.state.groups_toggle) {
-      return false;
-    }
-
-    if (!this.state.groups_toggle[post.group.id]) {
-      return false;
-    }
-
     let filter_targets = [
       post.body,
       post.job.name,
@@ -224,8 +271,8 @@ class GroupFeed extends React.Component {
     for (let i = 0; i < post.job.tags.length; i++) {
       filter_targets.push(post.job.tags[i].tag.tag);
     }
-
     let results = filter_targets.map(this.filterStringMatch);
+
     return results.some((x) => x == true);
   }
 
@@ -258,17 +305,19 @@ class GroupFeed extends React.Component {
     for (let i = 0; i < posts.length; i++) {
       out_posts.push(
         <Post
+          user={this.state.user}
           post={posts[i]}
           key={posts[i].id}
           token={this.state.token}
           jobInfoFunc={(dashboardStatus, applyFunc) =>
             this.setJobInfoId(posts[i].job, dashboardStatus, applyFunc)
           }
-          showCommentsFunc={() => 
+          showCommentsFunc={() =>
             this.setState({
               showCommentsData: posts[i].comments,
-              showPostCommentsModal: true
-            })}
+              showPostCommentsModal: true,
+            })
+          }
         />
       );
     }
@@ -295,6 +344,7 @@ class GroupFeed extends React.Component {
       })
       .catch((err) => {
         console.error(err);
+        window.location.replace("/login");
       });
   }
 
@@ -311,10 +361,7 @@ class GroupFeed extends React.Component {
       let g = this.state.groups[i];
       groups.push(
         <GreyGroupRow>
-          <GroupRowName>{g.name}</GroupRowName>
-          <GroupRowButton onClick={() => this.flipViewGroupState(g.id)}>
-            {this.checkbox_map[this.state.groups_toggle[g.id]]}
-          </GroupRowButton>
+          <GroupRowName href={"/group/" + g.link}>{g.name}</GroupRowName>
         </GreyGroupRow>
       );
       if (i + 1 != this.state.groups.length) {
@@ -322,10 +369,7 @@ class GroupFeed extends React.Component {
 
         groups.push(
           <WhiteGroupRow>
-            <GroupRowName>{g2.name}</GroupRowName>
-            <GroupRowButton onClick={() => this.flipViewGroupState(g2.id)}>
-              {this.checkbox_map[this.state.groups_toggle[g2.id]]}
-            </GroupRowButton>
+            <GroupRowName href={"/group/" + g2.link}>{g2.name}</GroupRowName>
           </WhiteGroupRow>
         );
       }
@@ -333,7 +377,31 @@ class GroupFeed extends React.Component {
     return groups;
   }
 
+  renderMembers() {
+    let members = [];
 
+    for (let i = 0; i < this.state.groupMembership.membership.length; i += 2) {
+      let m = this.state.groupMembership.membership[i].user;
+      members.push(
+        <GreyGroupRow>
+          <UserRowName>
+            {m.fname} {m.lname}
+          </UserRowName>
+        </GreyGroupRow>
+      );
+      if (i + 1 != this.state.groupMembership.membership.length) {
+        let m2 = this.state.groupMembership.membership[i + 1].user;
+        members.push(
+          <WhiteGroupRow>
+            <UserRowName>
+              {m2.fname} {m2.lname}
+            </UserRowName>
+          </WhiteGroupRow>
+        );
+      }
+    }
+    return members;
+  }
 
   getNewPostModal() {
     let newModal = (
@@ -350,6 +418,7 @@ class GroupFeed extends React.Component {
             token={this.state.token}
             dashboard_add={false}
             func={this.submitPost}
+            force_group={this.state.groupMembership.group}
           />
         </Modal.Body>
       </Modal>
@@ -378,8 +447,6 @@ class GroupFeed extends React.Component {
     );
   }
 
-
-
   closeNewPostModal() {
     this.setState({ showNewPostModal: false });
   }
@@ -406,10 +473,17 @@ class GroupFeed extends React.Component {
     if (!this.state.token) {
       document.location.replace("/login");
     }
+
+    if (this.state.user == null || this.state.groupMembership == null) {
+      return null;
+    }
+
     let renderedPosts = this.postList(this.state.posts);
     let renderedGroups = this.renderGroups();
     let newPostModal = this.getNewPostModal();
     let postSubmittedModal = this.getPostSubmittedModal();
+    let renderedMembers = this.renderMembers();
+
     return (
       <div>
         {newPostModal}
@@ -429,6 +503,10 @@ class GroupFeed extends React.Component {
             </SidebarContainer>
           </SidebarFlexContainer>
           <PostsContainer>
+            <GroupHeaderCard
+              token={this.state.token}
+              group={this.state.groupMembership.group}
+            />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
               <MakeNewPostButton
@@ -437,13 +515,25 @@ class GroupFeed extends React.Component {
                 Make a new post...
               </MakeNewPostButton>
             </NewPostContainer>
+
             {renderedPosts}
-            <button onClick={this.getMorePostsButton}>Get More Posts!</button>
           </PostsContainer>
+          <SidebarFlexContainer>
+            <SidebarContainer>
+              <h4>description</h4>
+              <GroupDescription>
+                {this.state.groupMembership.group.desc}
+              </GroupDescription>
+            </SidebarContainer>
+            <SidebarContainer>
+              <h4>members</h4>
+              {renderedMembers}
+            </SidebarContainer>
+          </SidebarFlexContainer>
         </FeedContainer>
       </div>
     );
   }
 }
 
-export default GroupFeed;
+export default GroupPage;

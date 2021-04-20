@@ -64,7 +64,8 @@ class ResumeModel(BaseModel):
     id: Optional[int]
     name: str
     filename: str
-    date: datetime.datetime
+    date: Optional[datetime.datetime]
+    token: Optional[str]
 
 class StageORM(Base):
     __tablename__ = "stage"
@@ -103,6 +104,22 @@ class SettingsModel(BaseModel):
     id: Optional[int]
     visibility: str
 
+class MembershipORM(Base):
+    __tablename__ = "membership"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    uid = Column(Integer, ForeignKey("user.id"))
+    group_membership_id = Column(Integer, ForeignKey("group_membership.id"))
+    user = relationship("UserORM")
+
+class MembershipModel(BaseModel):
+    class Config:
+        orm_mode = True
+    id: Optional[int]
+    uid: int
+    group_membership_id: int
+    user: Optional[UserModel]
+
 class GroupORM(Base):
     __tablename__ = "group"
     metadata = metadata
@@ -110,30 +127,39 @@ class GroupORM(Base):
     name = Column(String(32), nullable=False)
     icon = Column(String(32), nullable=False) 
     desc = Column(String(256), nullable=False)
+    background = Column(String(128), nullable=False)
+    privacy = Column(Integer) # 0 = public, 1 = unlisted, 2 = private
+    link = Column(String(64), unique=True)
 
 class GroupModel(BaseModel):
     class Config:
         orm_mode = True
     id: Optional[int]
-    name: str
-    icon: str
-    desc: str
+    name: Optional[str]
+    icon: Optional[str]
+    desc: Optional[str]
+    background: Optional[str]
+    privacy: Optional[int]
+    activeUserInGroup: Optional[bool]
+    key: Optional[int]
+    token: Optional[str]
+    link: Optional[str]
 
-class MembershipORM(Base):
-    __tablename__ = "membership"
+class GroupMembershipORM(Base):
+    __tablename__ = "group_membership"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
-    permission = Column(Integer)
+    membership = relationship("MembershipORM")
+    group = relationship("GroupORM")
 
-class MembershipModel(BaseModel):
+class GroupMembershipModel(BaseModel):
     class Config:
         orm_mode = True
     id: Optional[int]
-    permission: int
-    # [group id relationship model]
-    # # [user id relationship model]  
+    group_id: Optional[int]
+    membership: Optional[List[MembershipModel]]
+    group: Optional[GroupModel]
 
 class CommentORM(Base):
     __tablename__ = "comment"
@@ -144,7 +170,6 @@ class CommentORM(Base):
     post_id = Column(Integer, ForeignKey("post.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     user = relationship("UserORM")
-
 
 class CommentModel(BaseModel):
     class Config:
@@ -158,18 +183,19 @@ class CommentModel(BaseModel):
     token: Optional[str]
     user: Optional[UserModel]
 
-
 class CompanyORM(Base):
     __tablename__ = "company"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(32), nullable=False) 
+    logoFile = Column(String(32), nullable=True)
 
 class CompanyModel(BaseModel):
     id: Optional[int]
     name: str
     token: Optional[str]
     key: Optional[int]
+    logoFile: str
 
     class Config:
         orm_mode = True
@@ -231,6 +257,25 @@ class JobModel(BaseModel):
 
     class Config:
         orm_mode = True
+    
+class UserPostLikeORM(Base):
+    __tablename__ = "userPostLikes"
+    metadata = metadata
+    id = Column(Integer, primary_key=True, nullable=False)
+    post_id = Column(Integer, ForeignKey("post.id"))
+    uid = Column(Integer, ForeignKey("user.id"))
+    like = Column(Integer)
+    dashboard = Column(Integer)
+
+class UserPostLikeModel(BaseModel):
+    id: Optional[int]
+    post_id: Optional[int]
+    uid: Optional[int]
+    like: Optional[int]
+    dashboard: Optional[int]
+    
+    class Config:
+        orm_mode = True
 
 class PostORM(Base):
     __tablename__ = "post"
@@ -241,10 +286,11 @@ class PostORM(Base):
     job_id = Column(Integer, ForeignKey("job.id"))
     uid = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
-    group = relationship("GroupORM")
     job = relationship("JobORM")
     comments = relationship("CommentORM")
     user = relationship("UserORM")
+    group = relationship("GroupORM")
+    activity = relationship("UserPostLikeORM")
 
 class PostModel(BaseModel):
     class Config:
@@ -260,12 +306,13 @@ class PostModel(BaseModel):
     group_id: Optional[int]
     token: Optional[str]
     user: Optional[UserModel]
-    group: Optional[GroupModel]
     job: Optional[JobModel]
     comments: Optional[List[CommentModel]]
     applied: Optional[int]
     key: Optional[int]
-
+    group: Optional[GroupModel]
+    activity: Optional[List[UserPostLikeModel]]
+    userLike: Optional[int]
 
 class ApplicationEventModel(BaseModel):
     id: Optional[int]
@@ -289,6 +336,7 @@ class ApplicationBaseORM(Base):
     __table_args__ = (UniqueConstraint('job_id', 'uid', name='_job_id_uid'),
                      )
     job = relationship("JobORM")
+    resume = relationship("ResumeORM")
     applicationEvents = relationship("ApplicationEventORM")
 
 class ApplicationEventORM(Base):
@@ -306,11 +354,11 @@ class ApplicationBaseModel(BaseModel):
     job_id: Optional[int]
     uid: Optional[int]
     resume_id: Optional[int]
+    resume: Optional[ResumeModel]
     applicationEvents: Optional[List[ApplicationEventModel]]
     token: Optional[str]
     key: Optional[int]
     job: Optional[JobModel]
-    
 
     class Config:
         orm_mode = True

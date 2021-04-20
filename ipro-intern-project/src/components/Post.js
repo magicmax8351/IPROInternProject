@@ -8,11 +8,11 @@ import Button from "react-bootstrap/Button";
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
 
 const MasterPostContainer = styled.div`
-  max-width: 700px;
   background-color: white;
   padding: 5px;
   border-radius: 5px;
   margin-bottom: 10px;
+  width: 100%;
 `;
 
 const Container = styled.div`
@@ -51,6 +51,7 @@ const PostAuthor = styled.p`
   font-style: italic;
   margin-bottom: 0px;
   display: inline-block;
+  white-space: nowrap;
 `;
 
 const UserImage = styled.img`
@@ -71,6 +72,7 @@ const PostButton = styled.button`
   padding-left: 10px;
   padding-right: 10px;
   transition: 0.1s all ease-out;
+  white-space: nowrap;
 
   &:hover {
     background-color: #a7a5c6;
@@ -78,10 +80,26 @@ const PostButton = styled.button`
   }
 `;
 
-const ButtonContainer = styled.div`
+const RowFlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  margin: 10px;
+  width: 100%;
+`;
+
+const ButtonContainer = styled(RowFlexContainer)`
+  padding: 5px;
+`;
+
+const WideDiv = styled.div`
+  max-width: 100%;
+  display: flex;
+  flex-flow: nowrap;
+`;
+
+const ThumbButton = styled.button`
+  border: none;
+  background: none;
+  font-size: 10pt;
 `;
 
 class Post extends React.Component {
@@ -92,17 +110,26 @@ class Post extends React.Component {
       showPostCommentsModal: false,
       showJobInfoModal: false,
     };
-
     this.addJobButtonText = ["add to dashboard", "in your dashboard"];
+    this.likeIcon = ["⚫", "👍"];
+
+    this.user = props.user;
     this.token = props.token;
     this.addJobFromPost = this.addJobFromPost.bind(this);
     this.getJobInfoModal = this.getJobInfoModal.bind(this);
     this.getPostCommentsModal = this.getPostCommentsModal.bind(this);
     this.getButtonText = this.getButtonText.bind(this);
+    this.likePost = this.likePost.bind(this);
   }
 
   getButtonText() {
-    return this.addJobButtonText[this.state.post.applied];
+    let dashboardAdditions = this.calcDashboardAdditions(
+      this.state.post.activity,
+      this.state.post.applied,
+      this.user.id,
+      this.state.post
+    );
+    return this.addJobButtonText[this.state.post.applied] + " (" + dashboardAdditions + ")";
   }
 
   addJobFromPost() {
@@ -120,7 +147,7 @@ class Post extends React.Component {
       .then((res) => {
         if (res.status == 200) {
           let post_update = this.state.post;
-          post_update["applied"] = 1;
+          post_update.applied = 1;
           this.setState({ post: post_update });
         } else if (res.status == 411) {
           this.setState({ addJobState: 1 });
@@ -131,6 +158,36 @@ class Post extends React.Component {
       })
       .catch((error) => {
         alert(error);
+      });
+  }
+
+  likePost() {
+    let like = (this.state.post.userLike + 1) % this.likeIcon.length;
+    let newPost = this.state.post;
+    newPost.userLike = like;
+    this.setState({ post: newPost });
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/posts/like?post_id=" +
+        this.state.post.id +
+        "&like=" +
+        like +
+        "&dashboard=" +
+        this.state.post.applied,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => res.status)
+      .then((status) => {
+        if (status != 200) {
+          alert("Failed to like post!");
+        }
       });
   }
 
@@ -145,7 +202,12 @@ class Post extends React.Component {
           <Modal.Title>comments</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <PostComment comments={this.state.post.comments} />
+          <PostComment
+            post_id={this.state.post.id}
+            comments={this.state.post.comments}
+            token={this.token}
+            user={this.user}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -153,12 +215,6 @@ class Post extends React.Component {
             onClick={() => this.setState({ showPostCommentsModal: false })}
           >
             Close
-          </Button>
-
-          <Button
-          variant="primary"
-          >
-            post new comment
           </Button>
         </Modal.Footer>
       </Modal>
@@ -187,6 +243,38 @@ class Post extends React.Component {
     return newModal;
   }
 
+  calcDashboardAdditions(activityArray, userDashboard, uid, post) {
+    if(activityArray == null || userDashboard == null) {
+      return 0;
+    }
+    let count = 0;
+    for (let i = 0; i < activityArray.length; i++) {
+      if (activityArray[i].dashboard == 1 && activityArray[i].uid != uid) {
+        count += 1;
+      }
+    }
+    if (userDashboard == 1 && post.uid != uid) {
+      count += 1;
+    }
+    return count;
+  }
+
+  calcLikes(activityArray, userLike, userId) {
+    if(activityArray == null || userLike == null) {
+      return 0;
+    }
+    let count = 0;
+    for (let i = 0; i < activityArray.length; i++) {
+      if (activityArray[i].like != 0 && activityArray[i].uid != userId) {
+        count += 1;
+      }
+    }
+    if (userLike != 0) {
+      count += 1;
+    }
+    return count;
+  }
+
   render() {
     let jobInfoModal = this.getJobInfoModal();
     let postCommentsModal = this.getPostCommentsModal();
@@ -196,16 +284,38 @@ class Post extends React.Component {
         {jobInfoModal}
         {postCommentsModal}
         <MasterPostContainer>
-          <div>
-            <UserImage src={this.state.post.user.pic} />
-            <PostAuthor>
-              {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
-              {this.state.post.group.name}{" "}
-            </PostAuthor>
-          </div>
+          <RowFlexContainer>
+            <WideDiv>
+              <UserImage src={this.state.post.user.pic} />
+              <PostAuthor>
+                {this.state.post.user.fname} {this.state.post.user.lname} |{" "}
+                {this.state.post.group.name}{" "}
+              </PostAuthor>
+            </WideDiv>
+            <div>
+              <PostAuthor>
+                {this.calcLikes(
+                  this.state.post.activity,
+                  this.state.post.userLike,
+                  this.user.id
+                )}{" "}
+                |{" "}
+              </PostAuthor>
+              <ThumbButton onClick={this.likePost}>
+                {this.likeIcon[this.state.post.userLike]}
+              </ThumbButton>
+            </div>
+          </RowFlexContainer>
           <Container>
             <CompanyInfoContainer>
-              <CompanyLogo src="https://cdn.pixabay.com/photo/2013/02/12/09/07/microsoft-80660_960_720.png" />
+              <CompanyLogo
+                src={
+                  "http://" +
+                  window.location.hostname +
+                  ":8000/companies/logo/download?company_id=" +
+                  this.state.post.job.company.id
+                }
+              />
               <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
               <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
               <CompanyInfo>Posted 3/23</CompanyInfo>
@@ -228,7 +338,7 @@ class Post extends React.Component {
             >
               comments ({this.state.post.comments.length})
             </PostButton>
-            <PostButton onClick={this.addJobFromPost}>
+            <PostButton disabled={this.state.post.applied == 1} onClick={this.addJobFromPost}>
               {this.getButtonText()}
             </PostButton>
             <PostButton onClick={() => window.open(this.state.post.job.link)}>

@@ -18,15 +18,16 @@ class NewPost extends React.Component {
     this.func = props.func;
     this.token = props.token;
     this.state = {
-      company_id: props.company_id,
+      company_id: (props.company_id != null) ? props.company_id : -1,
       job_id: props.job_id,
-      group_id: null,
+      group_id: (props.force_group != null) ? props.force_group.id : -1,
       jobs: null,
       companies: null,
       groups: null,
       body: props.body,
       dashboard_add: props.dashboard_add,
       new_company_name: null,
+      force_group: props.force_group
     };
 
     this.dropdown_change = this.dropdown_change.bind(this);
@@ -43,6 +44,7 @@ class NewPost extends React.Component {
     this.enter_group = this.enter_group.bind(this);
 
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
+    this.enter_new_company_logo = this.enter_new_company_logo.bind(this);
     this.submitAddCompany = this.submitAddCompany.bind(this);
 
     this.enter_new_job_name = this.enter_new_job_name.bind(this);
@@ -76,7 +78,7 @@ class NewPost extends React.Component {
     fetch(
       "http://" +
         window.location.hostname +
-        ":8000/groups/get?token=" +
+        ":8000/group/list?token=" +
         this.token
     )
       .then((res) => res.json())
@@ -97,6 +99,10 @@ class NewPost extends React.Component {
 
   enter_new_company_name(event) {
     this.setState({ new_company_name: event.target.value });
+  }
+
+  enter_new_company_logo(event) {
+    this.setState({ new_company_logo: event.target.files[0] });
   }
 
   enter_group(event) {
@@ -127,7 +133,45 @@ class NewPost extends React.Component {
   }
 
   submitAddCompany(event) {
-    event.preventDefault();
+
+    
+    event.preventDefault()
+    if(this.state.new_company_logo != null && this.state.new_company_name.length > 2) {
+      // upload company logo here
+      
+      let form = new FormData();
+      form.append("logoFile", this.state.new_company_logo);
+      fetch("http://" + window.location.hostname + ":8000/companies/logo/upload", {
+        method: "POST",
+        body: form
+      })
+      .then((res) => res.json())
+      .then((json) => {
+
+        fetch("http://" + window.location.hostname + ":8000/companies/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: this.state.new_company_name,
+            logoFile: json.logoFile,
+            token: this.token
+          }),
+        })
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            companies: [...this.state.companies, json],
+            company_id: json.id,
+            job_id: 0
+          });
+        });
+
+      });
+    }
+
+    /*event.preventDefault();
     if (this.state.new_company_name.length > 2) {
       fetch("http://" + window.location.hostname + ":8000/companies/add", {
         method: "POST",
@@ -146,7 +190,7 @@ class NewPost extends React.Component {
             company_id: this.state.companies.length,
           });
         });
-    }
+    }*/
   }
 
   submitAddJob(event) {
@@ -179,8 +223,8 @@ class NewPost extends React.Component {
   submitPost(event) {
     event.preventDefault();
     if (
-      this.state.job_id > 0 &&
-      this.state.company_id > 0 &&
+      parseInt(this.state.job_id) > 0 &&
+      parseInt(this.state.company_id) > 0 &&
       this.state.group_id > 0 &&
       this.state.body.length > 1
     ) {
@@ -191,10 +235,12 @@ class NewPost extends React.Component {
         group_id: this.state.group_id,
       };
       this.func(post);
+    } else {
+      console.log(this.state);
     }
   }
 
-  renderDropdown(dropdownName, dropdownItems, state_name, func) {
+  renderDropdown(dropdownName, dropdownItems, state_name, func, disabled) {
     let items = [];
     let item = 0;
     for (var i = 0; i < dropdownItems.length; i++) {
@@ -208,6 +254,7 @@ class NewPost extends React.Component {
         onChange={func}
         name={dropdownName}
         id={state_name}
+        disabled={disabled}
       >
         {items}
       </Form.Control>
@@ -248,7 +295,8 @@ class NewPost extends React.Component {
           "Companies",
           companies,
           "company_id",
-          this.enter_company
+          this.enter_company,
+          false
         )}
       </Form.Group>
     );
@@ -272,9 +320,6 @@ class NewPost extends React.Component {
       }
     } else {
       jobs.push([-1, "Please select..."]);
-      if (this.state.company_id === -1) {
-        return null;
-      }
 
       for (let i = 0; i < this.state.jobs.length; i++) {
         if (this.state.jobs[i].company_id == this.state.company_id) {
@@ -290,7 +335,7 @@ class NewPost extends React.Component {
     return (
       <Form.Group>
         <Form.Label>Job title:</Form.Label>
-        {this.renderDropdown("Jobs", jobs, "job_id", this.enter_job)}
+        {this.renderDropdown("Jobs", jobs, "job_id", this.enter_job, (this.state.company_id == -1))}
       </Form.Group>
     );
   }
@@ -310,6 +355,12 @@ class NewPost extends React.Component {
               />
             </Form.Group>
           </Form.Row>
+          <Form.Row>
+            <Form.Group as={Col}>
+              <Form.Label>Company Logo</Form.Label>
+              <Form.Control onChange={this.enter_new_company_logo} type="file" />
+            </Form.Group>
+          </Form.Row>
           <Button
             variant="primary"
             type="submit"
@@ -320,11 +371,6 @@ class NewPost extends React.Component {
         </Form>
       );
     }
-  }
-
-  submitForm(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
   }
 
   renderAddJob() {
@@ -382,19 +428,19 @@ class NewPost extends React.Component {
     } else {
       value = "";
     }
-    let id = "body";
     //   Markdown editor: https://uiwjs.github.io/react-md-editor/
 
-    if (this.state.job_id !== -1 && this.state.company_id !== -1) {
-      return (
-        <Form.Group>
-          <Form.Label>Body</Form.Label>
-          <Form.Control as="textarea" rows={5} value={this.state.body} onChange={this.enter_body}/> 
-        </Form.Group>
-      );
-    } else {
-      return null;
-    }
+    return (
+      <Form.Group>
+        <Form.Label>Body</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={5}
+          value={this.state.body}
+          onChange={this.enter_body}
+        />
+      </Form.Group>
+    );
   }
 
   renderChooseGroups() {
@@ -407,15 +453,19 @@ class NewPost extends React.Component {
 
     let groups = [[-1, "Please select..."]];
 
-    for (let i = 0; i < this.state.groups.length; i++) {
-      if (1) {
-        groups.push([this.state.groups[i].id, this.state.groups[i].name]);
+    if (this.state.force_group != null) {
+      groups = [[this.state.force_group.id, this.state.force_group.name]];
+    } else {
+      for (let i = 0; i < this.state.groups.length; i++) {
+        if (1) {
+          groups.push([this.state.groups[i].id, this.state.groups[i].name]);
+        }
       }
     }
     return (
       <Form.Group>
         <Form.Label>Group to Share</Form.Label>
-        {this.renderDropdown("Jobs", groups, "job_id", this.enter_group)}
+        {this.renderDropdown("Jobs", groups, "job_id", this.enter_group, false)}
       </Form.Group>
     );
   }

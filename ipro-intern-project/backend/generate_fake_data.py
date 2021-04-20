@@ -52,41 +52,7 @@ def gen_fake_data():
     The C++ teams work on applications where C++ is used for computational heavy-lifting and for applications that have timing-critical, low-latency processes such as trading strategies. C++ provides the flexibility and low-level control that our developers need to get maximum performance out of multi-core, super-scalar processors. No previous experience in finance or trading is required. Training and continuous education is provided for all engineers to ensure they have the skills and knowledge needed to be successful.        
     """
     
-    # Add some groups
-    groups = []
-    groups.append(
-        GroupORM(name="ACM @ IIT",
-                 icon="/var/www/images/acm_logo.png",
-                 desc="Advancing Computing as a Science & Profession"))
-    groups.append(
-        GroupORM(name="AEPKS",
-                 icon="/var/www/images/pks_logo.png",
-                 desc="Men of Honor"))
-    groups.append(
-        GroupORM(name="Tesla Fan Club",
-                 icon="/var/www/images/pks_logo.png",
-                 desc="I love Elon's Musk"))
 
-    # Randomly generate a heck ton of groups:
-
-    for i in range(3):
-        groups.append(
-            GroupORM(
-                name=lipsum.paragraph(
-                    nb_sentences=1,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:4],
-                icon="/fake/image.png",
-                desc=lipsum.paragraph(
-                    nb_sentences=1,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split())[:8]
-            )
-        )
-        
-    for g in groups:
-        s.add(g)
-    s.commit()
 
     icons = [
         "/profile_pictures/p1.svg",
@@ -106,12 +72,19 @@ def gen_fake_data():
             state="IL"
         )
     )
-    for x in range(3):
+    used_emails = set()
+
+    for x in range(50):
+        usr_email = email.ascii_free_email()
+        if usr_email in used_emails:
+            continue
+        used_emails.add(usr_email)
+
         users.append(
             UserModel(fname=fake.first_name(),
                     lname=fake.last_name(),
                     password=fake.last_name(),
-                    email=email.ascii_free_email(),
+                    email=usr_email,
                     pic=random.choice(icons),
                     graddate=datetime.date(year=2020, month=9, day=9),
                     city="Chicago",
@@ -121,6 +94,58 @@ def gen_fake_data():
 
     adminUser = get_user(1)
 
+    token = login_user(LoginData(
+        email="admin",
+        password="admin"
+    )).token.val
+
+        # Add some groups
+    groups = []
+
+    groupImages = [
+        "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
+        "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
+        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
+    ]
+    groups.append(
+        GroupModel(name="ACM @ IIT",
+                 icon="/var/www/images/acm_logo.png",
+                 desc="Advancing Computing as a Science & Profession",
+                 privacy=0))
+    groups.append(
+        GroupModel(name="AEPKS",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="Men of Honor",
+                 privacy=0))
+    groups.append(
+        GroupModel(name="Tesla Fan Club",
+                 icon="/var/www/images/pks_logo.png",
+                 desc="I love Elon's Musk",
+                 privacy=0))
+
+    # Randomly generate a heck ton of groups:
+
+    for i in range(3):
+        groups.append(
+            GroupModel(
+                name=lipsum.paragraph(
+                    nb_sentences=1,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:4],
+                icon="/fake/image.png",
+                desc=lipsum.paragraph(
+                    nb_sentences=8,
+                    variable_nb_sentences=False,
+                    ext_word_list=word_list.split())[:256],
+                privacy=0,
+                background=random.choice(groupImages)
+            )
+        )
+    
+    added_groups = []
+    for g in groups:
+        added_groups.append(add_group(g, token))
+    
     print("Added sample users to DB")
 
     def uid():
@@ -128,11 +153,11 @@ def gen_fake_data():
 
     # Add some companies
     companies = []
-    companies.append(CompanyORM(name="Google"))
-    companies.append(CompanyORM(name="JPMorgan Chase"))
-    companies.append(CompanyORM(name="Uber"))
-    companies.append(CompanyORM(name="Citadel"))
-    companies.append(CompanyORM(name="Boeing"))
+    companies.append(CompanyORM(name="Google", logoFile="google_logo.jpg"))
+    companies.append(CompanyORM(name="JPMorgan Chase", logoFile="chase_logo.jpg"))
+    companies.append(CompanyORM(name="Uber", logoFile="uber_logo.jfif"))
+    companies.append(CompanyORM(name="Citadel", logoFile="citadel_logo.jfif"))
+    companies.append(CompanyORM(name="Boeing", logoFile="boeing_logo.jfif"))
 
     for c in companies:
         s.add(c)
@@ -145,7 +170,7 @@ def gen_fake_data():
     # Add some jobs
 
 
-    fake_job_urls = ['https://myjob.me', 'https://ilovemartainshray.jobs', 'https://microsoft.gov']
+    fake_job_urls = ["https://www.coinbase.com/careers/positions/1724688?gh_jid=1724688", "https://www.job.com/job/marketing-director-in-chicago-il/47904624"]
     jobs = []
     for i in range(10):
         jobs.append(
@@ -163,29 +188,8 @@ def gen_fake_data():
     s.commit()
     print("Added sample jobs to DB")
 
-    # Adding group membership
-
-    membership = []
-    for user in users:
-        for group in groups:
-            if random.randint(0, 2) == 1:
-                membership.append(
-                    MembershipORM(
-                        uid=user.id,
-                        group_id=group.id,
-                        permission=random.randint(0, 3)
-                    )
-                )
-
-    for m in membership:
-        s.add(m)
-
-    s.commit()
-    print("Added membership to DB")
-
-
     def g_id():
-        return random.choice(s.query(GroupORM).all()).id
+        return random.choice(added_groups).id
 
     # Add some posts
 
@@ -218,6 +222,32 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     def post_id():
         return random.choice(s.query(PostORM).all()).id
 
+    print("Adding some post likes!")
+    likes = []
+    likes_test = {}
+    for i in range(100):
+        for j in range(50):
+            if i in likes_test:
+                if j in likes_test[i]:
+                    continue
+                else:
+                    likes_test[i].append(j)
+            else:
+                likes_test[i] = [j]
+            
+
+            likes.append(
+                UserPostLikeORM(
+                    uid=uid(),
+                    post_id=post_id(),
+                    like=random.randint(0,1),
+                    dashboard=random.randint(0, 1)
+                )
+            )
+
+    s.add_all(likes)
+    s.commit()
+
     comments = []
     for i in range(1000):
         comments.append(
@@ -247,7 +277,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
 
     admin_resume = ResumeORM(
         name="admin_resume",
-        filename="/var/www/resume.pdf",
+        filename="resume.pdf",
         date=datetime.datetime.now(),
         uid=adminUser.id
     )
@@ -277,7 +307,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
                     date=datetime.datetime.now(),
                     applicationBaseId=app.id,
                     stage_id=stage.id,
-                    status=(random.randint(0,2))
+                    status=(random.randint(0,1))
                 )
             )
 

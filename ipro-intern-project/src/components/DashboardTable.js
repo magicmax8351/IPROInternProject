@@ -63,7 +63,7 @@ class App extends Component {
     this.setState({ filter: event.target.value });
   }
 
-  addApplication(job_id) {
+  addApplication(job_id, resume_id) {
     fetch("http://" + window.location.hostname + ":8000/applications/add", {
       method: "POST",
       headers: {
@@ -72,12 +72,12 @@ class App extends Component {
       body: JSON.stringify({
         job_id: job_id,
         token: this.state.token,
-        resume_id: 1,
+        resume_id: resume_id,
       }),
     })
       .then((res) => {
         if (res.status == 200) {
-          alert("Job succesfully added!");
+          //alert("Job succesfully added!");
           return res.json();
         } else if (res.status == 411) {
           throw new Error("Job already added!");
@@ -91,7 +91,8 @@ class App extends Component {
       .catch((error) => {
         alert(error);
       })
-      .then((res) => {
+      // I think this code was accidentally duplicated
+      /*.then((res) => {
         if (res.status == 200) {
           return res.json();
         } else if (res.status == 411) {
@@ -105,7 +106,7 @@ class App extends Component {
       })
       .catch((error) => {
         alert(error);
-      });
+      });*/
   }
 
   componentDidMount() {
@@ -150,7 +151,7 @@ class App extends Component {
       "Link",
       "Company Name",
       "Location",
-      "Resume ID",
+      "Resume",
     ];
     // Include metadata as specified by body. See `buildDashboardTableRow`.
     for (let i = 0; i < metadata_stages.length; i++) {
@@ -231,14 +232,23 @@ class App extends Component {
     }
     tableRowData.push(
       <td>
-        <a style={{ color: color }} href={applicationBase.job.link}>
-          {applicationBase.job.link}
-        </a>
+        <CuteButton 
+          onClick={() => window.open(applicationBase.job.link)}
+        >Job Link
+        </CuteButton>
       </td>
     );
     tableRowData.push(<td>{applicationBase.job.company.name}</td>);
     tableRowData.push(<td>{applicationBase.job.location}</td>);
-    tableRowData.push(<td>{applicationBase.resume_id}</td>);
+    tableRowData.push(
+      <td>
+        <CuteButton 
+          onClick={() => window.open("http://" + window.location.hostname +":8000/resumes/download?token=" + this.state.token + "&resume_id=" + applicationBase.resume_id)}
+        >{applicationBase.resume.name}
+        </CuteButton>
+      </td>
+    );
+    //tableRowData.push(<td>{applicationBase.resume.name}</td>);
 
     let tags = [];
     let jobTags_filtered = applicationBase.job.tags.filter((x) =>
