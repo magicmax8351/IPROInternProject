@@ -16,6 +16,9 @@ const FeedContainer = styled.div`
   display: flex;
   justify-content: center;
   justify-content: center;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const PostsContainer = styled.div`
@@ -24,7 +27,6 @@ const PostsContainer = styled.div`
   margin: 10px;
   max-width: 630px;
   min-width: 500px;
-  width: 100%;
 `;
 
 const SidebarFlexContainer = styled.div`
@@ -32,6 +34,7 @@ const SidebarFlexContainer = styled.div`
   flex-direction: column;
   margin-top: 224px;
   min-width: 100px;
+  width: 40%;
 `;
 
 const SidebarContainer = styled.div`
@@ -40,7 +43,6 @@ const SidebarContainer = styled.div`
   padding: 10px;
   border-radius: 5px;
   margin-top: 10px;
-  max-width: 220px;
 `;
 
 const UserInput = styled.input`

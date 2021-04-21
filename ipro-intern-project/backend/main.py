@@ -225,8 +225,15 @@ def add_post(new_post: PostModel):
 
     orm_session.add(new_post_orm)
     orm_session.commit()
+
+    like = UserPostLikeORM(uid=uid, post_id=new_post_orm.id, like=1, dashboard=0)
+    orm_session.add(like)
+
+
     ret = PostModel.from_orm(new_post_orm)
     ret.key = ret.id
+    ret.userLike = 1
+
     applied = orm_session.query(ApplicationBaseORM).filter(
         ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
     if applied:
@@ -306,15 +313,18 @@ def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("
 
     s = orm_parent_session()
     try:
-        like = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
-        like.like = like
-        like.dashboard = dashboard
+        likeObj = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
+        likeObj.like = like
+        likeObj.dashboard = dashboard
     except NoResultFound:
-        like = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
-        s.add(like)
+        likeObj = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
+        s.add(likeObj)
+    except MultipleResultsFound:
+        print(f"Multiple results found! UID: {uid} Post_id: {post_id}")
+        return
 
     s.commit()
-    likeModel = UserPostLikeModel.from_orm(like)
+    likeModel = UserPostLikeModel.from_orm(likeObj)
     s.close()
     return likeModel
 

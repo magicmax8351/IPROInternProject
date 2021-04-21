@@ -101,7 +101,7 @@ class JobInfo extends React.Component {
       <MasterPostContainer>
         <Container>
           <CompanyInfoContainer>
-            <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.state.post.job.company.id} />
+            <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.job.company.id} />
             <CompanyInfo>{this.job.company.name}</CompanyInfo>
             <CompanyInfo>{this.job.location}</CompanyInfo>
           </CompanyInfoContainer>
