@@ -84,7 +84,6 @@ class Navbar extends React.Component {
     super(props);
     this.user = props.user;
     this.loading = props.loading;
-    console.log(props);
   }
   render() {
     let userDiv = null;

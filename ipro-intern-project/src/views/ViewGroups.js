@@ -111,7 +111,7 @@ class ViewGroups extends React.Component {
       showMyGroups: true,
       sortMethod: "alphabetical",
       joinNewGroupModal: false,
-      showNewGroupModal: false
+      showNewGroupModal: false,
     };
 
     this.enter_filter = this.enter_filter.bind(this);
@@ -142,7 +142,7 @@ class ViewGroups extends React.Component {
   }
 
   memberSort(a, b) {
-    if(a.memberCount > b.memberCount) {
+    if (a.memberCount > b.memberCount) {
       return -1;
     } else if (b.memberCount > a.memberCount) {
       return 1;
@@ -202,8 +202,7 @@ class ViewGroups extends React.Component {
     )
       .then((res) => res.json())
       .then((json) => {
-        let groupsSorted = json
-          .sort(this.alphabeticalSort)
+        let groupsSorted = json.sort(this.alphabeticalSort);
         this.setState({ groups: groupsSorted });
       });
   }
@@ -213,22 +212,31 @@ class ViewGroups extends React.Component {
       return null;
     }
 
-    let groups_sorted = this.state.groups
-    if(this.state.sortMethod == "alphabetical") {
+    let groups_sorted = this.state.groups;
+    if (this.state.sortMethod == "alphabetical") {
       groups_sorted = groups_sorted.sort(this.alphabeticalSort);
     } else if (this.state.sortMethod == "members") {
       groups_sorted = groups_sorted.sort(this.memberSort);
     } else {
-      groups_sorted = shuffle(groups_sorted)
+      groups_sorted = shuffle(groups_sorted);
     }
 
     let groups_rendered = this.state.groups
       .filter((x) =>
         x.name.toLowerCase().includes(this.state.filter.toLowerCase())
       )
-      .filter((x) => this.state.showMyGroups || !x.activeUserInGroup || x.preserveGroup)
+      .filter(
+        (x) =>
+          this.state.showMyGroups || !x.activeUserInGroup || x.preserveGroup
+      )
       .map((x) => (
-        <GroupHeaderCard token={this.state.token} key={x.id} group={x} memberCount={x.memberCount} func={() => this.forceUpdate()}/>
+        <GroupHeaderCard
+          token={this.state.token}
+          key={x.id}
+          group={x}
+          memberCount={x.memberCount - (x.activeUserInGroup ? 1 : 0)}
+          func={() => this.forceUpdate()}
+        />
       ));
 
     let new_group_modal = this.getNewGroupModal();
@@ -259,14 +267,10 @@ class ViewGroups extends React.Component {
               </CreateGroupButton>
             </SidebarContainer>
           </SidebarFlexContainer>
-          <PostsContainer>
-
-            {groups_rendered}
-          </PostsContainer>
+          <PostsContainer>{groups_rendered}</PostsContainer>
           <SidebarFlexContainer>
-          <SidebarContainer>
-            <h3>public groups</h3>
-
+            <SidebarContainer>
+              <h3>public groups</h3>
             </SidebarContainer>
             <SidebarContainer>
               <h4>filter groups</h4>
@@ -285,14 +289,38 @@ class ViewGroups extends React.Component {
                   this.setState({ showMyGroups: !this.state.showMyGroups })
                 }
               />
-              <ToggleButtonGroup defaultValue={"alphabetical"} type="radio" name="options" onClick={(event) => this.setState({ sortMethod: event.target.value })}>
-                <ToggleButton style={{whiteSpace: "nowrap"}} variant="secondary" value="alphabetical">
+              <ToggleButtonGroup
+                defaultValue={"alphabetical"}
+                type="radio"
+                name="options"
+                onClick={(event) =>
+                  this.setState({ sortMethod: event.target.value })
+                }
+              >
+                <ToggleButton
+                  style={{ whiteSpace: "nowrap" }}
+                  variant="secondary"
+                  value="alphabetical"
+                >
                   a-z
                 </ToggleButton>
-                <ToggleButton variant="secondary" value="members" onClick={(event) => this.setState({ sortMethod: event.target.value })}>
+                <ToggleButton
+                  variant="secondary"
+                  value="members"
+                  onClick={(event) =>
+                    this.setState({ sortMethod: event.target.value })
+                  }
+                >
                   members
                 </ToggleButton>
-                <ToggleButton variant="secondary" style={{whiteSpace: "nowrap"}} value="random" onClick={(event) => this.setState({ sortMethod: event.target.value })}>
+                <ToggleButton
+                  variant="secondary"
+                  style={{ whiteSpace: "nowrap" }}
+                  value="random"
+                  onClick={(event) =>
+                    this.setState({ sortMethod: event.target.value })
+                  }
+                >
                   suprise me
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -305,11 +333,12 @@ class ViewGroups extends React.Component {
 }
 
 function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
+  var currentIndex = array.length,
+    temporaryValue,
+    randomIndex;
 
   // While there remain elements to shuffle...
   while (0 !== currentIndex) {
-
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
@@ -322,7 +351,5 @@ function shuffle(array) {
 
   return array;
 }
-
-
 
 export default ViewGroups;

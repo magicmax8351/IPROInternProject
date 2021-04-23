@@ -6,6 +6,8 @@ from main import *
 import faker
 import random
 import os
+from sqlalchemy.exc import IntegrityError
+
 
 def gen_fake_data():
     # initialize
@@ -225,25 +227,26 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     print("Adding some post likes!")
     likes = []
     likes_test = {}
-    for i in range(100):
-        for j in range(50):
-            if i in likes_test:
-                if j in likes_test[i]:
-                    continue
-                else:
-                    likes_test[i].append(j)
-            else:
-                likes_test[i] = [j]
-            
+    for i in range(1000):
+        uid_val = uid()
+        post_id_val = post_id()
 
-            likes.append(
-                UserPostLikeORM(
-                    uid=uid(),
-                    post_id=post_id(),
-                    like=random.randint(0,1),
-                    dashboard=random.randint(0, 1)
-                )
+        if uid_val in likes_test:
+            if post_id_val in likes_test[uid_val]:
+                continue
+            else:
+                likes_test[uid_val].append(post_id_val)
+        else:
+            likes_test[uid_val] = [post_id_val]
+        
+        likes.append(
+            UserPostLikeORM(
+                uid=uid_val,
+                post_id=post_id_val,
+                like=random.randint(0,1),
+                dashboard=random.randint(0, 1)
             )
+        )
 
     s.add_all(likes)
     s.commit()

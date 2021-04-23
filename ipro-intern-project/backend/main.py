@@ -17,6 +17,9 @@ from sqlalchemy import func
 import re
 import os
 import string
+from asyncio import ProactorEventLoop, set_event_loop, ProactorEventLoop, get_event_loop
+from uvicorn import Config, Server
+
 
 app = FastAPI()
 
@@ -38,6 +41,7 @@ app.add_middleware(
 engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
 orm_session = orm_parent_session()
+
 
 
 def gen_token():
@@ -319,10 +323,15 @@ def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("
         likeObj.dashboard = dashboard
     except NoResultFound:
         likeObj = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
-        s.add(likeObj)
-    except MultipleResultsFound:
-        print(f"Multiple results found! UID: {uid} Post_id: {post_id}")
-        return
+        try:
+            s.add(likeObj)
+            s.commit()
+            s.close()
+            return
+        except IntegrityError:
+            print(f"Strange behavior! UID: {uid} Post_id: {post_id}")
+            s.close()
+            return
 
     s.commit()
     likeModel = UserPostLikeModel.from_orm(likeObj)
@@ -1125,3 +1134,10 @@ def update_presetitem(updated_presetitem: PresetitemModel):
 def delete_presetitem(presetitem_id: int):
     """Removes the presetitem with the given ID."""
     raise HTTPException(400, "Not implemented")
+
+
+if __name__ == "__main__":
+    set_event_loop(ProactorEventLoop())
+    server = Server(config=Config(app=app, host="0.0.0.0"))
+    get_event_loop().run_until_complete(server.serve())
+

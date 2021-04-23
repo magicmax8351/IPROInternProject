@@ -3,11 +3,12 @@ import unittest
 import requests 
 import threading
 import time
+import random
 
 BASE_URL_LOCAL = "http://localhost:8000"
 BASE_URL_REMOTE = "http://wingman.justinjschmitz.com:8000"
 
-CUR_URL = BASE_URL_REMOTE
+CUR_URL = BASE_URL_LOCAL
 
 
 def test_post_get(token, results, i):
@@ -35,6 +36,29 @@ def test_post_get(token, results, i):
     response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
     results[i] = len(response.content)
 
+def test_post_like(token, results, i): 
+    url = CUR_URL + "/posts/like"
+    querystring = {"post_id": random.randint(1, 100),"like": random.randint(0, 1),"dashboard": random.randint(0, 1)}
+    headers = {
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "DNT": "1",
+        "sec-ch-ua-mobile": "?0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+        "Content-Type": "application/json",
+        "Accept": "*/*",
+        "Origin": "http://localhost:3000",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http://localhost:3000/",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cookie": "userType=Driver; fname=admin; token=" + token
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    results[i] = len(response.content)
 
 def test_groups_get(token, results, i):
     url = CUR_URL + "/group/list"
@@ -59,6 +83,35 @@ def test_groups_get(token, results, i):
     }
 
     response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+    results[i] = len(response.content)
+
+def test_application_status_update(token, results, i): 
+    url = CUR_URL + "/applications/update"
+
+    payload = {
+        "id": 2,
+        "status": random.randint(0, 2),
+        "token": token,
+        "applicationBaseId": 1
+    }
+    headers = {
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "DNT": "1",
+        "sec-ch-ua-mobile": "?0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+        "Content-Type": "application/json",
+        "Accept": "*/*",
+        "Origin": "http://localhost:3000",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http://localhost:3000/",
+        "Accept-Language": "en-US,en;q=0.9"
+    }
+
+    response = requests.request("POST", url, json=payload, headers=headers)
     results[i] = len(response.content)
 
 def test_applications_get(token, results, i):
@@ -103,7 +156,7 @@ class TestStringMethods(unittest.TestCase):
 
     def test_posts_get(self):
         threads = []
-        NUM_THREADS = 100
+        NUM_THREADS = 200
         TIME_DELAY = 0.01
         total_bytes = 0
         start = time.time()
@@ -119,6 +172,10 @@ class TestStringMethods(unittest.TestCase):
             x.start()
             threads.append(x := threading.Thread(target=test_applications_get, args=(self.token, results, (cur_thread := cur_thread + 1))))
             x.start()
+            threads.append(x := threading.Thread(target=test_post_like, args=(self.token, results, (cur_thread := cur_thread + 1))))
+            x.start()
+            threads.append(x := threading.Thread(target=test_applications_get, args=(self.token, results, (cur_thread := cur_thread + 1))))
+            x.start()
 
             time.sleep(TIME_DELAY)
         
@@ -130,6 +187,7 @@ class TestStringMethods(unittest.TestCase):
         total_time = end - start
         print(f"Total time: {total_time}")
         print(f"Total bytes: {total_bytes}")
+        print(f"Total requests: {len(threads)}")
         print(f"Total bytes/second: {total_bytes / (total_time)}")
         print(f"Total requests/second: {len(threads) / (total_time)}")
     

@@ -112,7 +112,6 @@ class GroupHeaderCard extends React.Component {
       .then((status) => {
         if (status == 200) {
           let newGroup = this.state.group;
-          newGroup.memberCount += 1;
           newGroup.activeUserInGroup = true;
           newGroup.preserveGroup = true;
           if (this.func) {
@@ -145,7 +144,6 @@ class GroupHeaderCard extends React.Component {
       .then((status) => {
         if (status == 200) {
           let newGroup = this.state.group;
-          newGroup.memberCount -= 1;
           newGroup.activeUserInGroup = false;
           if (this.func) {
             this.func();
@@ -231,7 +229,7 @@ class GroupHeaderCard extends React.Component {
         <GroupImage src={this.state.group.background} />
         <NameFlexBox>
           <GroupImageName href={"/group/" + this.state.group.link}>
-            {this.state.group.name} ({this.state.memberCount})
+            {this.state.group.name} ({this.state.memberCount + (this.state.group.activeUserInGroup ? 1 : 0)})
           </GroupImageName>
           {userGroupButton}
         </NameFlexBox>

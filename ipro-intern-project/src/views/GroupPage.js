@@ -46,7 +46,6 @@ const SidebarContainer = styled.div`
   margin-top: 10px;
 `;
 
-
 const WhiteGroupRow = styled.div`
   background: white;
   display: flex;
@@ -174,6 +173,10 @@ class GroupPage extends React.Component {
           this.state.token
       )
         .then((res) => res.json())
+        .then((json) => {
+          console.log(json.membership.length);
+          return json;
+        })
         .then((json) => this.setState({ groupMembership: json }));
     }
     fetch(
@@ -469,7 +472,10 @@ class GroupPage extends React.Component {
             <GroupHeaderCard
               token={this.state.token}
               group={this.state.groupMembership.group}
-              memberCount={this.state.groupMembership.membership.length}
+              memberCount={
+                this.state.groupMembership.membership.length -
+                (this.state.groupMembership.group.activeUserInGroup ? 1 : 0)
+              }
             />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
@@ -506,7 +512,7 @@ const renderGroups = (groups) => {
   if (groups == null) {
     return null;
   }
-  groups = groups.filter((x) => x.activeUserInGroup)
+  groups = groups.filter((x) => x.activeUserInGroup);
   let grouplist = [];
   for (let i = 0; i < groups.length; i += 2) {
     let g = groups[i];
@@ -528,6 +534,4 @@ const renderGroups = (groups) => {
   return grouplist;
 };
 
-export {
-  renderGroups
-}
+export { renderGroups };

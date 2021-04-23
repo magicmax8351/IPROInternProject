@@ -115,7 +115,7 @@ class JobInfo extends React.Component {
         <ButtonContainer>
           <PostButton>company info</PostButton>
           <PostButton>view posts</PostButton>
-          <PostButton onClick={this.jobInfoApplyFunc}>{this.state.dashboardStatus}</PostButton>
+          <PostButton disabled={this.state.dashboardStatus.includes("in")} onClick={this.jobInfoApplyFunc}>{this.state.dashboardStatus}</PostButton>
           <PostButton onClick={() => window.open(this.job.link)}>apply</PostButton>
         </ButtonContainer>
       </MasterPostContainer>

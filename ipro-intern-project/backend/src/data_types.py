@@ -267,6 +267,7 @@ class UserPostLikeORM(Base):
     uid = Column(Integer, ForeignKey("user.id"))
     like = Column(Integer)
     dashboard = Column(Integer)
+    UniqueConstraint(post_id, uid)
 
 class UserPostLikeModel(BaseModel):
     id: Optional[int]

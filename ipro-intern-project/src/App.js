@@ -26,7 +26,7 @@ class App extends Component {
     this.state = {
       user: null,
       token: Cookies.get("token"),
-      loading: 1
+      loading: 1,
     };
   }
   componentDidMount() {
@@ -50,12 +50,13 @@ class App extends Component {
         }
         return res.json();
       })
-      .then((json) => this.setState({ user: json, loading: 0}))
+      .then((json) => this.setState({ user: json, loading: 0 }))
       .catch((error) => {
-        alert(error);
-        // Cookies.remove("token");
+        Cookies.remove("token");
         this.setState({ loading: 0 });
-        Document.location.replace("/login")
+        if (Document.location) {
+          Document.location.replace("/login");
+        }
       });
   }
 
@@ -65,9 +66,13 @@ class App extends Component {
         <CookiesProvider>
           <Navbar
             user={this.state.user}
-            key={(this.state.user != null) ? this.state.user.id : Math.floor(Math.random() * 25565)}
+            key={
+              this.state.user != null
+                ? this.state.user.id
+                : Math.floor(Math.random() * 25565)
+            }
             loading={this.state.loading}
-            />
+          />
           <Router>
             <div>
               <Route exact path="/" component={NewsFeed} />
