@@ -12,7 +12,7 @@ CUR_URL = BASE_URL_REMOTE
 
 def test_post_get(token, results, i):
     url = CUR_URL + "/posts/get"
-    querystring = {"count":"100","start_id":"-1","group_link":"","nonce":"16567"}
+    querystring = {"count":"10","start_id":"-1","group_link":"","nonce":"16567"}
 
     payload = ""
     headers = {
@@ -104,7 +104,7 @@ class TestStringMethods(unittest.TestCase):
     def test_posts_get(self):
         threads = []
         NUM_THREADS = 100
-        TIME_DELAY = 0.2
+        TIME_DELAY = 0.01
         total_bytes = 0
         start = time.time()
 
