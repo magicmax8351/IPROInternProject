@@ -17,7 +17,7 @@ from sqlalchemy import func
 import re
 import os
 import string
-from asyncio import ProactorEventLoop, set_event_loop, ProactorEventLoop, get_event_loop
+from asyncio import SelectorEventLoop, set_event_loop, get_event_loop
 from uvicorn import Config, Server
 
 
@@ -198,7 +198,7 @@ def token_test(token: str = Cookie("")):
     try:
         t = s.query(TokenORM).filter(TokenORM.val == token).one()
         s.close()
-        return 
+        return
     except NoResultFound:
         s.close()
         raise HTTPException(422, "Not valid token!")
@@ -424,7 +424,7 @@ def get_applications(token: str):
 def add_application(new_application: ApplicationBaseModel, applied: bool = False):
     """Adds a new row to application table.
 
-    Test CURL: 
+    Test CURL:
 
     curl --request POST \
     --url 'http://localhost:8000/applications/add?token=ccab4e01998b735345a702ce16147378' \
@@ -483,7 +483,7 @@ def update_application(newApplicationEvent: ApplicationEventModel):
     """Updates the application with the given ID with new information.
        Checks to make sure that the application exists first.
 
-       Test request code: 
+       Test request code:
        curl --request POST \
         --url http://localhost:8000/applications/update \
         --header 'Content-Type: application/json' \
@@ -947,7 +947,7 @@ def get_user_groups(token: str, browse: bool = False):
     for m in s.query(GroupMembershipORM).filter(
         GroupMembershipORM.group_id.in_(group_memberships)):
         group_memberships.append(m.group_id)
-    
+
     for (group_membership_id, members) in s.query(MembershipORM.group_membership_id, func.count(MembershipORM.uid)).group_by(MembershipORM.group_membership_id).all():
         group_membership_count[group_membership_map[group_membership_id]] = members
 
@@ -982,11 +982,11 @@ def join_group(group_link: str, token: str):
         group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
-    
+
     groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
     if(s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).scalar() != None):
         raise HTTPException(430, "User already in group!")
-    
+
     newMembershipORM = MembershipORM(
         group_membership_id = groupMembershipObject.id,
         uid=uid
@@ -1007,13 +1007,13 @@ def join_group(group_link: str, token: str = Cookie("")):
         group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
-    
+
     groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
     try:
         m = s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).one()
     except NoResultFound:
         raise HTTPException(430, "User not in group!")
-    
+
     s.delete(m)
     s.commit()
     s.close()
@@ -1137,7 +1137,7 @@ def delete_presetitem(presetitem_id: int):
 
 
 if __name__ == "__main__":
-    set_event_loop(ProactorEventLoop())
+    set_event_loop(SelectorEventLoop())
     server = Server(config=Config(app=app, host="0.0.0.0"))
     get_event_loop().run_until_complete(server.serve())
 
