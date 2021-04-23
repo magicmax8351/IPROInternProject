@@ -213,7 +213,7 @@ class ViewGroups extends React.Component {
       return null;
     }
 
-    // let groups_sorted = this.state.groups.sort(this.compareUserInGroups);
+    let groups_sorted = this.state.groups
     if(this.state.sortMethod == "alphabetical") {
       groups_sorted = groups_sorted.sort(this.alphabeticalSort);
     } else if (this.state.sortMethod == "members") {
