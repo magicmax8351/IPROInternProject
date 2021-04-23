@@ -938,8 +938,6 @@ def get_user_groups(token: str, browse: bool = False):
     for m in s.query(GroupMembershipORM).filter(
         GroupMembershipORM.group_id.in_(group_memberships)):
         group_memberships.append(m.group_id)
-
-    print(group_membership_map)
     
     for (group_membership_id, members) in s.query(MembershipORM.group_membership_id, func.count(MembershipORM.uid)).group_by(MembershipORM.group_membership_id).all():
         group_membership_count[group_membership_map[group_membership_id]] = members
