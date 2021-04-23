@@ -285,7 +285,7 @@ class ViewGroups extends React.Component {
                   this.setState({ showMyGroups: !this.state.showMyGroups })
                 }
               />
-              <ToggleButtonGroup type="radio" name="options" defaultValue={1} onClick={(event) => this.setState({ sortMethod: event.target.value })}>
+              <ToggleButtonGroup defaultValue={"alphabetical"} type="radio" name="options" onClick={(event) => this.setState({ sortMethod: event.target.value })}>
                 <ToggleButton style={{whiteSpace: "nowrap"}} variant="secondary" value="alphabetical">
                   a-z
                 </ToggleButton>
