@@ -8,7 +8,7 @@ import random
 BASE_URL_LOCAL = "http://localhost:8000"
 BASE_URL_REMOTE = "http://wingman.justinjschmitz.com:8000"
 
-CUR_URL = BASE_URL_LOCAL
+CUR_URL = BASE_URL_REMOTE
 
 
 def test_post_get(token, results, i):
