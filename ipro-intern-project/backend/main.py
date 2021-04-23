@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 import re
 import os
 import string
@@ -927,11 +928,31 @@ def get_user_groups(token: str, browse: bool = False):
 
     group_memberships = [m.group_membership_id for m in s.query(
         MembershipORM).filter(MembershipORM.uid == uid)]
-    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(
-        GroupMembershipORM.group_id.in_(group_memberships))]
+    group_membership_map = {m.id: m.group_id for m in s.query(GroupMembershipORM)}
+
+    group_ids = [group_membership_map[x] for x in group_memberships]
+
+    group_memberships = []
+    group_membership_count = {}
+
+    for m in s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id.in_(group_memberships)):
+        group_memberships.append(m.group_id)
+
+    print(group_membership_map)
+    
+    for (group_membership_id, members) in s.query(MembershipORM.group_membership_id, func.count(MembershipORM.uid)).group_by(MembershipORM.group_membership_id).all():
+        group_membership_count[group_membership_map[group_membership_id]] = members
+
     for group in s.query(GroupORM):
         g = GroupModel.from_orm(group)
         g.key = g.id
+
+        if g.id in group_membership_count:
+            g.memberCount = group_membership_count[g.id]
+        else:
+            g.memberCount = 0
+
         if(g.id in group_ids):
             g.activeUserInGroup = True
             groups.append(g)

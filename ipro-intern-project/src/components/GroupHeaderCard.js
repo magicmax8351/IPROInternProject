@@ -51,7 +51,7 @@ const ActiveUserInGroupButton = styled.button`
   margin-left: 10px;
   font-size: 18px;
   padding: 10px;
-  border: solid;
+  border: solid 2px black;
   padding-top: 3px;
   max-height: 36px;
 `;
@@ -59,7 +59,7 @@ const ActiveUserInGroupButton = styled.button`
 const ActiveUserNotInGroupButton = styled(ActiveUserInGroupButton)`
   background: #7c79a8;
   color: white;
-  border: none;
+  border: white;
   white-space: nowrap;
 `;
 
@@ -91,8 +91,10 @@ class GroupHeaderCard extends React.Component {
       groupUrl:
         "http://" + window.location.hostname + "/group/" + props.group.link,
       buttonText: "in group",
+      memberCount: props.memberCount,
     };
     this.token = props.token;
+    this.func = props.func;
     this.joinGroup = this.joinGroup.bind(this);
     this.leaveGroup = this.leaveGroup.bind(this);
   }
@@ -110,8 +112,17 @@ class GroupHeaderCard extends React.Component {
       .then((status) => {
         if (status == 200) {
           let newGroup = this.state.group;
+          newGroup.memberCount += 1;
           newGroup.activeUserInGroup = true;
-          this.setState({ group: newGroup });
+          newGroup.preserveGroup = true;
+          if (this.func) {
+            this.func();
+          }
+          this.setState({
+            group: newGroup,
+            memberCount: newGroup.memberCount,
+            buttonText: "in group",
+          });
         } else {
           alert("Failed to join group!");
         }
@@ -133,7 +144,17 @@ class GroupHeaderCard extends React.Component {
       .then((res) => res.status)
       .then((status) => {
         if (status == 200) {
-          this.setState({ buttonText: "left group" });
+          let newGroup = this.state.group;
+          newGroup.memberCount -= 1;
+          newGroup.activeUserInGroup = false;
+          if (this.func) {
+            this.func();
+          }
+          this.setState({
+            buttonText: "left group",
+            group: newGroup,
+            memberCount: newGroup.memberCount,
+          });
         } else {
           this.setState({ buttonText: "failed to leave group" });
         }
@@ -153,11 +174,15 @@ class GroupHeaderCard extends React.Component {
               }
             }}
             onMouseOut={() => {
-              if (this.state.buttonText == "leave group?" || this.state.buttonText == "please confirm") {
+              if (
+                this.state.buttonText == "leave group?" ||
+                this.state.buttonText == "please confirm"
+              ) {
                 this.setState({ buttonText: "in group" });
               } else if (this.state.buttonText != "clicking revoked :(") {
-                this.setState({ buttonText: "left group"});
-            }}}
+                this.setState({ buttonText: "left group" });
+              }
+            }}
             onClick={() => {
               if (this.state.buttonText == "in group") {
                 return;
@@ -206,7 +231,7 @@ class GroupHeaderCard extends React.Component {
         <GroupImage src={this.state.group.background} />
         <NameFlexBox>
           <GroupImageName href={"/group/" + this.state.group.link}>
-            {this.state.group.name}
+            {this.state.group.name} ({this.state.memberCount})
           </GroupImageName>
           {userGroupButton}
         </NameFlexBox>
@@ -217,4 +242,4 @@ class GroupHeaderCard extends React.Component {
 
 export default GroupHeaderCard;
 
-export { ActiveUserNotInGroupButton };
+export { ActiveUserNotInGroupButton, ActiveUserInGroupButton };

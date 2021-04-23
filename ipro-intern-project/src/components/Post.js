@@ -353,4 +353,4 @@ class Post extends React.Component {
 
 export default Post;
 
-export { MasterPostContainer, UserImage };
+export { MasterPostContainer, UserImage, PostButton };

@@ -144,6 +144,7 @@ class GroupModel(BaseModel):
     key: Optional[int]
     token: Optional[str]
     link: Optional[str]
+    memberCount: Optional[int]
 
 class GroupMembershipORM(Base):
     __tablename__ = "group_membership"

@@ -52,7 +52,8 @@ class App extends Component {
       })
       .then((json) => this.setState({ user: json, loading: 0}))
       .catch((error) => {
-        Cookies.remove("token");
+        alert(error);
+        // Cookies.remove("token");
         this.setState({ loading: 0 });
         Document.location.replace("/login")
       });
