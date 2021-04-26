@@ -90,6 +90,15 @@ const GroupDescription = styled.p`
   margin-bottom: 0px;
 `;
 
+const GroupStatsList = styled.ul`
+  margin: 0px;
+  padding: 0px;
+`;
+
+const GroupStatsItem = styled.li`
+  list-style-type: none;
+`;
+
 class GroupPage extends React.Component {
   constructor(props) {
     super(props);
@@ -108,6 +117,10 @@ class GroupPage extends React.Component {
       group: {
         name: null,
         desc: null,
+      },
+      groupStats: {
+        avgJobsInDashboard: null,
+        mostPopularCompany: null,
       },
       start_id: -1,
       filter: "",
@@ -178,6 +191,18 @@ class GroupPage extends React.Component {
           return json;
         })
         .then((json) => this.setState({ groupMembership: json }));
+
+        fetch(
+          "http://" +
+            window.location.hostname +
+            ":8000/groups_stats/" +
+            this.group_link
+        )
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({ groupStats: json })
+          console.log(json)
+        })
     }
     fetch(
       "http://" +
@@ -494,6 +519,13 @@ class GroupPage extends React.Component {
               <GroupDescription>
                 {this.state.groupMembership.group.desc}
               </GroupDescription>
+            </SidebarContainer>
+            <SidebarContainer>
+              <h4>stats</h4>
+              <GroupStatsList>
+                <GroupStatsItem>{this.state.groupStats.avgJobsInDashboard}</GroupStatsItem>
+                <GroupStatsItem>{this.state.groupStats.mostPopularCompany}</GroupStatsItem>
+              </GroupStatsList>
             </SidebarContainer>
             <SidebarContainer>
               <h4>members</h4>

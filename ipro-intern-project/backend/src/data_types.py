@@ -162,6 +162,12 @@ class GroupMembershipModel(BaseModel):
     membership: Optional[List[MembershipModel]]
     group: Optional[GroupModel]
 
+class GroupStatsModel(BaseModel):
+    '''Not stored in DB. Calculated when the endpoint is called'''
+    group_id: Optional[int]
+    avgJobsInDashboard: Optional[int]
+    mostPopularCompany: Optional[str]
+
 class CommentORM(Base):
     __tablename__ = "comment"
     metadata = metadata
