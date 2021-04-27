@@ -483,3 +483,9 @@ class NewsFeed extends React.Component {
 }
 
 export default NewsFeed;
+
+export {
+  UserInput,
+  SidebarFlexContainer,
+  SidebarContainer
+}

@@ -36,34 +36,27 @@ const UserImage = styled.img`
   border-radius: 100px;
   max-height: 30px;
   border: 1px;
-  margin-bottom: 10px;
 `;
 
 const UserName = styled.h1`
   font-size: 30px;
   margin: 5px;
-  display: inline-block;
+  color: #ffffff;
+  font-family: "Work-Sans-Light";
+  white-space: nowrap;
+`;
+
+const UserNameLink = styled.a`
+  font-size: 30px;
+  margin: 5px;
   color: #ffffff;
   font-family: "Work-Sans-Light";
 `;
 
 const UserDiv = styled.div`
-  white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
 `;
-
-let userName = Cookies.get("name");
-let userImage = Cookies.get("image");
-
-userName = "martin";
-userImage =
-  "https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3";
-
-const userInfo = (
-  <UserDiv>
-    <UserImage src={userImage} />
-    <UserName>{userName}</UserName>
-  </UserDiv>
-);
 
 const getNavbarItem = (obj) => (
   <NavbarItem href={obj.link}>{obj.name}</NavbarItem>
@@ -86,12 +79,32 @@ function buildNavbarItems(objs) {
   return outItems;
 }
 
-const Navbar = (props) => (
-  <NavbarDiv>
-    <BasicLogo>WINGMAN</BasicLogo>
-    <NavbarItemBox>{buildNavbarItems(objs)}</NavbarItemBox>
-    {userInfo}
-  </NavbarDiv>
-);
+class Navbar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.user = props.user;
+    this.loading = props.loading;
+  }
+  render() {
+    let userDiv = null;
+    if(this.loading == 0 && this.user == null) {
+      userDiv = <UserNameLink href="/login">login</UserNameLink>;
+    } else if (this.user != null) {
+      userDiv = (
+        <UserDiv>
+          {/* <UserImage src={this.user.pic} /> */}
+          <UserName>{this.user.fname}</UserName>
+        </UserDiv>
+      );
+    }
+    return (
+      <NavbarDiv>
+        <BasicLogo>WINGMAN</BasicLogo>
+        <NavbarItemBox>{buildNavbarItems(objs)}</NavbarItemBox>
+        {userDiv}
+      </NavbarDiv>
+    );
+  }
+}
 
 export default Navbar;

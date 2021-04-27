@@ -144,6 +144,7 @@ class GroupModel(BaseModel):
     key: Optional[int]
     token: Optional[str]
     link: Optional[str]
+    memberCount: Optional[int]
 
 class GroupMembershipORM(Base):
     __tablename__ = "group_membership"
@@ -266,6 +267,7 @@ class UserPostLikeORM(Base):
     uid = Column(Integer, ForeignKey("user.id"))
     like = Column(Integer)
     dashboard = Column(Integer)
+    UniqueConstraint(post_id, uid)
 
 class UserPostLikeModel(BaseModel):
     id: Optional[int]

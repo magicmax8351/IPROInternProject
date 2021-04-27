@@ -101,7 +101,7 @@ class JobInfo extends React.Component {
       <MasterPostContainer>
         <Container>
           <CompanyInfoContainer>
-            <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.state.post.job.company.id} />
+            <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.job.company.id} />
             <CompanyInfo>{this.job.company.name}</CompanyInfo>
             <CompanyInfo>{this.job.location}</CompanyInfo>
           </CompanyInfoContainer>
@@ -115,7 +115,7 @@ class JobInfo extends React.Component {
         <ButtonContainer>
           <PostButton>company info</PostButton>
           <PostButton>view posts</PostButton>
-          <PostButton onClick={this.jobInfoApplyFunc}>{this.state.dashboardStatus}</PostButton>
+          <PostButton disabled={this.state.dashboardStatus.includes("in")} onClick={this.jobInfoApplyFunc}>{this.state.dashboardStatus}</PostButton>
           <PostButton onClick={() => window.open(this.job.link)}>apply</PostButton>
         </ButtonContainer>
       </MasterPostContainer>

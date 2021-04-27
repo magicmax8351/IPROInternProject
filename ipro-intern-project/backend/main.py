@@ -13,9 +13,13 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 import re
 import os
 import string
+from asyncio import SelectorEventLoop, set_event_loop, get_event_loop
+from uvicorn import Config, Server
+
 
 app = FastAPI()
 
@@ -37,6 +41,7 @@ app.add_middleware(
 engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
 orm_session = orm_parent_session()
+
 
 
 def gen_token():
@@ -193,7 +198,7 @@ def token_test(token: str = Cookie("")):
     try:
         t = s.query(TokenORM).filter(TokenORM.val == token).one()
         s.close()
-        return 
+        return
     except NoResultFound:
         s.close()
         raise HTTPException(422, "Not valid token!")
@@ -225,8 +230,15 @@ def add_post(new_post: PostModel):
 
     orm_session.add(new_post_orm)
     orm_session.commit()
+
+    like = UserPostLikeORM(uid=uid, post_id=new_post_orm.id, like=1, dashboard=0)
+    orm_session.add(like)
+
+
     ret = PostModel.from_orm(new_post_orm)
     ret.key = ret.id
+    ret.userLike = 1
+
     applied = orm_session.query(ApplicationBaseORM).filter(
         ApplicationBaseORM.uid == uid).filter(ApplicationBaseORM.job_id == ret.job_id).all()
     if applied:
@@ -306,15 +318,23 @@ def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("
 
     s = orm_parent_session()
     try:
-        like = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
-        like.like = like
-        like.dashboard = dashboard
+        likeObj = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
+        likeObj.like = like
+        likeObj.dashboard = dashboard
     except NoResultFound:
-        like = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
-        s.add(like)
+        likeObj = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
+        try:
+            s.add(likeObj)
+            s.commit()
+            s.close()
+            return
+        except IntegrityError:
+            print(f"Strange behavior! UID: {uid} Post_id: {post_id}")
+            s.close()
+            return
 
     s.commit()
-    likeModel = UserPostLikeModel.from_orm(like)
+    likeModel = UserPostLikeModel.from_orm(likeObj)
     s.close()
     return likeModel
 
@@ -404,7 +424,7 @@ def get_applications(token: str):
 def add_application(new_application: ApplicationBaseModel, applied: bool = False):
     """Adds a new row to application table.
 
-    Test CURL: 
+    Test CURL:
 
     curl --request POST \
     --url 'http://localhost:8000/applications/add?token=ccab4e01998b735345a702ce16147378' \
@@ -463,7 +483,7 @@ def update_application(newApplicationEvent: ApplicationEventModel):
     """Updates the application with the given ID with new information.
        Checks to make sure that the application exists first.
 
-       Test request code: 
+       Test request code:
        curl --request POST \
         --url http://localhost:8000/applications/update \
         --header 'Content-Type: application/json' \
@@ -917,11 +937,29 @@ def get_user_groups(token: str, browse: bool = False):
 
     group_memberships = [m.group_membership_id for m in s.query(
         MembershipORM).filter(MembershipORM.uid == uid)]
-    group_ids = [m.group_id for m in s.query(GroupMembershipORM).filter(
-        GroupMembershipORM.group_id.in_(group_memberships))]
+    group_membership_map = {m.id: m.group_id for m in s.query(GroupMembershipORM)}
+
+    group_ids = [group_membership_map[x] for x in group_memberships]
+
+    group_memberships = []
+    group_membership_count = {}
+
+    for m in s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id.in_(group_memberships)):
+        group_memberships.append(m.group_id)
+
+    for (group_membership_id, members) in s.query(MembershipORM.group_membership_id, func.count(MembershipORM.uid)).group_by(MembershipORM.group_membership_id).all():
+        group_membership_count[group_membership_map[group_membership_id]] = members
+
     for group in s.query(GroupORM):
         g = GroupModel.from_orm(group)
         g.key = g.id
+
+        if g.id in group_membership_count:
+            g.memberCount = group_membership_count[g.id]
+        else:
+            g.memberCount = 0
+
         if(g.id in group_ids):
             g.activeUserInGroup = True
             groups.append(g)
@@ -944,11 +982,11 @@ def join_group(group_link: str, token: str):
         group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
-    
+
     groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
     if(s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).scalar() != None):
         raise HTTPException(430, "User already in group!")
-    
+
     newMembershipORM = MembershipORM(
         group_membership_id = groupMembershipObject.id,
         uid=uid
@@ -969,13 +1007,13 @@ def join_group(group_link: str, token: str = Cookie("")):
         group = s.query(GroupORM).filter(GroupORM.link == group_link).one()
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
-    
+
     groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
     try:
         m = s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).one()
     except NoResultFound:
         raise HTTPException(430, "User not in group!")
-    
+
     s.delete(m)
     s.commit()
     s.close()
@@ -1096,3 +1134,10 @@ def update_presetitem(updated_presetitem: PresetitemModel):
 def delete_presetitem(presetitem_id: int):
     """Removes the presetitem with the given ID."""
     raise HTTPException(400, "Not implemented")
+
+
+if __name__ == "__main__":
+    set_event_loop(SelectorEventLoop())
+    server = Server(config=Config(app=app, host="0.0.0.0"))
+    get_event_loop().run_until_complete(server.serve())
+

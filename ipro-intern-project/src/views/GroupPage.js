@@ -8,6 +8,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
 import GroupHeaderCard from "../components/GroupHeaderCard";
+import { UserInput } from "./NewsFeed";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -16,6 +17,9 @@ const FeedContainer = styled.div`
   display: flex;
   justify-content: center;
   justify-content: center;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const PostsContainer = styled.div`
@@ -24,7 +28,6 @@ const PostsContainer = styled.div`
   margin: 10px;
   max-width: 630px;
   min-width: 500px;
-  width: 100%;
 `;
 
 const SidebarFlexContainer = styled.div`
@@ -32,6 +35,7 @@ const SidebarFlexContainer = styled.div`
   flex-direction: column;
   margin-top: 224px;
   min-width: 100px;
+  width: 40%;
 `;
 
 const SidebarContainer = styled.div`
@@ -40,14 +44,6 @@ const SidebarContainer = styled.div`
   padding: 10px;
   border-radius: 5px;
   margin-top: 10px;
-  max-width: 220px;
-`;
-
-const UserInput = styled.input`
-  background: #f0f0f0;
-  border: none;
-  font-size: 15px;
-  width: 100%;
 `;
 
 const WhiteGroupRow = styled.div`
@@ -122,7 +118,7 @@ class GroupPage extends React.Component {
       postSubmitted: 0,
       groups_toggle: null,
       user: null,
-      outOfPosts: false
+      outOfPosts: false,
     };
     this.count = 5;
 
@@ -134,7 +130,6 @@ class GroupPage extends React.Component {
     this.enter_filter = this.enter_filter.bind(this);
     this.filterStringMatch = this.filterStringMatch.bind(this);
     this.filterPost = this.filterPost.bind(this);
-    this.renderGroups = this.renderGroups.bind(this);
     this.renderMembers = this.renderMembers.bind(this);
 
     this.getNewPostModal = this.getNewPostModal.bind(this);
@@ -162,12 +157,11 @@ class GroupPage extends React.Component {
       }
     }, 250);
 
-
     window.setInterval(() => {
-      if(document.documentElement.scrollHeight < window.innerHeight) {
+      if (document.documentElement.scrollHeight < window.innerHeight) {
         this.setState({ loadNewPosts: true });
       }
-    }, 250)
+    }, 250);
 
     if (this.group_id != -1) {
       fetch(
@@ -179,6 +173,10 @@ class GroupPage extends React.Component {
           this.state.token
       )
         .then((res) => res.json())
+        .then((json) => {
+          console.log(json.membership.length);
+          return json;
+        })
         .then((json) => this.setState({ groupMembership: json }));
     }
     fetch(
@@ -188,14 +186,7 @@ class GroupPage extends React.Component {
         this.state.token
     )
       .then((res) => res.json())
-      .then((json) => {
-        this.setState({ groups: json });
-        let groups_toggle = {};
-        for (let i = 0; i < json.length; i++) {
-          groups_toggle[json[i].id] = 1;
-        }
-        this.setState({ groups_toggle: groups_toggle });
-      });
+      .then((json) => this.setState({ groups: json }));
 
     fetch(
       "http://" +
@@ -215,7 +206,7 @@ class GroupPage extends React.Component {
   }
 
   getMorePosts() {
-    if(this.state.outOfPosts) {
+    if (this.state.outOfPosts) {
       return;
     }
     fetch(
@@ -228,11 +219,12 @@ class GroupPage extends React.Component {
         "&start_id=" +
         this.state.start_id +
         "&group_link=" +
-        this.group_link + "&nonce=" + 
-        Math.floor(Math.random() * 25565), 
+        this.group_link +
+        "&nonce=" +
+        Math.floor(Math.random() * 25565),
       {
         credentials: "include",
-        "Cache-Control": "no-store"
+        "Cache-Control": "no-store",
       }
     )
       .then((res) => {
@@ -256,7 +248,6 @@ class GroupPage extends React.Component {
         });
       })
       .catch((error) => console.error(error));
-      
   }
 
   filterPost(post) {
@@ -350,31 +341,6 @@ class GroupPage extends React.Component {
 
   getMorePostsButton() {
     this.getMorePosts();
-  }
-
-  renderGroups() {
-    let groups = [];
-    if (!this.state.groups || !this.state.groups_toggle) {
-      return null;
-    }
-    for (let i = 0; i < this.state.groups.length; i += 2) {
-      let g = this.state.groups[i];
-      groups.push(
-        <GreyGroupRow>
-          <GroupRowName href={"/group/" + g.link}>{g.name}</GroupRowName>
-        </GreyGroupRow>
-      );
-      if (i + 1 != this.state.groups.length) {
-        let g2 = this.state.groups[i + 1];
-
-        groups.push(
-          <WhiteGroupRow>
-            <GroupRowName href={"/group/" + g2.link}>{g2.name}</GroupRowName>
-          </WhiteGroupRow>
-        );
-      }
-    }
-    return groups;
   }
 
   renderMembers() {
@@ -479,10 +445,10 @@ class GroupPage extends React.Component {
     }
 
     let renderedPosts = this.postList(this.state.posts);
-    let renderedGroups = this.renderGroups();
     let newPostModal = this.getNewPostModal();
     let postSubmittedModal = this.getPostSubmittedModal();
     let renderedMembers = this.renderMembers();
+    let renderedGroups = renderGroups(this.state.groups);
 
     return (
       <div>
@@ -506,6 +472,10 @@ class GroupPage extends React.Component {
             <GroupHeaderCard
               token={this.state.token}
               group={this.state.groupMembership.group}
+              memberCount={
+                this.state.groupMembership.membership.length -
+                (this.state.groupMembership.group.activeUserInGroup ? 1 : 0)
+              }
             />
             <NewPostContainer>
               <UserImage src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" />{" "}
@@ -537,3 +507,31 @@ class GroupPage extends React.Component {
 }
 
 export default GroupPage;
+
+const renderGroups = (groups) => {
+  if (groups == null) {
+    return null;
+  }
+  groups = groups.filter((x) => x.activeUserInGroup);
+  let grouplist = [];
+  for (let i = 0; i < groups.length; i += 2) {
+    let g = groups[i];
+    grouplist.push(
+      <GreyGroupRow>
+        <GroupRowName href={"/group/" + g.link}>{g.name}</GroupRowName>
+      </GreyGroupRow>
+    );
+    if (i + 1 != groups.length) {
+      let g2 = groups[i + 1];
+
+      grouplist.push(
+        <WhiteGroupRow>
+          <GroupRowName href={"/group/" + g2.link}>{g2.name}</GroupRowName>
+        </WhiteGroupRow>
+      );
+    }
+  }
+  return grouplist;
+};
+
+export { renderGroups };
