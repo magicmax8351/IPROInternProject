@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import DashboardSlim from '../components/DashboardSlim';
 
 
+
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -22,7 +23,7 @@ class Dashboard extends React.Component {
         <title>Dashboard</title>
       </Helmet>
       <PageContent>
-        <DashboardSlim color={this.state.color} token={this.state.token}></DashboardSlim>
+        <DashboardSlim  color={this.state.color} token={this.state.token}></DashboardSlim>
       </PageContent>
     </PageContent>
     )

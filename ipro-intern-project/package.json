@@ -13,6 +13,8 @@
     "@uiw/react-md-editor": "^1.14.5",
     "antd": "^4.0",
     "bootstrap": "^4.5.3",
+    "d3-ease": "^2.0.0",
+    "d3-interpolate": "^2.0.1",
     "formik": "^2.2.5",
     "js-cookie": "^2.2.1",
     "react": "^16.13.1",

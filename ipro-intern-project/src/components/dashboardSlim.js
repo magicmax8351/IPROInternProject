@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
 import CuteButton from "./CuteDashboardShareButton";
-
+import DashboardTableRow from "./DashboardTableRow";
 
 
 const DashboardTag = styled.p`
@@ -138,7 +138,7 @@ class App extends Component {
     let header = this.buildDashboardTableHeader(stages);
     let body = this.buildDashboardData(applications);
     return (
-      <Table responsive="sm">
+      <Table striped bordered hover responsive="sm">
         {header}
         {body}
       </Table>
@@ -148,6 +148,7 @@ class App extends Component {
   buildDashboardTableHeader(stages) {
     let tableHeaderData = [];
     let metadata_stages = [
+      "",//for expand button column
       "Share",
       "Job Name",
       "Company Name",
@@ -182,20 +183,23 @@ class App extends Component {
     );
   }
 
-  buildDashboardData(applications) { //maybe this for collapsable as well?
-    let dashboardData = [];
+  buildDashboardData(applications) { //collapse here
     let filtered_apps = applications.filter(this.filterDashboardTableRow);
+    let dashboardData = filtered_apps.map((x) => (
+      <DashboardTableRow
+        func={() => {
+          this.setState({
+            modalApp: x,
+            showNewPostModal: true,
+            expand: true,
+          });
+        }}
+        applicationBase={x}
+        token={this.state.token}
+      ></DashboardTableRow>
+    ));
 
-    for (let i = 0; i < filtered_apps.length; i++) {
-      dashboardData.push(this.buildDashboardTableRow(filtered_apps[i]));
-    }
-
-    return( 
-        
-        <tbody>
-        {dashboardData}</tbody>
-
-    );
+    return <tbody>{dashboardData}</tbody>;
   }
   
 
@@ -321,6 +325,7 @@ class App extends Component {
     //     </td>
     //   );
     // }
+
 
     return (
 
@@ -472,6 +477,9 @@ class App extends Component {
   }
 
   render() {
+
+    let dashboardSwitch;
+
     if (this.state.stages == null || this.state.applications == null) {
       return null;
     }
@@ -496,7 +504,10 @@ class App extends Component {
           Add Job to Dashboard
         </CuteButton>
       );
+
     }
+
+
 
     return (
       <div>
