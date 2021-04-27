@@ -9,7 +9,8 @@ import Button from "react-bootstrap/Button";
 import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
 import CuteButton from "./CuteDashboardShareButton";
-import JobInfo from "./JobInfo";
+import DashboardJobInfo from "./DashboardJobInfo";
+import SlimIcon from "./SlimIcon";
 
 const DashboardTag = styled.p`
   /* background: #ede6ff; took background out cuz it looked dumb */
@@ -156,23 +157,21 @@ class DashboardTableRow extends Component {
       }
     }
 
-    if(typeof lastEvent === 'undefined'){//for when u add new job to dashboard
       tableRowData.push(
         <td>
-          N/A
+        <SlimIcon
+            id={e.id}
+            status={e.status}
+            applicationBaseId={this.applicationBase.id}
+            token={this.token}
+            key={e.id}
+            func={(status) =>
+              this.updateApplicationStatus(this.applicationBase, e.id, status)
+            }
+          />
         </td>
       )
-    }
-    else{
-
-      tableRowData.push(
-        <td>
-          {lastEvent.stage.name}
-        </td>
-      )
-
-    }
-    
+       
     
 
 
@@ -184,14 +183,14 @@ class DashboardTableRow extends Component {
         <td colSpan={5}>
           <div style={{ backgroundColor: "" }}>
 
-          {/* <JobInfo
+          <DashboardJobInfo
              job = {this.applicationBase.job}
              dashboardStatus = "chagneLater"
              func={() => null}
-             /> */}
+             />
 
 
-            <h3 style={{paddingLeft: 20}}>Job Title: {getFrom.name}</h3>
+            {/* <h3 style={{paddingLeft: 20}}>Job Title: {getFrom.name}</h3>
             <h3 style={{paddingLeft: 20}}>Location: {getFrom.location}</h3>
             <h3 style={{paddingLeft: 20}}>Tags: {getFrom.showTags}</h3>
             <h3 style={{paddingLeft: 20}}>
@@ -199,7 +198,7 @@ class DashboardTableRow extends Component {
                 onClick={() => window.open(this.applicationBase.job.link)}
               >Job Link
               </CuteButton>
-            </h3>
+            </h3> */}
           </div>
         </td>
       </tr>)
