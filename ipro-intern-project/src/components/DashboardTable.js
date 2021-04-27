@@ -9,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
 import CuteButton from "./CuteDashboardShareButton";
+import DashboardTableRow from "./DashboardTableRow";
 
 const DashboardTag = styled.p`
   background: #eeeeeeee;
@@ -44,7 +45,6 @@ class App extends Component {
       alt: 0, //this helps alternate color lmao
     };
 
-    this.buildDashboardTableRow = this.buildDashboardTableRow.bind(this);
     this.addApplication = this.addApplication.bind(this);
     this.filterDashboardTableRow = this.filterDashboardTableRow.bind(this);
     this.tagStringMatch = this.tagStringMatch.bind(this);
@@ -90,9 +90,9 @@ class App extends Component {
       })
       .catch((error) => {
         alert(error);
-      })
-      // I think this code was accidentally duplicated
-      /*.then((res) => {
+      });
+    // I think this code was accidentally duplicated
+    /*.then((res) => {
         if (res.status == 200) {
           return res.json();
         } else if (res.status == 411) {
@@ -136,7 +136,7 @@ class App extends Component {
     let header = this.buildDashboardTableHeader(stages);
     let body = this.buildDashboardData(applications);
     return (
-      <Table responsive="sm">
+      <Table striped responsive="sm">
         {header}
         {body}
       </Table>
@@ -178,128 +178,24 @@ class App extends Component {
   }
 
   buildDashboardData(applications) {
-    let dashboardData = [];
     let filtered_apps = applications.filter(this.filterDashboardTableRow);
-
-    for (let i = 0; i < filtered_apps.length; i++) {
-      dashboardData.push(this.buildDashboardTableRow(filtered_apps[i]));
-    }
+    let dashboardData = filtered_apps.map((x) => (
+      <DashboardTableRow
+        func={() => {
+          this.setState({
+            modalApp: x,
+            showNewPostModal: true,
+          });
+        }}
+        applicationBase={x}
+        token={this.state.token}
+      ></DashboardTableRow>
+    ));
 
     return <tbody>{dashboardData}</tbody>;
   }
 
-  updateApplicationStatus(applicationBase, applicationEventId, newStatus) {
-    for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
-      if (applicationBase.applicationEvents[i].id == applicationEventId) {
-        applicationBase.applicationEvents[i].status = newStatus;
-        return;
-      }
-    }
-  }
 
-  buildDashboardTableRow(applicationBase) {
-    let tableRowData = [];
-    this.state.alt = this.state.alt + 1; //increment alt by 1
-    if (this.state.alt % 2 == 0) {
-      //if divisible by two, set no color
-      this.state.color = "";
-    } else {
-      this.state.color = "#ac9adb"; //else set purple
-    }
-    // Include metadata as specified by header. See `buildDashboardTableHeader`.
-    applicationBase.applicationEvents.sort((x, y) => x.stage_id > y.stage_id);
-    tableRowData.push(
-      <td>
-        <CuteButton
-          onClick={() => {
-            this.setState({
-              modalApp: applicationBase,
-              showNewPostModal: true,
-            });
-          }}
-        >
-          Share
-        </CuteButton>
-      </td>
-    );
-    tableRowData.push(<td>{applicationBase.job.name}</td>);
-    var color = "blue"; //it'll never equal blue lmao
-    if (this.state.color == "#ac9adb") {
-      //checkig color of row to change link text color
-      color = "#ede6ff"; //idk what color the link should be if not blue lmao
-    } else {
-      color = "#ac9adb";
-    }
-    tableRowData.push(
-      <td>
-        <CuteButton 
-          onClick={() => window.open(applicationBase.job.link)}
-        >Job Link
-        </CuteButton>
-      </td>
-    );
-    tableRowData.push(<td>{applicationBase.job.company.name}</td>);
-    tableRowData.push(<td>{applicationBase.job.location}</td>);
-    tableRowData.push(
-      <td>
-        <CuteButton 
-          onClick={() => window.open("http://" + window.location.hostname +":8000/resumes/download?token=" + this.state.token + "&resume_id=" + applicationBase.resume_id)}
-        >{applicationBase.resume.name}
-        </CuteButton>
-      </td>
-    );
-    //tableRowData.push(<td>{applicationBase.resume.name}</td>);
-
-    let tags = [];
-    let jobTags_filtered = applicationBase.job.tags.filter((x) =>
-      this.tagStringMatch(x.tag.tag)
-    );
-
-    for (let i = 0; i < jobTags_filtered.length; i++) {
-      tags.push(
-        <DashboardTag style={{ backgroundColor: "#ede6ff" }}>
-          {jobTags_filtered[i].tag.tag}
-        </DashboardTag>
-      ); // left this logic so that all tags are attached to job, this way when filtering other tags will show up that match the filter
-    }
-    let showTags = []; //create tags to be shown
-    for (let x = 0; x < jobTags_filtered.length; x++) {
-      //guarantees won't break if total tags < 3
-      if (x == 3) {
-        showTags.push("..."); //adds this to indicate there are more tags
-        x = jobTags_filtered.length; //exists the loop after 3 or total tag length, whichever comes first
-      } else {
-        showTags.push(tags[x]); //build showTags with tags
-      }
-    }
-
-    tableRowData.push(
-      <td>
-        <DashboardContainer>{showTags}</DashboardContainer>
-      </td>
-    );
-
-    for (let i = 0; i < applicationBase.applicationEvents.length; i++) {
-      let e = applicationBase.applicationEvents[i];
-      tableRowData.push(
-        <td>
-          <Icon
-            id={e.id}
-            status={e.status}
-            applicationBaseId={e.applicationBaseId}
-            token={this.state.token}
-            key={e.id}
-            func={(status) =>
-              this.updateApplicationStatus(applicationBase, e.id, status)
-            }
-          />
-        </td>
-      );
-    }
-    return (
-      <tr style={{ backgroundColor: this.state.color }}>{tableRowData}</tr>
-    );
-  }
 
   filterDashboardTableRow(applicationBase) {
     /* Filters based on this.state.filter_tag. Returns "false" if the object should
