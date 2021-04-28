@@ -22,6 +22,9 @@ const FeedContainer = styled.div`
   display: flex;
   justify-content: center;
   justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 1000px;  
 `;
 
 const PostsContainer = styled.div`

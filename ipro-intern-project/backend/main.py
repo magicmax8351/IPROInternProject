@@ -40,7 +40,6 @@ app.add_middleware(
 
 engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
-orm_session = orm_parent_session()
 
 
 
@@ -1018,6 +1017,36 @@ def join_group(group_link: str, token: str = Cookie("")):
     s.commit()
     s.close()
     return (200, "OK")
+
+@app.get("/groups_stats/{link}")
+def get_group_stats(link: str):
+    """Calculates and returns statistics for the given group"""
+    
+    stats = GroupStatsModel()
+    s = orm_parent_session()
+    
+    # get users in this group
+    group = s.query(GroupORM).filter(GroupORM.link == link).one()
+    groupMemberships = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    memberships = groupMemberships.membership
+
+    # calculate avgJobsInDashboard and find mostPopularCompany
+    total = 0
+    count = 0
+    companies = {}
+    for m in memberships:
+        total += len(m.user.applications)
+        count += 1
+
+        for app in m.user.applications:
+            key = app.job.company.name
+            companies[key] = companies[key] + 1 if key in companies else 1
+    
+    stats.avgJobsInDashboard = total // count
+    stats.mostPopularCompany = max(companies, key=companies.get)
+
+    s.close()
+    return stats
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):
