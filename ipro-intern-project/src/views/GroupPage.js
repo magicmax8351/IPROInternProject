@@ -90,13 +90,16 @@ const GroupDescription = styled.p`
   margin-bottom: 0px;
 `;
 
-const GroupStatsList = styled.ul`
-  margin: 0px;
-  padding: 0px;
+const GroupStatsHeader = styled.p`
+  font-size: .8em;
+  font-weight: bold;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
 `;
 
-const GroupStatsItem = styled.li`
-  list-style-type: none;
+const GroupStatsItem = styled.p`
+  margin-bottom: 0px;
+  padding-bottom: 0px;
 `;
 
 class GroupPage extends React.Component {
@@ -522,10 +525,18 @@ class GroupPage extends React.Component {
             </SidebarContainer>
             <SidebarContainer>
               <h4>stats</h4>
-              <GroupStatsList>
-                <GroupStatsItem>{this.state.groupStats.avgJobsInDashboard}</GroupStatsItem>
-                <GroupStatsItem>{this.state.groupStats.mostPopularCompany}</GroupStatsItem>
-              </GroupStatsList>
+              <GreyGroupRow><GroupStatsHeader>Average Jobs in Dashboard</GroupStatsHeader></GreyGroupRow>
+              <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.avgJobsInDashboard}</GroupStatsItem></WhiteGroupRow>
+              <GreyGroupRow><GroupStatsHeader>Most Popular Company</GroupStatsHeader></GreyGroupRow>
+              <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.mostPopularCompany}</GroupStatsItem></WhiteGroupRow>
+              <GreyGroupRow><GroupStatsHeader>Posts per Day</GroupStatsHeader></GreyGroupRow>
+              <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.postsPerDay}</GroupStatsItem></WhiteGroupRow>
+              <GreyGroupRow><GroupStatsHeader>Average Number of Offers</GroupStatsHeader></GreyGroupRow>
+              <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.avgNumberOffers}</GroupStatsItem></WhiteGroupRow>
+              {/*<GroupStatsList>
+                <GroupStatsItem>Average Jobs in Dashboard {this.state.groupStats.avgJobsInDashboard}</GroupStatsItem>
+                <GroupStatsItem>Most Popular Company: {this.state.groupStats.mostPopularCompany}</GroupStatsItem>
+              </GroupStatsList>*/}
             </SidebarContainer>
             <SidebarContainer>
               <h4>members</h4>

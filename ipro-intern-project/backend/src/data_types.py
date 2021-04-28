@@ -167,6 +167,8 @@ class GroupStatsModel(BaseModel):
     group_id: Optional[int]
     avgJobsInDashboard: Optional[int]
     mostPopularCompany: Optional[str]
+    postsPerDay: Optional[int]
+    avgNumberOffers: Optional[int]
 
 class CommentORM(Base):
     __tablename__ = "comment"
