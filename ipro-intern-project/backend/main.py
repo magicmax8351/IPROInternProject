@@ -40,7 +40,6 @@ app.add_middleware(
 
 engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
-orm_session = orm_parent_session()
 
 
 
@@ -1028,7 +1027,7 @@ def get_group_stats(link: str):
     
     # get users in this group
     group = s.query(GroupORM).filter(GroupORM.link == link).one()
-    groupMemberships = orm_session.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    groupMemberships = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
     memberships = groupMemberships.membership
 
     # calculate avgJobsInDashboard and find mostPopularCompany
