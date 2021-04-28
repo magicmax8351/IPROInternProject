@@ -1044,6 +1044,8 @@ def get_group_stats(link: str):
     
     stats.avgJobsInDashboard = total // count
     stats.mostPopularCompany = max(companies, key=companies.get)
+    stats.postsPerDay = random.randint(1, 20)
+    stats.avgNumberOffers = random.randint(1, 10)
 
     s.close()
     return stats
