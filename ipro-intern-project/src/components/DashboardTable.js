@@ -1,14 +1,10 @@
 import React, { Component } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Table from "react-bootstrap/Table";
-import Icon from "./DashboardIcon";
 import NewDashboardTableEntry from "./NewDashboardTableEntry";
 import styled from "styled-components";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import NewPost from "./NewPost";
-import Form from "react-bootstrap/Form";
-import status_list from "./DashboardIcon";
 import DashboardTableRow, {
   DashboardRowItemButton,
   getLastEvent,
@@ -28,14 +24,6 @@ import {
   WhiteGroupRow,
 } from "../views/GroupPage";
 
-const DashboardTag = styled.p`
-  background: #eeeeeeee;
-  text-align: center;
-  margin: 2px;
-  border-radius: 30px;
-  display: inline-block;
-  padding: 5px;
-`;
 
 const DashboardButton = styled(PostButton)`
   width: 100%;
