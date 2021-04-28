@@ -865,7 +865,11 @@ def add_group(new_group: GroupModel, token: str = Cookie("")):
     groupImages = [
         "https://live.staticflickr.com/7421/16439168222_aaecb19630_b.jpg",
         "https://image.freepik.com/free-vector/geometric-background_23-2148573776.jpg",
-        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg"
+        "https://static8.depositphotos.com/1154062/1071/v/600/depositphotos_10712741-stock-illustration-white-crumpled-abstract-background.jpg",
+        "/group_pictures/snowy_street.jpg",
+        "/group_pictures/sleepy_puggle.jpg",
+        "/group_pictures/bread.jpg",
+        "/group_pictures/chicago.jpg"
     ]
 
     new_group.link = re.sub("[^0-9a-zA-Z_]+", "",
@@ -878,11 +882,12 @@ def add_group(new_group: GroupModel, token: str = Cookie("")):
     if(new_group.privacy != 0):
         new_group.link += "_" + gen_token()[:8]
 
+    
     new_group_ORM = GroupORM(
         name=new_group.name,
         icon="/fake/image.png",
         desc=new_group.desc,
-        background=random.choice(groupImages),
+        background=(new_group.background if new_group.background else random.choice(groupImages)),
         privacy=new_group.privacy,
         link=new_group.link
     )
@@ -996,7 +1001,7 @@ def join_group(group_link: str, token: str):
     return (200, "OK")
 
 @app.post("/group/leave")
-def join_group(group_link: str, token: str = Cookie("")):
+def leave_group(group_link: str, token: str = Cookie("")):
     uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(422, "Not Authenticated")
