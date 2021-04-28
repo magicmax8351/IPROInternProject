@@ -102,6 +102,10 @@ const ThumbButton = styled.button`
   font-size: 10pt;
 `;
 
+const PostBody = styled.p`
+  white-space: pre-wrap;
+`;
+
 class Post extends React.Component {
   constructor(props) {
     super(props);
@@ -129,7 +133,12 @@ class Post extends React.Component {
       this.user.id,
       this.state.post
     );
-    return this.addJobButtonText[this.state.post.applied] + " (" + dashboardAdditions + ")";
+    return (
+      this.addJobButtonText[this.state.post.applied] +
+      " (" +
+      dashboardAdditions +
+      ")"
+    );
   }
 
   addJobFromPost() {
@@ -244,7 +253,7 @@ class Post extends React.Component {
   }
 
   calcDashboardAdditions(activityArray, userDashboard, uid, post) {
-    if(activityArray == null || userDashboard == null) {
+    if (activityArray == null || userDashboard == null) {
       return 0;
     }
     let count = 0;
@@ -260,7 +269,7 @@ class Post extends React.Component {
   }
 
   calcLikes(activityArray, userLike, userId) {
-    if(activityArray == null || userLike == null) {
+    if (activityArray == null || userLike == null) {
       return 0;
     }
     let count = 0;
@@ -324,7 +333,7 @@ class Post extends React.Component {
               <PostCardHeading>
                 {this.state.post.job.name} | Summer 2021
               </PostCardHeading>
-              <p>{this.state.post.body}</p>
+              <PostBody>{this.state.post.body}</PostBody>
             </div>
           </Container>
           <ButtonContainer>
@@ -338,7 +347,10 @@ class Post extends React.Component {
             >
               comments ({this.state.post.comments.length})
             </PostButton>
-            <PostButton disabled={this.state.post.applied == 1} onClick={this.addJobFromPost}>
+            <PostButton
+              disabled={this.state.post.applied == 1}
+              onClick={this.addJobFromPost}
+            >
               {this.getButtonText()}
             </PostButton>
             <PostButton onClick={() => window.open(this.state.post.job.link)}>
@@ -353,4 +365,4 @@ class Post extends React.Component {
 
 export default Post;
 
-export { MasterPostContainer, UserImage, PostButton };
+export { MasterPostContainer, UserImage, PostButton, PostBody };

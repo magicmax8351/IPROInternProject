@@ -42,7 +42,6 @@ engine = create_engine("sqlite:///test_db.db")
 orm_parent_session = sessionmaker(bind=engine)
 
 
-
 def gen_token():
     tok = str(uuid.uuid4().hex)[8:] + str(uuid.uuid4().hex)[8:]
     return tok
@@ -202,6 +201,7 @@ def token_test(token: str = Cookie("")):
         s.close()
         raise HTTPException(422, "Not valid token!")
 
+
 def get_uid_token(token: str):
     s = orm_parent_session()
     try:
@@ -212,6 +212,7 @@ def get_uid_token(token: str):
         s.close()
         return {"result": 0, "uid": -1}
 # Post
+
 
 @app.post("/posts/add")
 def add_post(new_post: PostModel):
@@ -230,9 +231,9 @@ def add_post(new_post: PostModel):
     orm_session.add(new_post_orm)
     orm_session.commit()
 
-    like = UserPostLikeORM(uid=uid, post_id=new_post_orm.id, like=1, dashboard=0)
+    like = UserPostLikeORM(
+        uid=uid, post_id=new_post_orm.id, like=1, dashboard=0)
     orm_session.add(like)
-
 
     ret = PostModel.from_orm(new_post_orm)
     ret.key = ret.id
@@ -291,7 +292,8 @@ def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")
     for post in query:
         post_model = PostModel.from_orm(post)
         if len(post_model.activity) > 0:
-            post_model.userLike = max(map(lambda x: x.like if (x.uid == uid and x.like != 0) else 0, post_model.activity))
+            post_model.userLike = max(map(lambda x: x.like if (
+                x.uid == uid and x.like != 0) else 0, post_model.activity))
         else:
             post_model.userLike = 0
 
@@ -309,6 +311,7 @@ def get_post(count: int, start_id: int, group_link: str, token: str = Cookie("")
 
     return {'posts': posts, 'count': len(posts)}
 
+
 @app.get("/posts/like")
 def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("")):
     uid = get_uid_token(token)["uid"]
@@ -317,11 +320,13 @@ def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("
 
     s = orm_parent_session()
     try:
-        likeObj = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(UserPostLikeORM.post_id == post_id).one()
+        likeObj = s.query(UserPostLikeORM).filter(UserPostLikeORM.uid == uid).filter(
+            UserPostLikeORM.post_id == post_id).one()
         likeObj.like = like
         likeObj.dashboard = dashboard
     except NoResultFound:
-        likeObj = UserPostLikeORM(uid=uid, post_id=post_id, like=like, dashboard=dashboard)
+        likeObj = UserPostLikeORM(
+            uid=uid, post_id=post_id, like=like, dashboard=dashboard)
         try:
             s.add(likeObj)
             s.commit()
@@ -336,6 +341,7 @@ def like_post(post_id: int, like: int, dashboard: int = 0, token: str = Cookie("
     likeModel = UserPostLikeModel.from_orm(likeObj)
     s.close()
     return likeModel
+
 
 @app.post("/posts/update")
 def update_post(updated_post: PostModel):
@@ -442,28 +448,14 @@ def add_application(new_application: ApplicationBaseModel, applied: bool = False
     orm_session = orm_parent_session()
 
     new_application_base_orm = ApplicationBaseORM(
+        timestamp=datetime.datetime.now(),
         job_id=new_application.job_id,
         resume_id=new_application.resume_id,
         uid=uid
     )
-
-    r = []
-
+    
     try:
         orm_session.add(new_application_base_orm)
-
-        for s in orm_session.query(StageORM).all():
-            e = ApplicationEventORM(
-                date=datetime.datetime.now(),
-                status=0,
-                applicationBaseId=new_application_base_orm.id,
-                stage_id=s.id
-            )
-            if s.id == 1 and applied:
-                e.status = 1
-
-            orm_session.add(e)
-
         orm_session.commit()
 
     except IntegrityError:
@@ -472,54 +464,82 @@ def add_application(new_application: ApplicationBaseModel, applied: bool = False
 
     ret_app = ApplicationBaseModel.from_orm(new_application_base_orm)
     orm_session.close()
-
-    ret_app.key = ret_app.id
     return ret_app
 
+def get_stages():
+    s = orm_parent_session()
+    ret = [StageModel.from_orm(x) for x in s.query(StageORM)]
+    s.close()
+    return ret
 
 @app.post("/applications/update")
-def update_application(newApplicationEvent: ApplicationEventModel):
+def update_application(newApplicationEvent: StatusUpdateModel, token: str = Cookie("")):
     """Updates the application with the given ID with new information.
        Checks to make sure that the application exists first.
-
-       Test request code:
-       curl --request POST \
-        --url http://localhost:8000/applications/update \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "id": 4,
-            "status": 0,
-            "stage_id": 0,
-            "token": "c0144c49bc667fb90885b6d016147410",
-            "applicationBaseId": 1
-        }'
     """
 
-    uid = get_uid_token(newApplicationEvent.token)["uid"]
+    uid = get_uid_token(token)["uid"]
     if uid == -1:
         raise HTTPException(410, "User token invalid!")
 
     orm_session = orm_parent_session()
+    stages = get_stages()
+    print(stages)
 
-    base = orm_session.query(ApplicationBaseORM).filter(
-        ApplicationBaseORM.uid == uid,
-        ApplicationBaseORM.id == newApplicationEvent.applicationBaseId
-    ).one()
-
-    if base == None:
+    try:
+        base = orm_session.query(ApplicationBaseORM).filter(
+            ApplicationBaseORM.uid == uid,
+            ApplicationBaseORM.id == newApplicationEvent.applicationBaseId
+        ).one()
+    except NoResultFound:
         orm_session.close()
         raise HTTPException(411, "Couldn't match Base ID to user!")
+        
+    if newApplicationEvent.stage == None:
+        event_obj = ApplicationEventORM(
+                applicationBaseId=newApplicationEvent.applicationBaseId,
+                timestamp=datetime.datetime.now(),
+                stage_id=stages[0].id
+        )
+        orm_session.add(event_obj)
+    else:
+        try:
+            old_event_obj = orm_session.query(ApplicationEventORM).filter(
+                ApplicationEventORM.applicationBaseId == newApplicationEvent.applicationBaseId).filter(ApplicationEventORM.stage_id == newApplicationEvent.stage.id).one()
 
-    event_obj = orm_session.query(ApplicationEventORM).filter(
-        ApplicationEventORM.id == newApplicationEvent.id).one()
+            if(old_event_obj.stage_id == stages[-1].id):
+                orm_session.query(ApplicationEventORM).filter(
+                ApplicationEventORM.applicationBaseId == old_event_obj.applicationBaseId).delete()
+                # event_obj = ApplicationEventORM(
+                #     applicationBaseId=newApplicationEvent.applicationBaseId,
+                #     timestamp=datetime.datetime.now(),
+                #     stage_id=stages[0].id
+                # )
+                # orm_session.add(event_obj)
+                event_obj = None
+            else:
+                event_obj = ApplicationEventORM(
+                    applicationBaseId=newApplicationEvent.applicationBaseId,
+                    timestamp=datetime.datetime.now(),
+                    stage_id=stages[old_event_obj.stage.id].id
+                )
+                try:
+                    orm_session.add(event_obj)
+                except IntegrityError:
+                    raise HTTPException(430, "Status update invalid!")
 
-    if(event_obj == None):
-        orm_session.close()
-        raise HTTPException(412, "Event ID not found!")
-
-    event_obj.status = newApplicationEvent.status
-    ret = ApplicationEventModel.from_orm(event_obj)
+        except NoResultFound:
+            event_obj = ApplicationEventORM(
+                applicationBaseId=newApplicationEvent.applicationBaseId,
+                timestamp=datetime.datetime.now(),
+                stage_id=stages[0].id
+            )
+            orm_session.add(event_obj)
     orm_session.commit()
+    if(event_obj != None):
+        ret = ApplicationEventModel.from_orm(event_obj)
+    else:
+        ret = None
     orm_session.close()
     return ret
 
@@ -666,6 +686,7 @@ def get_company_id(company_id: int):
     s.close()
     raise ValueError
 
+
 @app.post("/companies/logo/upload")
 def upload_logo(logoFile: UploadFile = File(...)):
     """Uploads aand saves a logo file"""
@@ -682,11 +703,12 @@ def upload_logo(logoFile: UploadFile = File(...)):
         file_object.write(logoFile.file.read())
     return {'logoFile': unique_name}
 
+
 @app.get("/companies/logo/download")
 def download_logo(company_id: int):
     """Download the logo for the given company"""
     #uid = get_uid_token(token)["uid"]
-    #if uid == -1:
+    # if uid == -1:
     #    raise HTTPException(422, "Not Authenticated")
     s = orm_parent_session()
     company = s.query(CompanyORM).get(company_id)
@@ -697,6 +719,7 @@ def download_logo(company_id: int):
     else:
         raise HTTPException(404, f"Company id={company_id} Not Found")
         return {'error': f"Company id={company_id} Not Found"}
+
 
 @app.post("/companies/update")
 def update_company(updated_company: CompanyModel):
@@ -873,21 +896,20 @@ def add_group(new_group: GroupModel, token: str = Cookie("")):
     ]
 
     new_group.link = re.sub("[^0-9a-zA-Z_]+", "",
-           new_group.name.strip().replace(" ", "_").lower()).replace("__", "_")
+                            new_group.name.strip().replace(" ", "_").lower()).replace("__", "_")
 
     while(s.query(GroupORM).filter(GroupORM.link == new_group.link).scalar() != None):
         new_group.link += "_" + gen_token()[:8]
 
-
     if(new_group.privacy != 0):
         new_group.link += "_" + gen_token()[:8]
 
-    
     new_group_ORM = GroupORM(
         name=new_group.name,
         icon="/fake/image.png",
         desc=new_group.desc,
-        background=(new_group.background if new_group.background else random.choice(groupImages)),
+        background=(
+            new_group.background if new_group.background else random.choice(groupImages)),
         privacy=new_group.privacy,
         link=new_group.link
     )
@@ -941,7 +963,8 @@ def get_user_groups(token: str, browse: bool = False):
 
     group_memberships = [m.group_membership_id for m in s.query(
         MembershipORM).filter(MembershipORM.uid == uid)]
-    group_membership_map = {m.id: m.group_id for m in s.query(GroupMembershipORM)}
+    group_membership_map = {
+        m.id: m.group_id for m in s.query(GroupMembershipORM)}
 
     group_ids = [group_membership_map[x] for x in group_memberships]
 
@@ -949,7 +972,7 @@ def get_user_groups(token: str, browse: bool = False):
     group_membership_count = {}
 
     for m in s.query(GroupMembershipORM).filter(
-        GroupMembershipORM.group_id.in_(group_memberships)):
+            GroupMembershipORM.group_id.in_(group_memberships)):
         group_memberships.append(m.group_id)
 
     for (group_membership_id, members) in s.query(MembershipORM.group_membership_id, func.count(MembershipORM.uid)).group_by(MembershipORM.group_membership_id).all():
@@ -975,6 +998,7 @@ def get_user_groups(token: str, browse: bool = False):
     s.close()
     return groups
 
+
 @app.get("/group/join")
 def join_group(group_link: str, token: str):
     uid = get_uid_token(token)["uid"]
@@ -987,18 +1011,20 @@ def join_group(group_link: str, token: str):
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
 
-    groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    groupMembershipObject = s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id == group.id).one()
     if(s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).scalar() != None):
         raise HTTPException(430, "User already in group!")
 
     newMembershipORM = MembershipORM(
-        group_membership_id = groupMembershipObject.id,
+        group_membership_id=groupMembershipObject.id,
         uid=uid
     )
     s.add(newMembershipORM)
     s.commit()
     s.close()
     return (200, "OK")
+
 
 @app.post("/group/leave")
 def leave_group(group_link: str, token: str = Cookie("")):
@@ -1012,9 +1038,11 @@ def leave_group(group_link: str, token: str = Cookie("")):
     except NoResultFound as e:
         raise HTTPException(422, "Group not found!")
 
-    groupMembershipObject = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    groupMembershipObject = s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id == group.id).one()
     try:
-        m = s.query(MembershipORM).filter(MembershipORM.group_membership_id == groupMembershipObject.id).filter(MembershipORM.uid == uid).one()
+        m = s.query(MembershipORM).filter(MembershipORM.group_membership_id ==
+                                          groupMembershipObject.id).filter(MembershipORM.uid == uid).one()
     except NoResultFound:
         raise HTTPException(430, "User not in group!")
 
@@ -1023,16 +1051,18 @@ def leave_group(group_link: str, token: str = Cookie("")):
     s.close()
     return (200, "OK")
 
+
 @app.get("/groups_stats/{link}")
 def get_group_stats(link: str):
     """Calculates and returns statistics for the given group"""
-    
+
     stats = GroupStatsModel()
     s = orm_parent_session()
-    
+
     # get users in this group
     group = s.query(GroupORM).filter(GroupORM.link == link).one()
-    groupMemberships = s.query(GroupMembershipORM).filter(GroupMembershipORM.group_id == group.id).one()
+    groupMemberships = s.query(GroupMembershipORM).filter(
+        GroupMembershipORM.group_id == group.id).one()
     memberships = groupMemberships.membership
 
     # calculate avgJobsInDashboard and find mostPopularCompany
@@ -1046,7 +1076,7 @@ def get_group_stats(link: str):
         for app in m.user.applications:
             key = app.job.company.name
             companies[key] = companies[key] + 1 if key in companies else 1
-    
+
     stats.avgJobsInDashboard = total // count
     stats.mostPopularCompany = max(companies, key=companies.get)
     stats.postsPerDay = random.randint(1, 20)
@@ -1054,6 +1084,7 @@ def get_group_stats(link: str):
 
     s.close()
     return stats
+
 
 @app.post("/groups/update")
 def update_group(updated_group: GroupModel):
@@ -1176,4 +1207,3 @@ if __name__ == "__main__":
     set_event_loop(SelectorEventLoop())
     server = Server(config=Config(app=app, host="0.0.0.0"))
     get_event_loop().run_until_complete(server.serve())
-

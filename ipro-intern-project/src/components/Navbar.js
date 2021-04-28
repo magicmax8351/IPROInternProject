@@ -58,6 +58,17 @@ const UserDiv = styled.div`
   justify-content: flex-end;
 `;
 
+const LogoImage = styled.img`
+  max-height: 50px;
+  padding: 5px;
+  margin-bottom: 9px;
+  margin-right: -7px;
+`;
+
+const LogoContainer = styled.div`
+  white-space: nowrap;
+`;
+
 const getNavbarItem = (obj) => (
   <NavbarItem href={obj.link}>{obj.name}</NavbarItem>
 );
@@ -87,19 +98,22 @@ class Navbar extends React.Component {
   }
   render() {
     let userDiv = null;
-    if(this.loading == 0 && this.user == null) {
+    if (this.loading == 0 && this.user == null) {
       userDiv = <UserNameLink href="/login">login</UserNameLink>;
     } else if (this.user != null) {
       userDiv = (
         <UserDiv>
           {/* <UserImage src={this.user.pic} /> */}
-          <UserName>{this.user.fname}</UserName>
+          <UserName>{this.user.fname.toLowerCase()}</UserName>
         </UserDiv>
       );
     }
     return (
       <NavbarDiv>
-        <BasicLogo>WINGMAN</BasicLogo>
+        <LogoContainer>
+          <LogoImage src="/logo.png" />
+          <BasicLogo>wingman</BasicLogo>
+        </LogoContainer>
         <NavbarItemBox>{buildNavbarItems(objs)}</NavbarItemBox>
         {userDiv}
       </NavbarDiv>

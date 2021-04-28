@@ -10,6 +10,13 @@ import NewPost from "./NewPost";
 import status_list from "./DashboardIcon";
 import CuteButton from "./CuteDashboardShareButton";
 import DashboardTableRow from "./DashboardTableRow";
+import {
+  FeedContainer,
+  PostsContainer,
+  SidebarContainer,
+  SidebarFlexContainer,
+  UserInput,
+} from "../views/NewsFeed";
 
 const DashboardTag = styled.p`
   background: #eeeeeeee;
@@ -195,8 +202,6 @@ class DashboardTable extends Component {
     return <tbody>{dashboardData}</tbody>;
   }
 
-
-
   filterDashboardTableRow(applicationBase) {
     /* Filters based on this.state.filter_tag. Returns "false" if the object should
      *  be filtered, and "true" otherwise.
@@ -368,10 +373,23 @@ class DashboardTable extends Component {
 
     return (
       <div>
-        {newEntry}
-        {table}
         {newPostModal}
         {postSubmittedModal}
+        <FeedContainer>
+          <SidebarFlexContainer>
+            <SidebarContainer>
+              <h4>filter</h4>
+              <UserInput
+                onChange={this.enter_filter}
+                placeholder="enter a filter"
+              />
+            </SidebarContainer>
+          </SidebarFlexContainer>
+          <PostsContainer>
+            {newEntry}
+            {table}
+          </PostsContainer>
+        </FeedContainer>
       </div>
     );
   }

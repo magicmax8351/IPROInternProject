@@ -34,8 +34,7 @@ const SidebarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 224px;
-  min-width: 100px;
-  width: 40%;
+  max-width: 180px;
 `;
 
 const SidebarContainer = styled.div`
@@ -91,15 +90,16 @@ const GroupDescription = styled.p`
 `;
 
 const GroupStatsHeader = styled.p`
-  font-size: .8em;
   font-weight: bold;
   margin-bottom: 0px;
   padding-bottom: 0px;
+  white-space: nowrap;
 `;
 
 const GroupStatsItem = styled.p`
   margin-bottom: 0px;
   padding-bottom: 0px;
+  white-space: nowrap;
 `;
 
 class GroupPage extends React.Component {
@@ -525,13 +525,13 @@ class GroupPage extends React.Component {
             </SidebarContainer>
             <SidebarContainer>
               <h4>stats</h4>
-              <GreyGroupRow><GroupStatsHeader>Average Jobs in Dashboard</GroupStatsHeader></GreyGroupRow>
+              <GreyGroupRow><GroupStatsHeader>avg. member apps</GroupStatsHeader></GreyGroupRow>
               <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.avgJobsInDashboard}</GroupStatsItem></WhiteGroupRow>
-              <GreyGroupRow><GroupStatsHeader>Most Popular Company</GroupStatsHeader></GreyGroupRow>
+              <GreyGroupRow><GroupStatsHeader>top company</GroupStatsHeader></GreyGroupRow>
               <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.mostPopularCompany}</GroupStatsItem></WhiteGroupRow>
-              <GreyGroupRow><GroupStatsHeader>Posts per Day</GroupStatsHeader></GreyGroupRow>
+              <GreyGroupRow><GroupStatsHeader>posts per day</GroupStatsHeader></GreyGroupRow>
               <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.postsPerDay}</GroupStatsItem></WhiteGroupRow>
-              <GreyGroupRow><GroupStatsHeader>Average Number of Offers</GroupStatsHeader></GreyGroupRow>
+              <GreyGroupRow><GroupStatsHeader>avg. member offers</GroupStatsHeader></GreyGroupRow>
               <WhiteGroupRow><GroupStatsItem>{this.state.groupStats.avgNumberOffers}</GroupStatsItem></WhiteGroupRow>
               {/*<GroupStatsList>
                 <GroupStatsItem>Average Jobs in Dashboard {this.state.groupStats.avgJobsInDashboard}</GroupStatsItem>
@@ -577,4 +577,4 @@ const renderGroups = (groups) => {
   return grouplist;
 };
 
-export { renderGroups };
+export { renderGroups, GreyGroupRow, GroupStatsHeader, GroupStatsItem, WhiteGroupRow};

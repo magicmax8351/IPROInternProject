@@ -30,11 +30,12 @@ const GroupImageName = styled.a`
   margin-bottom: 0px;
   max-height: 200px;
   padding: 5px;
-  font-size: 24px;
+  font-size: 20px;
   color: black;
   transition: 0.1s;
   border-radius: 10px;
   border: solid white 2px;
+  white-space: nowrap;
   &:hover {
     color: black;
     border: solid grey 2px;
@@ -43,7 +44,6 @@ const GroupImageName = styled.a`
 `;
 
 const ActiveUserInGroupButton = styled.button`
-  height: 80%;
   margin-top: auto;
   margin-bottom: auto;
   border-radius: 5px;

@@ -326,8 +326,7 @@ class PostModel(BaseModel):
 
 class ApplicationEventModel(BaseModel):
     id: Optional[int]
-    date: Optional[datetime.date]
-    status: int
+    timestamp: Optional[datetime.datetime]
     stage_id: Optional[int]
     token: Optional[str]
     applicationBaseId: Optional[int]
@@ -347,17 +346,19 @@ class ApplicationBaseORM(Base):
                      )
     job = relationship("JobORM")
     resume = relationship("ResumeORM")
+    timestamp = Column(DateTime, nullable=False)
     applicationEvents = relationship("ApplicationEventORM")
 
 class ApplicationEventORM(Base):
     __tablename__ = "applicationEvent"
     metadata = metadata
     id = Column(Integer, primary_key=True, nullable=False)
-    date = Column(DateTime, nullable=False)
-    status = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
     applicationBaseId = Column(Integer, ForeignKey("applicationBase.id"))
     stage_id = Column(Integer, ForeignKey("stage.id"))
     stage = relationship("StageORM")
+    __table_args__ = (UniqueConstraint('stage_id', 'applicationBaseId', name='_app_id_stage_id'),
+                     )
 
 class ApplicationBaseModel(BaseModel):
     id: Optional[int]
@@ -369,6 +370,7 @@ class ApplicationBaseModel(BaseModel):
     token: Optional[str]
     key: Optional[int]
     job: Optional[JobModel]
+    timestamp: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True
@@ -427,3 +429,7 @@ class AuthIntModel(BaseModel):
 class ApplicationDataModel(BaseModel):
     applicationData: List[ApplicationBaseModel]
     stages: List[StageModel]
+
+class StatusUpdateModel(BaseModel): 
+    applicationBaseId: int
+    stage: Optional[StageModel]

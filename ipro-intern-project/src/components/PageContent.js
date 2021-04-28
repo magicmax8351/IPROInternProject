@@ -7,8 +7,7 @@ const PageContent = styled.div`
   display: flex;
   justify-content: center;
   display: block;
-
+  padding-bottom: 20px;
 
 `
-
 export default PageContent

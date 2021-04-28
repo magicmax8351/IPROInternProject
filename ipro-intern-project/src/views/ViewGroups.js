@@ -73,16 +73,6 @@ const JoinGroupButton = styled(PostButton)`
   }
 `;
 
-const MakeNewPostButton = styled.button`
-  background: #f0f0f0;
-  font-size: 14px;
-  width: 100%;
-  text-align: left;
-  border-radius: 5px;
-  border: none;
-  color: black;
-  padding-left: 2px;
-`;
 
 const RowFlex = styled.div`
   display: flex;

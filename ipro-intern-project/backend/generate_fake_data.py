@@ -55,16 +55,20 @@ def gen_fake_data():
     """
 
     icons = [
-        "/profile_pictures/p1.svg",
-        "/profile_pictures/p2.svg",
         "/profile_pictures/p3.jpg",
-        "/profile_pictures/p4.svg",
         "/profile_pictures/p5.jpg",
         "/profile_pictures/p6.jpg",
         "/profile_pictures/p7.jpg",
         "/profile_pictures/p8.jpg",
         "/profile_pictures/p9.jpg",
         "/profile_pictures/p10.jpg",
+        "/profile_pictures/p11.jpg",
+        "/profile_pictures/p12.jpg",
+        "/profile_picures/p13.jpg",
+        "/profile_pictures/p14.jpg",
+        "/profile_pictures/p15.jpg",
+        "/profile_pictures/p16.jpg",
+        "/profile_pictures/p17.jpg",
     ]
     users = []
     users.append(
@@ -209,6 +213,20 @@ def gen_fake_data():
 
     fake_job_urls = ["https://www.coinbase.com/careers/positions/1724688?gh_jid=1724688",
                      "https://www.job.com/job/marketing-director-in-chicago-il/47904624"]
+
+    job_descriptions = ["""The Engineering Development Solutions team is accountable for creating and supporting the ongoing improvement of infrastructure delivery management capabilities through application development, data management, and process automation. As a Python Developer, you will work to rapidly and effectively develop solutions through code that add real value for our organization. This position will focus on development of internal tools related to our continuous integration infrastructure in support of our development team. """,
+                        """Blend helps lenders maximize their digital agility. Our digital lending platform is used by Wells Fargo, U.S. Bank, and other leading financial institutions to increase customer acquisition, improve productivity, and accelerate the delivery of any banking product across every channel. We process more than $3.5 billion in mortgages and consumer loans daily, helping millions of consumers get into homes and gain access to the capital they need to lead better lives.
+
+Blend is growing our Customer Support team in Chicago! We're looking for someone who has a proven track record of delivering high quality technical support to our customer base. As a Support team member, y ou'll be the voice of the company, creating a top-notch experience to ensure our customer are utilizing our product effectively.
+
+As part of the team, you’ll have the opportunity to grow your career, contribute your ideas and make a huge impact on the success of our product and company.
+
+Blend views the support team as a significant investment and to make you are set-up for success, Blend will host you at our HQ in San Francisco for the first 2-3 weeks for on-boarding and training with the team.""",
+                        """The individual will work on feature enhancements, performance improvements, bug fixes and troubleshooting production issues, with a broad range of Clearing and risk applications.
+
+The candidate must be self-motivated and eager to learn new technologies. He/she will need good analytical skills and will have opportunity to work with the end users directly to come up
+
+with creative and practical technology solution for different business problems. He/she will be mentored by other Lead developers."""]
     jobs = []
     for i in range(100):
         jobs.append(
@@ -216,10 +234,7 @@ def gen_fake_data():
                 name=random.choice(fake_job_titles),
                 location=random.choice(fake_locations),
                 company_id=comp_id(),
-                description=lipsum.paragraph(
-                    nb_sentences=15,
-                    variable_nb_sentences=False,
-                    ext_word_list=word_list.split()),
+                description=random.choice(job_descriptions),
                 link=random.choice(fake_job_urls)))
 
     s.add_all(jobs)
@@ -323,42 +338,45 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     s.add(admin_resume)
     s.commit()
 
-
     application_base_list = []
+    built_app_list = []
     for user in added_users:
         for job in jobs:
-            if(random.randint(0, 2) == 1):
-                application_base_list.append(
-                    ApplicationBaseORM(
+            if(random.randint(0, 4) == 1):
+                application_base_list.append(ApplicationBaseModel(
                         job_id=job.id,
                         resume_id=admin_resume.id,
-                        uid=user.user.id
-                    )
-                )
+                        token=user.token.val))
 
-    s.add_all(application_base_list)
-    s.commit()
-
-    application_event = []
     for app in application_base_list:
-        for stage in stages:
-            application_event.append(
+        try:
+            built_app_list.append(add_application(app))
+        except Exception as e:
+            print(app)
+            print(token)
+            print(e)
+            pass
+    
+
+    application_events = []
+    for app in built_app_list:
+        numStages = random.randint(0, len(stages))
+        for i in range(numStages):
+            application_events.append(
                 ApplicationEventORM(
-                    date=datetime.datetime.now(),
+                    timestamp=datetime.datetime.now(),
                     applicationBaseId=app.id,
-                    stage_id=stage.id,
-                    status=(random.randint(0, 1))
+                    stage_id=stages[i].id
                 )
             )
 
-    s.add_all(application_event)
+    s.add_all(application_events)
     s.commit()
 
     print("Adding some tags...")
 
-    tags = []
-    for word in set(word_list.split()):
-        tags.append(TagORM(tag=word))
+    tags = [TagORM(tag=x) for x in ["machine learning", "CS", "AI", "ITM", "windows", "linux", "tesla", "microsoft",
+                                    "amazon", "FAANG", "great recruiter", "high pay", "low pay", "unpaid", "good benefits", "free lunch"]]
 
     s.add_all(tags)
     s.commit()

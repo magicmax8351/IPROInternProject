@@ -490,5 +490,8 @@ export default NewsFeed;
 export {
   UserInput,
   SidebarFlexContainer,
-  SidebarContainer
+  SidebarContainer,
+  FeedContainer,
+  PostsContainer,
+  MakeNewPostButton
 }

@@ -1,13 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-
+import { PostBody } from "./Post";
 
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
 
 const MasterPostContainer = styled.div`
   max-width: 100%;
-  background-color: #ede6ff;
-  padding: 10px;
+  padding: 5px;
   border-radius: 5px;
   margin-bottom: 10px;
 `;
@@ -42,7 +41,6 @@ const CompanyInfo = styled.p`
   margin-bottom: 0px;
 `;
 
-
 const UserImage = styled.img`
   border-radius: 100px;
   display: inline-block;
@@ -63,10 +61,9 @@ const PostButton = styled.button`
   transition: 0.1s all ease-out;
 
   &:hover {
-    background-color: #A7A5C6;
+    background-color: #a7a5c6;
     color: white;
   }
-
 `;
 
 const ButtonContainer = styled.div`
@@ -76,24 +73,33 @@ const ButtonContainer = styled.div`
   margin-bottom: 0px;
 `;
 
+const RightButtonContainer = styled.div`
+  width: 28%;
+  display: flex;
+  justify-content: space-between;
+`;
+
 class DashboardJobInfo extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        dashboardStatus: props.dashboardStatus
-    }
+      dashboardStatus: props.dashboardStatus,
+      buttonText: props.resume.name
+    };
     this.job = props.job;
     this.applyFunc = props.applyFunc;
+    this.func = props.func;
     this.jobInfoApplyFunc = this.jobInfoApplyFunc.bind(this);
+    this.resume = props.resume;
   }
 
   jobInfoApplyFunc() {
-      if(this.state.dashboardStatus == "in your dashboard") {
-          return;
-      } else {
-          this.applyFunc();
-          this.setState({dashboardStatus: "in your dashboard"});
-      }
+    if (this.state.dashboardStatus == "in your dashboard") {
+      return;
+    } else {
+      this.applyFunc();
+      this.setState({ dashboardStatus: "in your dashboard" });
+    }
   }
 
   render() {
@@ -101,19 +107,33 @@ class DashboardJobInfo extends React.Component {
       <MasterPostContainer>
         <Container>
           <CompanyInfoContainer>
-            <CompanyLogo src={"http://" + window.location.hostname +":8000/companies/logo/download?company_id=" + this.job.company.id} />
+            <CompanyLogo
+              src={
+                "http://" +
+                window.location.hostname +
+                ":8000/companies/logo/download?company_id=" +
+                this.job.company.id
+              }
+            />
             <CompanyInfo>{this.job.company.name}</CompanyInfo>
             <CompanyInfo>{this.job.location}</CompanyInfo>
           </CompanyInfoContainer>
           <div>
-            <PostCardHeading>
-              {this.job.name} | Summer 2021
-            </PostCardHeading>
-            <p>{this.job.description}</p>
+            <PostCardHeading>{this.job.name} | Summer 2021</PostCardHeading>
+            <PostBody>{this.job.description}</PostBody>
           </div>
         </Container>
         <ButtonContainer>
-            <PostButton onClick={() => window.open(this.job.link)}>Job Link</PostButton>
+          <PostButton onClick={() => window.open(this.job.link)}>
+            Job Link
+          </PostButton>
+          <RightButtonContainer>
+            <PostButton
+              style={{width: "140px"}} // HACK
+              onMouseOver={() => this.setState({ buttonText: "download" })}
+              onMouseOut={() => this.setState({ buttonText: this.resume.name })}>{this.state.buttonText}</PostButton>
+            <PostButton onClick={this.func}>share</PostButton>
+          </RightButtonContainer>
         </ButtonContainer>
       </MasterPostContainer>
     );

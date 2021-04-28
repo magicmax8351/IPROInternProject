@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { PostBody } from "./Post"
 
 
 // For icons: https://github.com/FortAwesome/Font-Awesome/tree/master/js-packages/%40fortawesome/free-regular-svg-icons
@@ -109,7 +110,7 @@ class JobInfo extends React.Component {
             <PostCardHeading>
               {this.job.name} | Summer 2021
             </PostCardHeading>
-            <p>{this.job.description}</p>
+            <PostBody>{this.job.description}</PostBody>
           </div>
         </Container>
         <ButtonContainer>

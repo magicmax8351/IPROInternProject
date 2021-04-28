@@ -9,7 +9,6 @@ import Button from "react-bootstrap/Button";
 import { faPlusSquare, faMinusSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-
 // Logic for adding posts is broken.
 // Use https://formik.org/docs/overview to handle adding things to the database.
 
@@ -25,7 +24,8 @@ class NewDashboardTableEntry extends React.Component {
       companies: null,
       groups: null,
       body: null,
-      new_company_name: null
+      new_company_name: null,
+      applications: props.applications,
     };
     this.enter_company = this.enter_company.bind(this);
     this.enter_new_company_name = this.enter_new_company_name.bind(this);
@@ -38,7 +38,7 @@ class NewDashboardTableEntry extends React.Component {
     this.enter_new_job_link = this.enter_new_job_link.bind(this);
     this.enter_new_job_location = this.enter_new_job_location.bind(this);
     this.submitAddJob = this.submitAddJob.bind(this);
-    
+
     this.enter_resume = this.enter_resume.bind(this);
     this.enter_new_resume_name = this.enter_new_resume_name.bind(this);
     this.enter_new_resume_file = this.enter_new_resume_file.bind(this);
@@ -46,15 +46,30 @@ class NewDashboardTableEntry extends React.Component {
   }
 
   componentDidMount() {
-    fetch("http://" + window.location.hostname + ":8000/jobs/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/jobs/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ jobs: json }));
 
-    fetch("http://" + window.location.hostname + ":8000/companies/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/companies/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ companies: json }));
 
-    fetch("http://" + window.location.hostname + ":8000/resumes/get?token=" + this.token)
+    fetch(
+      "http://" +
+        window.location.hostname +
+        ":8000/resumes/get?token=" +
+        this.token
+    )
       .then((res) => res.json())
       .then((json) => this.setState({ resumes: json }));
   }
@@ -96,7 +111,10 @@ class NewDashboardTableEntry extends React.Component {
   }
 
   enter_new_resume_file(event) {
-    this.setState({ new_resume_file: event.target.files[0], new_resume_name: event.target.files[0].name });
+    this.setState({
+      new_resume_file: event.target.files[0],
+      new_resume_name: event.target.files[0].name,
+    });
   }
 
   enter_new_company_logo(event) {
@@ -104,46 +122,50 @@ class NewDashboardTableEntry extends React.Component {
   }
 
   submitAddCompany(event) {
-    event.preventDefault()
-    if(this.state.new_company_logo != null && this.state.new_company_name.length > 2) {
+    event.preventDefault();
+    if (
+      this.state.new_company_logo != null &&
+      this.state.new_company_name.length > 2
+    ) {
       // upload company logo here
-      
+
       let form = new FormData();
       form.append("logoFile", this.state.new_company_logo);
-      fetch("http://" + window.location.hostname + ":8000/companies/logo/upload", {
-        method: "POST",
-        body: form
-      })
-      .then((res) => res.json())
-      .then((json) => {
-
-        fetch("http://" + window.location.hostname + ":8000/companies/add", {
+      fetch(
+        "http://" + window.location.hostname + ":8000/companies/logo/upload",
+        {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: this.state.new_company_name,
-            logoFile: json.logoFile,
-            token: this.token
-          }),
-        })
+          body: form,
+        }
+      )
         .then((res) => res.json())
         .then((json) => {
-          this.setState({
-            companies: [...this.state.companies, json],
-            company_id: json.id,
-            job_id: 0
-          });
+          fetch("http://" + window.location.hostname + ":8000/companies/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: this.state.new_company_name,
+              logoFile: json.logoFile,
+              token: this.token,
+            }),
+          })
+            .then((res) => res.json())
+            .then((json) => {
+              this.setState({
+                companies: [...this.state.companies, json],
+                company_id: json.id,
+                job_id: 0,
+              });
+            });
         });
-
-      });
     }
   }
 
   submitAddJob(event) {
-    event.preventDefault()
-    if(this.state.new_job_name.length > 2 && this.state.company_id > 0 ) {
+    event.preventDefault();
+    if (this.state.new_job_name.length > 2 && this.state.company_id > 0) {
       fetch("http://" + window.location.hostname + ":8000/jobs/add", {
         method: "POST",
         headers: {
@@ -155,16 +177,16 @@ class NewDashboardTableEntry extends React.Component {
           link: this.state.new_job_link,
           location: this.state.new_job_location,
           company_id: this.state.company_id,
-          token: this.token
+          token: this.token,
         }),
       })
-      .then((res) => res.json())
-      .then((json) => {
-        this.setState({
-          jobs: [...this.state.jobs, json],
-          job_id: json.id
+        .then((res) => res.json())
+        .then((json) => {
+          this.setState({
+            jobs: [...this.state.jobs, json],
+            job_id: json.id,
+          });
         });
-      });
     }
   }
 
@@ -172,38 +194,38 @@ class NewDashboardTableEntry extends React.Component {
     event.preventDefault();
 
     let resume_name = this.state.new_resume_name;
-    if(resume_name == undefined || resume_name.length <= 2) {
+    if (resume_name == undefined || resume_name.length <= 2) {
       resume_name = "Untitled Resume";
     }
 
-    if(this.state.new_resume_file != null) {
+    if (this.state.new_resume_file != null) {
       let form = new FormData();
       form.append("resume", this.state.new_resume_file);
       fetch("http://" + window.location.hostname + ":8000/resumes/upload", {
         method: "POST",
-        body: form
+        body: form,
       })
-      .then((res) => res.json())
-      .then((json) => {
-        fetch("http://" + window.location.hostname + ":8000/resumes/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: resume_name,
-            filename: json.filename,
-            token: this.token
-          }),
-        })
         .then((res) => res.json())
         .then((json) => {
-          this.setState({
-            resumes: [...this.state.resumes, json],
-            resume_id: json.id
-          });
+          fetch("http://" + window.location.hostname + ":8000/resumes/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: resume_name,
+              filename: json.filename,
+              token: this.token,
+            }),
+          })
+            .then((res) => res.json())
+            .then((json) => {
+              this.setState({
+                resumes: [...this.state.resumes, json],
+                resume_id: json.id,
+              });
+            });
         });
-      });
     }
   }
 
@@ -239,7 +261,7 @@ class NewDashboardTableEntry extends React.Component {
       ]);
     }
 
-    companies.push([-2, "Add new"])
+    companies.push([-2, "Add new"]);
 
     return (
       <Form.Group>
@@ -264,11 +286,16 @@ class NewDashboardTableEntry extends React.Component {
     }
 
     for (let i = 0; i < this.state.jobs.length; i++) {
-      if (this.state.jobs[i].company_id == this.state.company_id) {
-        jobs.push([
-          this.state.jobs[i].id,
-          this.state.jobs[i].name + " - " + this.state.jobs[i].location,
-        ]);
+      let same_job = this.state.applications.map(
+        (x) => x.job.id == this.state.jobs[i].id
+      ).filter((x) => x);
+      if (same_job.length == 0) {
+        if (this.state.jobs[i].company_id == this.state.company_id) {
+          jobs.push([
+            this.state.jobs[i].id,
+            this.state.jobs[i].name + " - " + this.state.jobs[i].location,
+          ]);
+        }
       }
     }
     jobs.push([-2, "Add New"]);
@@ -287,17 +314,19 @@ class NewDashboardTableEntry extends React.Component {
     let resumes = [[-1, "Please select..."]];
 
     for (let i = 0; i < this.state.resumes.length; i++) {
-      resumes.push([
-        this.state.resumes[i].id,
-        this.state.resumes[i].name,
-      ]);
+      resumes.push([this.state.resumes[i].id, this.state.resumes[i].name]);
     }
     resumes.push([-2, "Add New"]);
 
-    return(
+    return (
       <Form.Group>
         <Form.Label>Resume:</Form.Label>
-        {this.renderDropdown("Resumes", resumes, "resume_id", this.enter_resume)}
+        {this.renderDropdown(
+          "Resumes",
+          resumes,
+          "resume_id",
+          this.enter_resume
+        )}
       </Form.Group>
     );
   }
@@ -311,16 +340,26 @@ class NewDashboardTableEntry extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Company Name</Form.Label>
-              <Form.Control onChange={this.enter_new_company_name} placeholder="New company name" />
+              <Form.Control
+                onChange={this.enter_new_company_name}
+                placeholder="New company name"
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Company Logo</Form.Label>
-              <Form.Control onChange={this.enter_new_company_logo} type="file" />
+              <Form.Control
+                onChange={this.enter_new_company_logo}
+                type="file"
+              />
             </Form.Group>
           </Form.Row>
-          <Button variant="primary" type="submit" onClick={this.submitAddCompany}>
+          <Button
+            variant="primary"
+            type="submit"
+            onClick={this.submitAddCompany}
+          >
             Add company
           </Button>
         </Form>
@@ -337,23 +376,35 @@ class NewDashboardTableEntry extends React.Component {
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Job title</Form.Label>
-              <Form.Control onChange={this.enter_new_job_name} placeholder="Software Engineer Intern" />
+              <Form.Control
+                onChange={this.enter_new_job_name}
+                placeholder="Software Engineer Intern"
+              />
             </Form.Group>
             <Form.Group as={Col}>
               <Form.Label>Location</Form.Label>
-              <Form.Control onChange={this.enter_new_job_location} placeholder="Chicago" />
+              <Form.Control
+                onChange={this.enter_new_job_location}
+                placeholder="Chicago"
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Description</Form.Label>
-              <Form.Control onChange={this.enter_new_job_description} placeholder="Engineer new techniques to move money in a big circle"/>
+              <Form.Control
+                onChange={this.enter_new_job_description}
+                placeholder="Engineer new techniques to move money in a big circle"
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Link</Form.Label>
-              <Form.Control onChange={this.enter_new_job_link} placeholder="https://example.com"/>
+              <Form.Control
+                onChange={this.enter_new_job_link}
+                placeholder="https://example.com"
+              />
             </Form.Group>
           </Form.Row>
           <Button variant="primary" type="submit" onClick={this.submitAddJob}>
@@ -365,15 +416,19 @@ class NewDashboardTableEntry extends React.Component {
   }
 
   renderAddResume() {
-    if(this.state.resume_id != -2) {
+    if (this.state.resume_id != -2) {
       return null;
     } else {
-      return(
+      return (
         <Form>
           <Form.Row>
             <Form.Group as={Col}>
               <Form.Label>Resume Name</Form.Label>
-              <Form.Control onChange={this.enter_new_resume_name} placeholder="New resume name" value={this.state.new_resume_name} />
+              <Form.Control
+                onChange={this.enter_new_resume_name}
+                placeholder="New resume name"
+                value={this.state.new_resume_name}
+              />
             </Form.Group>
           </Form.Row>
           <Form.Row>
@@ -382,7 +437,11 @@ class NewDashboardTableEntry extends React.Component {
               <Form.Control onChange={this.enter_new_resume_file} type="file" />
             </Form.Group>
           </Form.Row>
-          <Button variant="primary" type="submit" onClick={this.submitAddResume}>
+          <Button
+            variant="primary"
+            type="submit"
+            onClick={this.submitAddResume}
+          >
             Add resume
           </Button>
         </Form>
@@ -406,7 +465,14 @@ class NewDashboardTableEntry extends React.Component {
           {this.renderAddJob()}
           {this.renderListResume()}
           {this.renderAddResume()}
-          <Button variant="primary" type="submit" onClick={(event) => { event.preventDefault(); return this.func(this.state.job_id, this.state.resume_id); }}>
+          <Button
+            variant="primary"
+            type="submit"
+            onClick={(event) => {
+              event.preventDefault();
+              return this.func(this.state.job_id, this.state.resume_id);
+            }}
+          >
             Submit
           </Button>
         </Form>

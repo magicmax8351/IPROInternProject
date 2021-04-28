@@ -1,14 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-
-
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 120%; 
-`
-
-const status_list = ["N/A","Round 1", "Round 2", "Offer"];
+import { DashboardRowItemButton } from './DashboardTableRow';
 
 class SlimIcon extends Component {
   // Will need to pull all data from get functions from backend API to pull real data.
@@ -16,44 +8,37 @@ class SlimIcon extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      id: props.id,
       token: props.token,
       applicationBaseId: props.applicationBaseId,
-      status: props.status,
-      func: props.func
+      event: props.event,
+      func: props.func,
+      pendingUpdate: false,
     }
   this.updateStatus = this.updateStatus.bind(this);
   }
 
   updateStatus() {
-    let newStatus = (this.state.status + 1) % status_list.length;
-    this.setState({status: newStatus});
-    this.state.func(newStatus);
+    this.setState({ pendingUpdate: true });
     fetch("http://" + window.location.hostname + ":8000/applications/update", {
+      credentials: "include",
+      "Cache-Control": "no-store",
       "method": "POST",
       "headers": {
         "Content-Type": "application/json"
       },
       "body": JSON.stringify({
-        "id": this.state.id,
-        "status": newStatus,
-        "token": this.state.token,
-        "applicationBaseId": this.state.applicationBaseId
+        applicationBaseId: this.state.applicationBaseId,
+        stage: (this.state.event != null ? this.state.event.stage : null)
       })})
-      .then((res) => res.status)
-      .then((status) => {
-        if(status != 200) {
-          throw new Error("Weird error!")
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert(err);
+      .then((res) => res.json())
+      .then((json) => {
+        this.setState({ event: json, pendingUpdate: false});
       });
   }
 
   render() {
-    return <IconButton onClick={this.updateStatus}>{status_list[this.state.status]}</IconButton>;
+    console.log(this.state.event);
+    return <DashboardRowItemButton disabled={this.state.pendingUpdate} onClick={this.updateStatus}>{(this.state.event != null ? this.state.event.stage.name : "Not Applied")}</DashboardRowItemButton>;
   }
 }
 
