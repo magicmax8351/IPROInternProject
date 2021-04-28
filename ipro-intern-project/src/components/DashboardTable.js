@@ -24,7 +24,7 @@ const DashboardContainer = styled.div`
   width: 100%;
 `;
 
-class App extends Component {
+class DashboardTable extends Component {
   // Will need to pull all data from get functions from backend API to pull real data.
   //https://github.com/react-bootstrap-table/react-bootstrap-table2/issues/215 to get carets working when CSS happens
 
@@ -377,4 +377,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default DashboardTable;
