@@ -226,8 +226,6 @@ class DashboardTableRow extends Component {
       }
     }
 
-
-    console.log(lastEvent);
     tableRowData.push(
       <td>
         <SlimIcon

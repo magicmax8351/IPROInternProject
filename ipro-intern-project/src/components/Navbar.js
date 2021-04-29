@@ -69,8 +69,13 @@ const LogoContainer = styled.div`
   white-space: nowrap;
 `;
 
-const getNavbarItem = (obj) => (
-  <NavbarItem href={obj.link}>{obj.name}</NavbarItem>
+const NavbarItemUnderlined = styled(NavbarItem)`
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+`;
+
+const getNavbarItem = (obj, path) => (
+  (path == obj.link) ? <NavbarItemUnderlined href={obj.link}>{obj.name}</NavbarItemUnderlined> : <NavbarItem href={obj.link}>{obj.name}</NavbarItem>
 );
 
 // Jank way to stitch the objects together
@@ -82,10 +87,10 @@ for (let i = 0; i < names.length; i++) {
   objs.push({ link: links[i], name: names[i] });
 }
 
-function buildNavbarItems(objs) {
+function buildNavbarItems(objs, curPath) {
   let outItems = [];
   for (let i = 0; i < objs.length; i++) {
-    outItems.push(getNavbarItem(objs[i]));
+    outItems.push(getNavbarItem(objs[i], curPath));
   }
   return outItems;
 }
@@ -114,7 +119,9 @@ class Navbar extends React.Component {
           <LogoImage src="/logo.png" />
           <BasicLogo>wingman</BasicLogo>
         </LogoContainer>
-        <NavbarItemBox>{buildNavbarItems(objs)}</NavbarItemBox>
+        <NavbarItemBox>
+          {buildNavbarItems(objs, document.location.pathname)}
+        </NavbarItemBox>
         {userDiv}
       </NavbarDiv>
     );

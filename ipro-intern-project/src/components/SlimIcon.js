@@ -37,7 +37,6 @@ class SlimIcon extends Component {
   }
 
   render() {
-    console.log(this.state.event);
     return <DashboardRowItemButton disabled={this.state.pendingUpdate} onClick={this.updateStatus}>{(this.state.event != null ? this.state.event.stage.name : "Not Applied")}</DashboardRowItemButton>;
   }
 }
