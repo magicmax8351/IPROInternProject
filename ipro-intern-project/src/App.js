@@ -17,7 +17,7 @@ import ViewGroups from "./views/ViewGroups";
 import Cookies from "js-cookie";
 
 const BackgroundGrey = styled.div`
-  background-color: #f0f0f0;
+  background-color: rgb(242, 242, 242);
 `;
 
 class App extends Component {

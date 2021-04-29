@@ -23,6 +23,7 @@ import {
   GroupStatsItem,
   WhiteGroupRow,
 } from "../views/GroupPage";
+import { SmallTitle } from "../views/ViewGroups";
 
 
 const DashboardButton = styled(PostButton)`
@@ -31,7 +32,6 @@ const DashboardButton = styled(PostButton)`
 
 const SidebarOptions = styled.select`
   width: 100%;
-  margin-top: 10px;
   border-radius: 5px;
   font-size: 15px;
 `;
@@ -148,7 +148,7 @@ class DashboardTable extends Component {
     let header = this.buildDashboardTableHeader(stages);
     let body = this.buildDashboardData(applications);
     return (
-      <Table bordered hover responsive="sm">
+      <Table striped hover>
         {header}
         {body}
       </Table>
@@ -442,6 +442,9 @@ class DashboardTable extends Component {
         {jobAddedModal}
         <FeedContainer>
           <SidebarFlexContainer>
+          <SidebarContainer>
+            <SmallTitle>dashboard</SmallTitle>
+          </SidebarContainer>
             <SidebarContainer>
               <h5>search</h5>
               <UserInput

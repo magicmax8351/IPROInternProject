@@ -24,7 +24,7 @@ const FeedContainer = styled.div`
   justify-content: center;
   margin-left: auto;
   margin-right: auto;
-  width: 1000px;  
+  width: 1000px;
 `;
 
 const PostsContainer = styled.div`
@@ -73,18 +73,26 @@ const JoinGroupButton = styled(PostButton)`
   }
 `;
 
-
 const RowFlex = styled.div`
   display: flex;
   justify-content: space-between;
 `;
 
-const OtherOptionsBox = styled(SidebarContainer)`
+const OtherOptionsBox = styled.div`
+  background-color: white;
+  height: fit-content;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 135px;
 `;
+
+const SmallTitle = styled.h3`
+  margin: auto;
+`
 
 class ViewGroups extends React.Component {
   constructor(props) {
@@ -242,6 +250,9 @@ class ViewGroups extends React.Component {
         <FeedContainer>
           <SidebarFlexContainer>
             <SidebarContainer>
+              <SmallTitle>public groups</SmallTitle>
+            </SidebarContainer>
+            <SidebarContainer>
               <h4>your groups</h4>
               {renderGroups(this.state.groups)}
             </SidebarContainer>
@@ -262,9 +273,6 @@ class ViewGroups extends React.Component {
           </SidebarFlexContainer>
           <PostsContainer>{groups_rendered}</PostsContainer>
           <SidebarFlexContainer>
-            <SidebarContainer>
-              <h3>public groups</h3>
-            </SidebarContainer>
             <SidebarContainer>
               <h4>filter groups</h4>
               <UserInput
@@ -335,7 +343,6 @@ function shuffle(array) {
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
-
     // And swap it with the current element.
     temporaryValue = array[currentIndex];
     array[currentIndex] = array[randomIndex];
@@ -346,3 +353,5 @@ function shuffle(array) {
 }
 
 export default ViewGroups;
+
+export { SmallTitle };

@@ -21,7 +21,7 @@ const DashboardTag = styled.p`
 `;
 
 const DashboardRowItemButton = styled.button`
-  background: white;
+  background: transparent;
   margin-bottom: 0px;
   max-height: 200px;
   padding: 5px;
@@ -29,7 +29,7 @@ const DashboardRowItemButton = styled.button`
   font-size: 18px;
   transition: 0.1s;
   border-radius: 10px;
-  border: solid white 2px;
+  border: solid transparent 2px;
   white-space: nowrap;
   &:hover {
     color: black;

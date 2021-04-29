@@ -7,6 +7,7 @@ import { MasterPostContainer, UserImage } from "../components/Post";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import NewPost from "../components/NewPost";
+import { SmallTitle } from "./ViewGroups";
 
 // Group ID of -1 given to "main page" - load in posts from all groups
 // user is associated with
@@ -456,6 +457,9 @@ class NewsFeed extends React.Component {
         {postSubmittedModal}
         <FeedContainer>
           <SidebarFlexContainer>
+            <SidebarContainer>
+              <SmallTitle>news feed</SmallTitle>
+            </SidebarContainer>
             <SidebarContainer>
               <h4>filter</h4>
               <UserInput
