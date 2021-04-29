@@ -73,8 +73,11 @@ const ButtonContainer = styled.div`
   margin-bottom: 0px;
 `;
 
+const PostButtonRight = styled(PostButton)`
+  margin-left: 10px;
+`
+
 const RightButtonContainer = styled.div`
-  width: 28%;
   display: flex;
   justify-content: space-between;
 `;
@@ -132,7 +135,7 @@ class DashboardJobInfo extends React.Component {
               style={{width: "140px"}} // HACK
               onMouseOver={() => this.setState({ buttonText: "download" })}
               onMouseOut={() => this.setState({ buttonText: this.resume.name })}>{this.state.buttonText}</PostButton>
-            <PostButton onClick={this.func}>share</PostButton>
+            <PostButtonRight onClick={this.func}>share</PostButtonRight>
           </RightButtonContainer>
         </ButtonContainer>
       </MasterPostContainer>
