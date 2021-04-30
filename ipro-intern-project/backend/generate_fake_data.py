@@ -64,7 +64,7 @@ def gen_fake_data():
         "/profile_pictures/p10.jpg",
         "/profile_pictures/p11.jpg",
         "/profile_pictures/p12.jpg",
-        "/profile_picures/p13.jpg",
+        "/profile_pictures/p13.jpg",
         "/profile_pictures/p14.jpg",
         "/profile_pictures/p15.jpg",
         "/profile_pictures/p16.jpg",
