@@ -73,7 +73,7 @@ def gen_fake_data():
     users = []
     users.append(
         UserModel(
-            fname="Steven",
+            fname="Brendan",
             lname="Traversa",
             password="admin",
             email="admin",
