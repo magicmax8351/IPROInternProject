@@ -257,6 +257,7 @@ class DashboardTableRow extends Component {
                   });
                 }}
                 resume={this.applicationBase.resume}
+                token={this.token}
               />
             </div>
           </td>

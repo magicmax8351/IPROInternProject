@@ -21,7 +21,6 @@
 /(venv)
 /Scripts
 
-/backend/resumes
 
 npm-debug.log*
 yarn-debug.log*

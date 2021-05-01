@@ -93,7 +93,9 @@ class DashboardJobInfo extends React.Component {
     this.applyFunc = props.applyFunc;
     this.func = props.func;
     this.jobInfoApplyFunc = this.jobInfoApplyFunc.bind(this);
+    this.downloadResume = this.downloadResume.bind(this);
     this.resume = props.resume;
+    this.token = props.token;
   }
 
   jobInfoApplyFunc() {
@@ -102,6 +104,25 @@ class DashboardJobInfo extends React.Component {
     } else {
       this.applyFunc();
       this.setState({ dashboardStatus: "in your dashboard" });
+    }
+  }
+
+  downloadResume() {
+    console.log(this.resume.id);
+    if(this.resume.id != -1) {
+      fetch("http://" + window.location.hostname + ":8000/resumes/download?token=" + this.token + "&resume_id=" + this.resume.id)
+      .then((res) => {
+        if (res.status == 200) {
+          window.open(res.url);
+        } else if (res.status == 404) {
+          throw new Error("Resume Not Found!");
+        } else {
+          throw new Error("Something else broke!");
+        }
+      })
+      .catch((error) => {
+        alert(error);
+      });
     }
   }
 
@@ -134,7 +155,8 @@ class DashboardJobInfo extends React.Component {
             <PostButton
               style={{width: "140px"}} // HACK
               onMouseOver={() => this.setState({ buttonText: "download" })}
-              onMouseOut={() => this.setState({ buttonText: this.resume.name })}>{this.state.buttonText}</PostButton>
+              onMouseOut={() => this.setState({ buttonText: this.resume.name })}
+              onClick={this.downloadResume}>{this.state.buttonText}</PostButton>
             <PostButtonRight onClick={this.func}>share</PostButtonRight>
           </RightButtonContainer>
         </ButtonContainer>
