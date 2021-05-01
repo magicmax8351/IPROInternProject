@@ -59,6 +59,7 @@ const PostButton = styled.button`
   padding-left: 10px;
   padding-right: 10px;
   transition: 0.1s all ease-out;
+  white-space: nowrap;
 
   &:hover {
     background-color: #a7a5c6;
@@ -153,7 +154,6 @@ class DashboardJobInfo extends React.Component {
           </PostButton>
           <RightButtonContainer>
             <PostButton
-              style={{width: "140px"}} // HACK
               onMouseOver={() => this.setState({ buttonText: "download" })}
               onMouseOut={() => this.setState({ buttonText: this.resume.name })}
               onClick={this.downloadResume}>{this.state.buttonText}</PostButton>

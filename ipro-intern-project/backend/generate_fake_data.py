@@ -329,7 +329,7 @@ I am excited to announce I will be moving to Park City, Utah to work as a luxury
     # Adding a fake resume to the admin user
 
     admin_resume = ResumeORM(
-        name="resume-21-main",
+        name="resume",
         filename="resume.pdf",
         date=datetime.datetime.now(),
         uid=adminUser.id
