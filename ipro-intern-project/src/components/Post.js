@@ -287,6 +287,9 @@ class Post extends React.Component {
   render() {
     let jobInfoModal = this.getJobInfoModal();
     let postCommentsModal = this.getPostCommentsModal();
+    let ugly_time = String(this.state.post.timestamp);
+    let pretty_time = ugly_time.substring(5,7) + "/" + ugly_time.substring(2,4);{/*grabs the month first, then year of post*/}
+
 
     return (
       <div>
@@ -327,7 +330,7 @@ class Post extends React.Component {
               />
               <CompanyInfo>{this.state.post.job.company.name}</CompanyInfo>
               <CompanyInfo>{this.state.post.job.location}</CompanyInfo>
-              <CompanyInfo>Posted 3/23</CompanyInfo>
+              <CompanyInfo>Posted {pretty_time}</CompanyInfo> {/*changed this from static 3/23*/}
             </CompanyInfoContainer>
             <div>
               <PostCardHeading>

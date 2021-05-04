@@ -218,7 +218,7 @@ def get_uid_token(token: str):
 def add_post(new_post: PostModel):
     """Adds a new row to post table."""
     orm_session = orm_parent_session()
-    uid = get_uid_token(new_post.token)["uid"]
+    uid = get_uid_token(new_post.token)["uid"]    
 
     new_post_orm = PostORM(
         body=new_post.body,
