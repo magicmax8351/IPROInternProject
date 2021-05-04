@@ -22,7 +22,7 @@ const Container = styled.div`
 const PostInfoContainer = styled.div``;
 
 const CompanyInfoContainer = styled.div`
-  max-width: 100px;
+  max-width: 110px;
   margin: 10px;
 `;
 
@@ -43,6 +43,7 @@ const CompanyInfo = styled.p`
   max-width: 80px;
   display: block;
   margin-bottom: 0px;
+  white-space: nowrap;
 `;
 
 const PostAuthor = styled.p`
@@ -290,6 +291,7 @@ class Post extends React.Component {
     let time = new Date(this.state.post.timestamp).toLocaleDateString("en-US", {
       month: "numeric",
       day: "numeric",
+      year: "numeric"
     });
     return (
       <div>
