@@ -111,7 +111,7 @@ class DashboardJobInfo extends React.Component {
   downloadResume() {
     console.log(this.resume.id);
     if(this.resume.id != -1) {
-      fetch("http://" + window.location.hostname + ":8000/resumes/download?token=" + this.token + "&resume_id=" + this.resume.id)
+      fetch("http://" + window.location.hostname + ":8000/resumes/download?token=" + this.token + "&resume_id=" + this.resume.id + "&nonce=" + (new Date()).getTime())
       .then((res) => {
         if (res.status == 200) {
           window.open(res.url);
